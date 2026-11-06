@@ -1,31 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { AuthSessionProvider, createAuthGateway } from '../features/auth';
+import { RootNavigator } from '../navigation/RootNavigator';
+
+const authGateway = createAuthGateway();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>ALIADO</Text>
-      <Text style={styles.subtitle}>Base móvil lista para iniciar el desarrollo por features.</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <AuthSessionProvider gateway={authGateway}>
+        <RootNavigator />
+      </AuthSessionProvider>
+      <StatusBar style="dark" />
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '700',
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 16,
-    textAlign: 'center',
-  },
-});
