@@ -9,9 +9,9 @@ La raíz de `docs/` debe mantenerse liviana. Los documentos vigentes se organiza
 - **Fase 1 completada:** base Expo/React Native/TypeScript inicializada con CNG y development builds; sin funcionalidades de producto.
 - El stack y las versiones están fijados en [ADR 0001](adr/0001-stack-y-versiones-movil.md).
 - El flujo de ramas está documentado en [Gitflow](development/GITFLOW.md) y [ADR 0002](adr/0002-gitflow-fast-forward.md); todavía no se han creado `develop` ni ramas de trabajo.
-- La estructura actual solo contiene bootstrap (`index.ts`, `src/app/`), assets y configuración. Las features se crearán al iniciar su implementación.
+- La estructura incorpora navegación y la feature `src/features/auth/` (SPEC-01). El resto de features se creará al iniciar su implementación.
 - Validación con Node 24.14.1/npm 11.11.0: `npm ci`, `typecheck`, `verify:config` y `doctor` (20/20) pasan; Expo Doctor usa un runner que captura sus subprocesos JSON en archivos. Ver [Validación](development/VALIDATION.md).
-- D-04 (sesión y almacenamiento seguro) y las decisiones funcionales de `aliado-prb` siguen pendientes.
+- D-04 (sesión y almacenamiento seguro), la API desplegada y la versión de términos siguen pendientes; el detalle está en [F01 — Acceso e identidad](features/auth.md).
 
 ## Lectura recomendada
 
@@ -19,10 +19,11 @@ La raíz de `docs/` debe mantenerse liviana. Los documentos vigentes se organiza
 2. [Alcance y flujo de entrega](core/DELIVERY_PLAN.md) — MVP móvil, dependencias y etapas de trabajo.
 3. [Flujo Gitflow](development/GITFLOW.md) — ramas, promoción y merges fast-forward.
 4. [Validación y diagnóstico](development/VALIDATION.md) — comandos de cierre y resolución de Expo Doctor.
-5. [Decisiones de arquitectura](adr/README.md) — ADR aceptados y decisiones pendientes.
-6. [Plan general ALIADO](../../aliado-prb/docs/plans/plan-general-ALIADO.md) — fuente transversal funcional y técnica.
-7. [Arquitectura y stack del plan](../../aliado-prb/docs/tasks/01-arquitectura-y-stack.md) — tecnologías y límites previstos para los clientes.
-8. [Backlog de features](../../aliado-prb/docs/tasks/README.md) — orden de dependencias y tareas por feature.
+5. [F01 — Acceso e identidad](features/auth.md) — alcance móvil implementado, contrato y bloqueos.
+6. [Decisiones de arquitectura](adr/README.md) — ADR aceptados y decisiones pendientes.
+7. [Plan general ALIADO](../../aliado-prb/docs/plans/plan-general-ALIADO.md) — fuente transversal funcional y técnica.
+8. [Arquitectura y stack del plan](../../aliado-prb/docs/tasks/01-arquitectura-y-stack.md) — tecnologías y límites previstos para los clientes.
+9. [Backlog de features](../../aliado-prb/docs/tasks/README.md) — orden de dependencias y tareas por feature.
 
 Durante el diseño inicial, las notas de pantallas y recorridos del prototipo se guardan en `docs/temporary/` y están excluidas de Git. Consultar localmente `docs/temporary/PROTOTYPE-UI-REFERENCE.md`; antes de cerrar el frontend, contrastar cada punto con los SPEC, migrar solo las decisiones confirmadas y eliminar la carpeta temporal.
 
@@ -32,6 +33,7 @@ Durante el diseño inicial, las notas de pantallas y recorridos del prototipo se
 |---|---|
 | `core/` | Alcance, roadmap y criterios generales de entrega de la app. |
 | `architecture/` | Arquitectura móvil vigente y convenciones estructurales. |
+| `features/` | Alcance, contrato y estado real de cada feature móvil. |
 | `development/` | Flujo de ramas, validaciones y operación del repositorio. |
 | `adr/` | Decisiones técnicas, alternativas y consecuencias. |
 | `api/` | Contratos específicos del consumo móvil, cuando se definan. |

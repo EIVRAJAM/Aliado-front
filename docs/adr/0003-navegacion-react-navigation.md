@@ -1,0 +1,44 @@
+# ADR 0003 — Navegación móvil con React Navigation
+
+- **Estado:** aceptada
+- **Fecha:** 2026-11-06
+- **Alcance:** navegación raíz y flujo de acceso de la app móvil
+- **Feature que la inicia:** F01 — Acceso e identidad
+
+## Contexto
+
+La app necesitaba su primera navegación real para el flujo de acceso: inicio de sesión, registro, recuperación y sesión autenticada. La arquitectura ya reservaba `src/navigation/` para la navegación raíz y los flujos por rol, pero no había una librería decidida.
+
+El bootstrap actual vive en `src/app/`. Expo Router usa `src/app/` como directorio de rutas cuando se adopta, por lo que instalarlo ahora obligaría a mover el bootstrap y cambiar la estructura de entrada antes de necesitarlo.
+
+## Decisión
+
+Usar **React Navigation 7** con el stack nativo para la navegación de la app:
+
+- `@react-navigation/native` `^7.5.1`
+- `@react-navigation/native-stack` `^7.21.0`
+- `react-native-screens` `~4.30.1`
+- `react-native-safe-area-context` `~5.11.1`
+
+Las versiones nativas se instalaron con `npx expo install` para respetar la matriz de Expo SDK 58. La raíz se compone en `src/navigation/RootNavigator.tsx` y el bootstrap envuelve la app con `SafeAreaProvider` y `AuthSessionProvider`.
+
+## Alternativas consideradas
+
+- **Expo Router:** viable y mantenida, pero implica convertir `src/app/` en el árbol de rutas y reubicar el bootstrap. Se podrá reevaluar cuando el crecimiento de la navegación lo justifique; no se adopta en esta feature.
+- **Navegación por estado local:** suficiente para dos o tres pantallas, pero no escala a flujos por rol, deep links, historial ni restauración. Se descarta como solución estructural.
+- **Otra librería de navegación:** no aporta una ventaja demostrada para el alcance actual y añadiría una dependencia no necesaria.
+
+## Consecuencias
+
+- La navegación raíz y los tipos de rutas viven en `src/navigation/`.
+- Las pantallas de una feature se importan desde su índice público; la navegación no conoce detalles internos de la feature.
+- La sesión autenticada se refleja con pantallas condicionales del stack. La autorización efectiva sigue perteneciendo al backend.
+- Las nuevas pantallas nativas requieren rebuild del development build, no solo recarga de Metro.
+- Si se adopta Expo Router más adelante, se registrará un ADR de migración y se reubicará el bootstrap.
+- Los deep links de recuperación no se implementan en esta feature; el código se captura manualmente en la pantalla de confirmación hasta que exista una decisión de enlace.
+
+## Referencias
+
+- [Arquitectura móvil](../architecture/MOBILE_ARCHITECTURE.md)
+- [ADR 0001 — Stack y versiones](0001-stack-y-versiones-movil.md)
+- [F01 — Acceso e identidad](../../../aliado-prb/docs/tasks/features/01-acceso-identidad.md)

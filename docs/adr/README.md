@@ -8,13 +8,14 @@ Las decisiones compartidas de backend y producto se mantienen en `../aliado-prb/
 |---|---|---|---|
 | [0001](0001-stack-y-versiones-movil.md) | Stack, versiones y gestor de paquetes de la app móvil | Aceptada | 2026-11-06 |
 | [0002](0002-gitflow-fast-forward.md) | Gitflow con promoción fast-forward | Aceptada | 2026-11-06 |
+| [0003](0003-navegacion-react-navigation.md) | Navegación móvil con React Navigation | Aceptada | 2026-11-06 |
 
 ## Pendientes relevantes para la app móvil
 
 | ID fuente | Tema | Estado / impacto móvil |
 |---|---|---|
 | D-01 | Versiones de React Native, React, Node, TypeScript, gestor de dependencias y herramientas | **Resuelta para el cliente móvil** por [ADR 0001](0001-stack-y-versiones-movil.md). La parte backend conserva su propia decisión en `aliado-prb`. |
-| D-04 | Duración, concurrencia, transporte y almacenamiento de sesión | Pendiente. Define persistencia segura, expiración, revocación y reautenticación. |
+| D-04 | Duración, concurrencia, transporte y almacenamiento de sesión | Pendiente. F01 mantiene la sesión solo en memoria; no hay persistencia de tokens hasta resolver duración, expiración, revocación y almacenamiento seguro. |
 | D-06 | Proveedor y ciclo de vida de storage | Pendiente. La app necesita contrato de carga y acceso privado; puede avanzar con adaptadores de desarrollo. |
 | D-07 | MIME, tamaño y cantidad de archivos | Pendiente. Afecta carga móvil, validación y mensajes de error. |
 | D-08 | Push/correo, tokens de dispositivo y reintentos | Pendiente. No asumir push productivo ni inventar almacenamiento de tokens. |

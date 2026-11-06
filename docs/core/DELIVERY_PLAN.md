@@ -1,6 +1,6 @@
 # Alcance y flujo de entrega — App móvil ALIADO
 
-**Estado:** fase 1 completada. La base Expo/React Native/TypeScript está inicializada con CNG y development builds, sin funcionalidades de producto ni integración API. El MVP sigue siendo planificación hasta que cada feature se implemente y acepte.
+**Estado:** fase 1 completada y F01 (acceso e identidad) iniciada. La UI, validación y contrato de integración de SPEC-01 están implementados; la autenticación real sigue bloqueada por API desplegada, D-04 y configuración de términos. El MVP sigue siendo planificación hasta que cada feature se implemente y acepte con API real.
 
 ## Alcance del cliente
 
@@ -12,8 +12,8 @@ SPEC-15 a SPEC-19 son capacidades **Could**, apagadas y posteriores al MVP. SPEC
 
 | Etapa | Contenido móvil | Dependencias / salida |
 |---|---|---|
-| F00 Fundación | **Fase 1:** base Expo/TypeScript/CNG, metadatos, scripts, typecheck y CI mínima. **Pendiente:** navegación base, componentes comunes, cliente API, contratos, sesión segura y automatización de pruebas. | D-01 resuelta para móvil en [ADR 0001](../adr/0001-stack-y-versiones-movil.md); D-04 y contratos mínimos pendientes. |
-| H1 Acceso y perfil inicial | SPEC-01 autenticación; SPEC-02 perfil, privacidad y eliminación básica; base de notificaciones F09.base donde corresponda. | Sesión real, roles y errores de acceso; eliminación completa espera reglas de servicios activos. |
+| F00 Fundación | **Fase 1:** base Expo/TypeScript/CNG, metadatos, scripts, typecheck y CI mínima. **F01:** navegación React Navigation, transporte HTTP, tema/componentes base y pantallas de acceso. **Pendiente:** sesión segura, contratos desplegados y automatización de pruebas. | D-01 resuelta para móvil en [ADR 0001](../adr/0001-stack-y-versiones-movil.md); navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md); D-04, API y versión de términos pendientes. |
+| H1 Acceso y perfil inicial | **F01 móvil:** UI y validación de registro, login, logout y recuperación implementadas. **Pendiente:** integración real con API, persistencia segura D-04 y pruebas E2E. SPEC-02 perfil, privacidad y eliminación básica; base de notificaciones F09.base donde corresponda. | Sesión real, roles y errores de acceso; eliminación completa espera reglas de servicios activos. |
 | H2 Solicitudes y descubrimiento | SPEC-04 solicitudes/catálogos/archivos → SPEC-05 perfil profesional → SPEC-03 descubrimiento. | API y catálogos disponibles; no prometer compatibilidad horaria completa sin resolver D-03. |
 | H3 Oportunidad a servicio | SPEC-06 compatibilidad → SPEC-07 propuestas → SPEC-08 contratación/ciclo del servicio; integración F09. | Estados, permisos e idempotencia acordados; contratación concurrente aceptada. |
 | H4 Confianza y continuidad | SPEC-10 confianza → SPEC-11 reportes/evidencias → SPEC-12 administración en las superficies del móvil → SPEC-13 formalización → SPEC-14 historial/preferencias/indicadores. | Integración con contratos backend y políticas abiertas cerradas según feature. |

@@ -4,9 +4,10 @@ Este documento operativiza la decisión [ADR 0002](../adr/0002-gitflow-fast-forw
 
 ## Estado actual
 
-- Rama actual: `main`.
-- El repositorio todavía no tiene commits.
-- `develop` aún no existe. Se creará desde el primer commit validado cuando la persona responsable lo autorice, fuera de la fase 1.
+- `develop` existe como rama huérfana con el commit inicial de la base (`chore(project): establish Expo mobile foundation`), creado porque el repositorio no tenía historial.
+- `main` permanece sin commits y no fue modificada.
+- F01 se desarrolla en `feature/f01-acceso-identidad`, creada desde `develop`.
+- No hay merges, tags ni push en esta fase. La primera promoción a `main` requiere autorización y conservar fast-forward.
 
 ## Ramas
 
@@ -21,7 +22,7 @@ Este documento operativiza la decisión [ADR 0002](../adr/0002-gitflow-fast-forw
 | `release/<version>` | `develop` | `main` y `develop` | Estabilización y versión. |
 | `hotfix/<version>` | `main` | `main` y `develop` | Corrección urgente de producción. |
 
-Usar identificadores de feature o tarea y un slug corto en minúsculas, por ejemplo `feature/f01-autenticacion` o `docs/f01-gitflow`.
+Usar identificadores de feature o tarea y un slug corto en minúsculas, por ejemplo `feature/f01-acceso-identidad` o `docs/f01-gitflow`.
 
 ## Ciclo de trabajo
 

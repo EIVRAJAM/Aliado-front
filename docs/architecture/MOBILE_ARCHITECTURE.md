@@ -1,6 +1,6 @@
 # Arquitectura de la app móvil ALIADO
 
-**Estado:** base inicializada en fase 1. El stack y las versiones están confirmados en [ADR 0001](../adr/0001-stack-y-versiones-movil.md); la estructura por features se irá creando con cada feature. D-04 (sesión segura) y las decisiones funcionales de `aliado-prb` siguen pendientes.
+**Estado:** base inicializada y primera feature móvil (`auth`, SPEC-01) implementada en UI y contrato de integración. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La integración real con API, D-04 (sesión segura) y las decisiones funcionales de `aliado-prb` siguen pendientes.
 
 ## Propósito y límites
 
@@ -20,22 +20,34 @@ El panel web de Administrador y el backend son clientes y componentes separados.
 
 ## Estado actual de la estructura
 
-La fase 1 solo crea el bootstrap y la configuración mínima. No hay features ni capas vacías.
+La estructura actual contiene el bootstrap, la navegación y la feature de acceso. No hay features vacías ni capas sin consumidor.
 
 ```text
 .
-├── index.ts                 # registro del componente raíz
+├── index.ts
 ├── src/
-│   └── app/
-│       └── App.tsx          # bootstrap mínimo de la aplicación
-├── assets/                  # iconos base provisionales
-├── app.json                 # metadatos Expo y configuración CNG
-├── package.json             # scripts y versiones fijadas
-├── tsconfig.json            # TypeScript estricto
-└── .github/workflows/ci.yml # validación mínima
+│   ├── app/App.tsx                    # bootstrap, providers y navegación raíz
+│   ├── navigation/                    # RootNavigator y tipos de rutas
+│   ├── features/auth/                 # SPEC-01: acceso e identidad
+│   │   ├── components/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── session/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   └── validation/
+│   └── shared/
+│       ├── api/http-client.ts         # transporte JSON y errores comunes
+│       ├── config/env.ts              # variables públicas validadas
+│       └── ui/theme.ts                # tokens visuales compartidos
+├── assets/
+├── app.json
+├── package.json
+├── tsconfig.json
+└── .github/workflows/ci.yml
 ```
 
-La estructura objetivo se aplicará al inspeccionar e inicializar cada feature; no implica crear hoy todos estos directorios:
+La estructura objetivo se ampliará con cada feature; no implica crear hoy todos estos directorios:
 
 ```text
 src/
@@ -81,9 +93,9 @@ Los nombres finales deben seguir las convenciones del stack ratificado. No crear
 
 ## Navegación y roles
 
-La navegación todavía no está instalada ni decidida. Se elegirá una librería mantenida al iniciar la primera feature que la necesite, registrando la decisión si afecta la arquitectura. Si se adopta Expo Router, `src/app/` pasará a ser su directorio de rutas y el bootstrap actual se reubicará; ese cambio se decidirá antes de instalar la librería.
+La navegación usa React Navigation 7 con stack nativo, según [ADR 0003](../adr/0003-navegacion-react-navigation.md). `src/navigation/RootNavigator.tsx` contiene la raíz y `src/navigation/types.ts` los tipos de rutas. Expo Router no se adopta en esta fase; si se adopta más adelante, `src/app/` pasará a ser su directorio de rutas y el bootstrap se reubicará con un ADR de migración.
 
-La app presenta los flujos Cliente y Prestador según la identidad y permisos devueltos por el backend. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
+La app presenta los flujos Cliente y Prestador según la identidad y permisos devueltos por el backend. En F01 el stack muestra el flujo de acceso sin sesión y una pantalla de sesión autenticada mínima. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
 
 Las rutas protegidas mejoran navegación y presentación, pero nunca sustituyen la verificación de rol y propiedad de recursos en el servidor.
 
@@ -95,7 +107,7 @@ Las rutas protegidas mejoran navegación y presentación, pero nunca sustituyen 
 - No asumir campos, endpoints o estados que no estén en los SPEC/contratos.
 - Las fixtures pueden habilitar trabajo visual temprano, pero deben estar aisladas del adaptador real y no presentarse como integración aceptada.
 - Los comandos que admitan reintento conservan su `Idempotency-Key`; una nueva intención de usuario genera una clave distinta.
-- La configuración de entorno parte de `.env.example`; las variables reales no se versionan. La URL base y el contrato de entorno se completarán cuando se implemente el cliente API.
+- La configuración de entorno parte de `.env.example`; las variables reales no se versionan. `EXPO_PUBLIC_API_BASE_URL` debe incluir `/api/v1`; si falta, el adaptador HTTP no simula éxito y la UI informa que la integración está pendiente. `EXPO_PUBLIC_TERMS_VERSION` habilita el registro.
 
 ## Estado, formularios y datos locales
 
@@ -103,7 +115,7 @@ Clasificar el estado antes de elegir librerías: estado efímero de pantalla loc
 
 Validar entradas en el límite, con reglas alineadas al contrato. Formularios deben representar carga, errores por campo, error del servidor, éxito confirmado y reintento cuando aplique.
 
-Los tokens de sesión se guardarán en almacenamiento seguro de plataforma según la decisión D-04. No guardar tokens, contraseñas ni documentos sensibles en preferencias no seguras, logs o cachés genéricas. Al cerrar sesión o cambiar de cuenta, limpiar datos asociados a la identidad anterior.
+En F01 la sesión vive solo en memoria durante la ejecución actual; no se implementa persistencia de tokens mientras D-04 siga abierta. No se usa AsyncStorage, localStorage ni logs para tokens. Cuando D-04 se resuelva, la persistencia se hará en almacenamiento seguro de plataforma y se limpiarán los datos de la identidad anterior al cerrar sesión o cambiar de cuenta.
 
 ## UX, accesibilidad y estados
 
@@ -127,4 +139,6 @@ La estrategia de pruebas de interacción, builds nativos y E2E sigue pendiente d
 
 Confirmadas por [ADR 0001](../adr/0001-stack-y-versiones-movil.md): Expo SDK 58, React Native 0.88.1, React 19.3.0, TypeScript 6.0.x, Node 24 LTS y npm con lockfile. La API es REST/JSON.
 
-Siguen pendientes de decisión: librería de navegación, herramientas de estado/formularios/pruebas, generación de contratos y las decisiones D-04/D-06/D-07/D-08/D-18 que afectan sesión, archivos, notificaciones e idempotencia.
+Navegación confirmada por [ADR 0003](../adr/0003-navegacion-react-navigation.md): React Navigation 7 con stack nativo.
+
+Siguen pendientes de decisión: herramientas de estado servidor/formularios/pruebas, generación de contratos y las decisiones D-04/D-06/D-07/D-08/D-18 que afectan sesión, archivos, notificaciones e idempotencia.

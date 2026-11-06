@@ -9,7 +9,7 @@
 
 El repositorio aloja únicamente la app móvil Cliente/Prestador y se integrará con el backend y el panel administrativo de `aliado-prb` mediante contratos API. Se necesita un flujo predecible que mantenga `main` siempre liberable, use `develop` como integración y evite commits de merge que dificulten la lectura del historial y la trazabilidad por feature.
 
-El repositorio se encuentra actualmente en `main`, sin commits y sin rama `develop`. Esta fase solo documenta el flujo; la creación de `develop` y la aplicación operativa corresponden a una fase posterior autorizada.
+El repositorio no tenía historial cuando se documentó esta decisión. Para iniciar F01 sin escribir en `main`, se creó `develop` como rama huérfana con el commit inicial de la base y desde allí se creó `feature/f01-acceso-identidad`. `main` permanece sin commits. La primera promoción a `main` requerirá autorización y conservar fast-forward.
 
 ## Decisión
 
@@ -70,7 +70,7 @@ main -> hotfix/<version> -> main (tag) -> develop
 
 - El historial de `main` y `develop` es lineal y cada commit pertenece a una rama revisada.
 - Cualquier commit local en `main` o `develop` rompe el modelo; si ocurre, debe regularizarse antes de continuar.
-- La creación inicial de `develop` queda pendiente para cuando exista el primer commit validado y la persona responsable lo autorice.
+- `develop` quedó creada como rama huérfana con el commit inicial de la base; `main` no fue modificada.
 - El detalle operativo y los comandos de referencia están en [`docs/development/GITFLOW.md`](../development/GITFLOW.md).
 
 ## Referencias

@@ -2,7 +2,7 @@
 
 Repositorio de la aplicación móvil de ALIADO, construida con **Expo SDK 58**, **React Native 0.88.1**, **TypeScript 6.0.x** y **Continuous Native Generation (CNG)**. El backend, la base de datos y el panel administrativo viven en `../aliado-prb` y no forman parte de este repositorio.
 
-La fase 1 deja únicamente la base técnica y documental: no hay funcionalidades de producto ni integración real con la API.
+La base técnica está lista y F01 (acceso e identidad) tiene UI, validación y contrato de integración. La autenticación real sigue pendiente de API desplegada, D-04 y configuración de términos; no hay cuentas demo ni sesión simulada.
 
 ## Requisitos
 
@@ -22,7 +22,7 @@ npm run verify:config
 npm run doctor
 ```
 
-El archivo `.env` es local y no se versiona. En esta fase la variable de API todavía no se consume; completa su valor cuando exista el contrato de entorno.
+El archivo `.env` es local y no se versiona. `EXPO_PUBLIC_API_BASE_URL` debe incluir `/api/v1`; `EXPO_PUBLIC_TERMS_VERSION` debe contener la versión aprobada de términos. Sin esos valores, F01 muestra el bloqueo correspondiente y no simula autenticación.
 
 ## Comandos
 
@@ -51,8 +51,22 @@ Los comandos nativos requieren SDKs locales y no se ejecutan en el CI mínimo. L
 .
 ├── index.ts
 ├── src/
-│   └── app/
-│       └── App.tsx
+│   ├── app/App.tsx
+│   ├── navigation/
+│   │   ├── RootNavigator.tsx
+│   │   └── types.ts
+│   ├── features/auth/
+│   │   ├── components/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── session/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   └── validation/
+│   └── shared/
+│       ├── api/http-client.ts
+│       ├── config/env.ts
+│       └── ui/theme.ts
 ├── assets/
 ├── app.json
 ├── package.json
@@ -66,15 +80,16 @@ Los comandos nativos requieren SDKs locales y no se ejecutan en el CI mínimo. L
 └── docs/
 ```
 
-Las carpetas `src/features/`, `src/navigation/` y `src/shared/` se crearán cuando una feature real las necesite; no se versionan carpetas vacías. La estructura objetivo y sus reglas están en [docs/architecture/MOBILE_ARCHITECTURE.md](docs/architecture/MOBILE_ARCHITECTURE.md).
+La estructura se amplía solo cuando una feature real lo necesita. La arquitectura y sus reglas están en [docs/architecture/MOBILE_ARCHITECTURE.md](docs/architecture/MOBILE_ARCHITECTURE.md); el alcance de F01 y sus bloqueos en [docs/features/auth.md](docs/features/auth.md).
 
 ## Documentación
 
 - Índice local: [docs/README.md](docs/README.md)
 - Arquitectura móvil: [docs/architecture/MOBILE_ARCHITECTURE.md](docs/architecture/MOBILE_ARCHITECTURE.md)
+- F01 Acceso e identidad: [docs/features/auth.md](docs/features/auth.md)
 - Entrega y alcance: [docs/core/DELIVERY_PLAN.md](docs/core/DELIVERY_PLAN.md)
 - Gitflow: [docs/development/GITFLOW.md](docs/development/GITFLOW.md)
-- ADR de stack: [docs/adr/0001-stack-y-versiones-movil.md](docs/adr/0001-stack-y-versiones-movil.md)
+- ADRs: [docs/adr/README.md](docs/adr/README.md)
 - Fuente funcional de ALIADO: `../aliado-prb/docs`
 
 ## Calidad
@@ -107,6 +122,8 @@ La corrección se verificó también simulando el fallo original: un CLI de Expo
 ## Estado y pendientes
 
 - Stack y versiones: [ADR 0001](docs/adr/0001-stack-y-versiones-movil.md).
-- Flujo de ramas: [ADR 0002](docs/adr/0002-gitflow-fast-forward.md). `develop` todavía no existe y no se cambió de rama en fase 1.
-- Pendientes que bloquean la siguiente fase: D-04 (sesión segura), contratos API mínimos, decisión de navegación y cierre de las decisiones funcionales indicadas en [docs/adr/README.md](docs/adr/README.md).
+- Flujo de ramas: [ADR 0002](docs/adr/0002-gitflow-fast-forward.md). `develop` es la base y F01 se desarrolla en `feature/f01-acceso-identidad`.
+- Navegación: [ADR 0003](docs/adr/0003-navegacion-react-navigation.md).
+- F01: UI, validación y contrato de integración implementados; la autenticación real sigue bloqueada por API desplegada, D-04 y versión de términos. Ver [docs/features/auth.md](docs/features/auth.md).
+- Pendientes que bloquean la siguiente fase: D-04 (sesión segura), contrato API desplegado, versión de términos, canal/deep link de recuperación y cierre de las decisiones indicadas en [docs/adr/README.md](docs/adr/README.md).
 - Los iconos actuales son provisionales y los identificadores `com.aliado.movil` deben confirmarse antes de publicar.
