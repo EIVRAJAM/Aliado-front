@@ -14,12 +14,6 @@ export interface RegisterAuthInput {
   termsVersion: string;
 }
 
-export interface RegistrationResult {
-  id: string;
-  email: string;
-  role: AuthRole;
-}
-
 export interface LoginInput {
   email: string;
   password: string;

@@ -13,6 +13,5 @@ export type {
   PasswordRecoveryConfirmationInput,
   PasswordRecoveryInput,
   RegisterAuthInput,
-  RegistrationResult,
 } from './types/auth';
 export { AuthError } from './types/auth';

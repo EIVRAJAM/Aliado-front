@@ -7,15 +7,8 @@ import {
   type PasswordRecoveryConfirmationInput,
   type PasswordRecoveryInput,
   type RegisterAuthInput,
-  type RegistrationResult,
 } from '../types/auth';
 import type { AuthGateway } from './auth-gateway';
-
-interface RegisterResponse {
-  id?: unknown;
-  email?: unknown;
-  rol?: unknown;
-}
 
 interface LoginResponse {
   sessionToken?: unknown;
@@ -63,11 +56,11 @@ export class HttpAuthGateway implements AuthGateway {
     return this.baseUrl;
   }
 
-  async register(input: RegisterAuthInput): Promise<RegistrationResult> {
+  async register(input: RegisterAuthInput): Promise<void> {
     const baseUrl = this.requireBaseUrl();
 
     try {
-      const response = await requestJson<RegisterResponse>(baseUrl, '/auth/registro', {
+      await requestJson<unknown>(baseUrl, '/api/v1/auth/registro', {
         method: 'POST',
         body: {
           email: input.email,
@@ -77,16 +70,6 @@ export class HttpAuthGateway implements AuthGateway {
           versionTerminos: input.termsVersion,
         },
       });
-
-      if (!isNonEmptyString(response.id) || !isNonEmptyString(response.email) || !isAuthRole(response.rol)) {
-        throw new AuthError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
-      }
-
-      return {
-        id: response.id,
-        email: response.email,
-        role: response.rol,
-      };
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.status === 409) {
@@ -108,7 +91,7 @@ export class HttpAuthGateway implements AuthGateway {
     const baseUrl = this.requireBaseUrl();
 
     try {
-      const response = await requestJson<LoginResponse>(baseUrl, '/auth/login', {
+      const response = await requestJson<LoginResponse>(baseUrl, '/api/v1/auth/login', {
         method: 'POST',
         body: {
           email: input.email,
@@ -140,7 +123,7 @@ export class HttpAuthGateway implements AuthGateway {
     const baseUrl = this.requireBaseUrl();
 
     try {
-      await requestJson<MessageResponse>(baseUrl, '/auth/logout', {
+      await requestJson<MessageResponse>(baseUrl, '/api/v1/auth/logout', {
         method: 'POST',
         token,
       });
@@ -156,7 +139,7 @@ export class HttpAuthGateway implements AuthGateway {
     const baseUrl = this.requireBaseUrl();
 
     try {
-      await requestJson<MessageResponse>(baseUrl, '/auth/recuperacion', {
+      await requestJson<MessageResponse>(baseUrl, '/api/v1/auth/recuperacion', {
         method: 'POST',
         body: {
           email: input.email,
@@ -174,7 +157,7 @@ export class HttpAuthGateway implements AuthGateway {
     const baseUrl = this.requireBaseUrl();
 
     try {
-      await requestJson<MessageResponse>(baseUrl, '/auth/recuperacion/confirmar', {
+      await requestJson<MessageResponse>(baseUrl, '/api/v1/auth/recuperacion/confirmar', {
         method: 'POST',
         body: {
           token: input.token,
