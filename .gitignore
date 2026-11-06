@@ -1,0 +1,48 @@
+# Dependencias
+node_modules/
+
+# Expo y artefactos generados
+.expo/
+.expo-shared/
+dist/
+web-build/
+expo-env.d.ts
+.metro-health-check*
+*.tsbuildinfo
+
+# Proyectos nativos generados por CNG
+/ios
+/android
+.kotlin/
+
+# Entornos locales y secretos
+.env
+.env.*
+!.env.example
+.env*.local
+
+# Credenciales y firma móvil
+*.jks
+*.p8
+*.p12
+*.key
+*.pem
+*.mobileprovision
+*.orig.*
+
+# Logs y cobertura
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+coverage/
+
+# IDE y sistema operativo
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Documentación temporal de análisis/prototipos; no versionar
+/docs/temporary/

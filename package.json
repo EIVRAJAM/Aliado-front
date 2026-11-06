@@ -1,0 +1,34 @@
+{
+  "name": "aliado-movil",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "packageManager": "npm@11.11.0",
+  "engines": {
+    "node": ">=24.3.0 <25"
+  },
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "prebuild": "expo prebuild",
+    "prebuild:clean": "expo prebuild --clean",
+    "build:android": "expo run:android --variant release",
+    "build:ios": "expo run:ios --configuration Release",
+    "typecheck": "tsc --noEmit",
+    "verify:config": "node scripts/doctor.mjs --config-only",
+    "doctor": "node scripts/doctor.mjs"
+  },
+  "dependencies": {
+    "expo": "~58.0.23",
+    "expo-dev-client": "~58.0.18",
+    "expo-status-bar": "~58.0.4",
+    "react": "19.3.0",
+    "react-native": "0.88.1"
+  },
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "expo-doctor": "^1.21.6",
+    "typescript": "~6.0.3"
+  }
+}
