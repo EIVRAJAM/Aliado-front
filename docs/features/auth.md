@@ -59,7 +59,7 @@ El adaptador HTTP usa los endpoints documentados de F01, sin inventar rutas:
 - **Login:** validación de correo y contraseña, bloqueo de envío duplicado, mensaje genérico para credenciales inválidas y mensaje de configuración si falta la API.
 - **Registro:** correo, contraseña, rol, consentimiento y versión de términos; éxito navega al login; correo duplicado no revela el rol de la cuenta existente.
 - **Recuperación:** solicitud con mensaje idéntico exista o no la cuenta; confirmación con código y nueva contraseña; errores de token inválido, usado o expirado.
-- **Sesión:** muestra correo y rol, permite cerrar sesión y aclara que no se conserva al cerrar la app.
+- **Sesión:** muestra correo y rol, permite cerrar sesión y aclara que no se conserva al cerrar la app. Un `401` al cerrar sesión se trata como sesión expirada y limpia el estado local; la expiración de llamadas protegidas se integrará cuando existan esas features.
 - **Accesibilidad:** etiquetas, roles de accesibilidad, estados de carga y mensajes anunciados.
 
 ## Pendientes para cerrar F01

@@ -33,7 +33,7 @@ Decisiones complementarias:
 - **Dependencias nativas:** se instalarán con `npx expo install` para respetar las versiones compatibles del SDK.
 - **Lockfile:** `package-lock.json` se versiona. `node_modules/` no.
 - **Identificadores nativos:** `com.aliado.movil` es un valor inicial para permitir prebuild/build; debe confirmarse con la organización antes de publicar en tiendas.
-- **Navegación:** no se elige todavía. Se decidirá al iniciar la primera feature que la requiera, con su propio ADR si afecta la arquitectura.
+- **Navegación:** se decidió al iniciar F01 en [ADR 0003](0003-navegacion-react-navigation.md), con React Navigation 7 y stack nativo.
 
 ## Alternativas consideradas
 
@@ -41,7 +41,7 @@ Decisiones complementarias:
 - **pnpm o yarn:** pueden aportar velocidad o workspaces, pero no hay monorepo en este repositorio y npm reduce configuración y riesgo de resolución no hoisted con Expo.
 - **Expo SDK 57:** soportado, pero SDK 58 es el estable vigente y evita iniciar con una línea anterior.
 - **TypeScript 7:** disponible en el registro, pero no es la versión usada por la plantilla oficial del SDK; adoptarlo ahora introduciría una variable no validada.
-- **Expo Router u otra navegación:** no se instala en fase 1 porque no hay flujos de producto implementados.
+- **Expo Router u otra navegación:** no se instala en fase 1; F01 adoptó React Navigation según ADR 0003.
 
 ## Consecuencias
 
