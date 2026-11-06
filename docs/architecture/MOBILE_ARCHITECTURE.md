@@ -103,11 +103,12 @@ Las rutas protegidas mejoran navegación y presentación, pero nunca sustituyen 
 
 - Usar una capa de transporte central que gestione URL por entorno, serialización, cancelación y errores comunes.
 - Mantener servicios y tipos específicos dentro de su feature; generar o compartir contratos desde OpenAPI cuando el contrato esté aprobado.
+- En F01, el cliente HTTP sigue el OpenAPI entregado por backend; las diferencias con el plan funcional se registran en [F01 — Acceso e identidad](../features/auth.md).
 - Modelar explícitamente respuestas exitosas, errores recuperables, validaciones, `401`, `403`, `404`, `409` y conectividad intermitente.
 - No asumir campos, endpoints o estados que no estén en los SPEC/contratos.
 - Las fixtures pueden habilitar trabajo visual temprano, pero deben estar aisladas del adaptador real y no presentarse como integración aceptada.
 - Los comandos que admitan reintento conservan su `Idempotency-Key`; una nueva intención de usuario genera una clave distinta.
-- La configuración de entorno parte de `.env.example`; las variables reales no se versionan. `EXPO_PUBLIC_API_BASE_URL` debe incluir `/api/v1`; si falta, el adaptador HTTP no simula éxito y la UI informa que la integración está pendiente. `EXPO_PUBLIC_TERMS_VERSION` habilita el registro.
+- La configuración de entorno parte de `.env.example`; las variables reales no se versionan. `EXPO_PUBLIC_API_BASE_URL` debe apuntar al servidor sin `/api/v1`; el cliente añade el prefijo `/api/v1` definido por OpenAPI. Si falta, el adaptador HTTP no simula éxito y la UI informa que la integración está pendiente. `EXPO_PUBLIC_TERMS_VERSION` habilita el registro.
 
 ## Estado, formularios y datos locales
 

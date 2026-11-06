@@ -22,7 +22,7 @@ npm run verify:config
 npm run doctor
 ```
 
-El archivo `.env` es local y no se versiona. `EXPO_PUBLIC_API_BASE_URL` debe incluir `/api/v1`; `EXPO_PUBLIC_TERMS_VERSION` debe contener la versión aprobada de términos. Sin esos valores, F01 muestra el bloqueo correspondiente y no simula autenticación.
+El archivo `.env` es local y no se versiona. `EXPO_PUBLIC_API_BASE_URL` debe apuntar al servidor sin `/api/v1` (el cliente añade el prefijo del OpenAPI); `EXPO_PUBLIC_TERMS_VERSION` debe contener la versión aprobada de términos. Sin esos valores, F01 muestra el bloqueo correspondiente y no simula autenticación.
 
 ## Comandos
 
