@@ -26,7 +26,7 @@ La estructura actual contiene el bootstrap, la navegación y la feature de acces
 .
 ├── index.ts
 ├── src/
-│   ├── app/App.tsx                    # bootstrap, providers y navegación raíz
+│   ├── bootstrap/App.tsx              # bootstrap, providers y navegación raíz
 │   ├── navigation/                    # RootNavigator y tipos de rutas
 │   ├── features/auth/                 # SPEC-01: acceso e identidad
 │   │   ├── components/
@@ -51,7 +51,7 @@ La estructura objetivo se ampliará con cada feature; no implica crear hoy todos
 
 ```text
 src/
-├── app/                   # bootstrap y providers de aplicación
+├── bootstrap/             # bootstrap y providers de aplicación
 ├── navigation/            # navegación raíz y flujos por rol (se creará al implementar navegación)
 ├── features/
 │   ├── auth/              # se creará con la primera feature que lo requiera
@@ -93,7 +93,7 @@ Los nombres finales deben seguir las convenciones del stack ratificado. No crear
 
 ## Navegación y roles
 
-La navegación usa React Navigation 7 con stack nativo, según [ADR 0003](../adr/0003-navegacion-react-navigation.md). `src/navigation/RootNavigator.tsx` contiene la raíz y `src/navigation/types.ts` los tipos de rutas. Expo Router no se adopta en esta fase; si se adopta más adelante, `src/app/` pasará a ser su directorio de rutas y el bootstrap se reubicará con un ADR de migración.
+La navegación usa React Navigation 7 con stack nativo, según [ADR 0003](../adr/0003-navegacion-react-navigation.md). `src/navigation/RootNavigator.tsx` contiene la raíz y `src/navigation/types.ts` los tipos de rutas. Expo Router no se adopta en esta fase. El bootstrap vive en `src/bootstrap/` para no usar el directorio reservado `src/app/` de Expo Router y evitar su detección accidental. Si se adopta Expo Router más adelante, `src/app/` pasará a ser su directorio de rutas y el bootstrap se reubicará con un ADR de migración.
 
 La app presenta los flujos Cliente y Prestador según la identidad y permisos devueltos por el backend. En F01 el stack muestra el flujo de acceso sin sesión y una pantalla de sesión autenticada mínima. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
 

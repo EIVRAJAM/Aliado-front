@@ -39,7 +39,7 @@ Cada rama de trabajo sigue el [flujo Gitflow](../development/GITFLOW.md): sale d
 
 Una feature móvil no se declara integrada solo porque compile o renderice. Debe cumplir sus escenarios SPEC, respetar permisos y privacidad, manejar sus estados, usar contratos aprobados y verificarse con API real cuando la tarea requiera integración. El mock puede servir para desarrollo, no como evidencia de aceptación end-to-end.
 
-La base de fase 1 se considera verificada cuando un checkout limpio instala con `npm ci`, pasa `npm run typecheck`, pasa `npm run verify:config`, pasa `npm run doctor` con Expo Doctor ejecutado y el CI mínimo permanece en verde. El runner de Doctor captura los subprocesos JSON en archivos para evitar la pérdida de salida por pipes/sockets. Eso no acredita ninguna funcionalidad de producto.
+La base de fase 1 se considera verificada cuando un checkout limpio instala con `npm ci`, pasa `npm run typecheck`, pasa `npm run verify:config`, pasa `npm run doctor` con Expo Doctor ejecutado y el CI mínimo permanece en verde. El runner de Doctor captura los subprocesos JSON en archivos para evitar la pérdida de salida por pipes/sockets. Si Doctor falla por red, el resultado se reporta como fallido y la base no se declara verificada. Eso no acredita ninguna funcionalidad de producto.
 
 ## Fuente de verdad
 

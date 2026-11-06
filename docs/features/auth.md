@@ -28,7 +28,7 @@ src/features/auth/
 └── index.ts           # superficie pública de la feature
 ```
 
-La navegación raíz vive en `src/navigation/` y el bootstrap en `src/app/App.tsx`.
+La navegación raíz vive en `src/navigation/` y el bootstrap en `src/bootstrap/App.tsx`.
 
 ## Contrato de integración
 

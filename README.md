@@ -51,7 +51,7 @@ Los comandos nativos requieren SDKs locales y no se ejecutan en el CI mínimo. L
 .
 ├── index.ts
 ├── src/
-│   ├── app/App.tsx
+│   ├── bootstrap/App.tsx
 │   ├── navigation/
 │   │   ├── RootNavigator.tsx
 │   │   └── types.ts
@@ -113,11 +113,11 @@ Verificado con Node 24.14.1 y npm 11.11.0:
 |---|---|
 | `npm ci` | OK |
 | `npm run typecheck` | OK |
-| `npm run verify:config` | OK, JSON válido de 2171 bytes |
-| `npm run doctor` | OK, 20/20 con corrección de captura de subprocesos |
+| `npm run verify:config` | OK, JSON válido de 2326 bytes |
+| `npm run doctor` | Se ejecuta siempre. Depende de red: la última ejecución local terminó 0 con 20/20; un fallo de red (por ejemplo 18/20) mantiene exit 1. |
 | `npx expo config --json --full` | OK, JSON interpretado |
 
-La corrección se verificó también simulando el fallo original: un CLI de Expo que devuelve vacío cuando `stdout` es socket/FIFO. Sin el parche, Doctor falla con el error de parseo; con el parche, completa 20/20. Ver [docs/development/VALIDATION.md](docs/development/VALIDATION.md).
+La corrección de captura se verificó simulando el fallo original: un CLI de Expo que devuelve vacío cuando `stdout` es socket/FIFO. Sin el parche, Doctor falla con el error de parseo; con el parche, completa 20/20. Ese resultado no elimina la dependencia de red de algunos chequeos ni se declara estable de forma universal. El CI ejecuta `npm run doctor` como paso obligatorio, sin `continue-on-error`. Ver [docs/development/VALIDATION.md](docs/development/VALIDATION.md).
 
 ## Estado y pendientes
 

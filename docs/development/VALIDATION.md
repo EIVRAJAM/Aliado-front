@@ -37,11 +37,11 @@ El parche no desactiva chequeos: solo cambia el transporte de salida de los subp
 
 ## Evidencia
 
-- `expo config --json --full` directo: exit 0, JSON de 2171 bytes.
+- `expo config --json --full` directo: exit 0, JSON válido (2326 bytes en el estado actual).
 - Config lanzado como subproceso con `stdout` a archivo: exit 0, JSON válido.
 - Fallo simulado: CLI que devuelve vacío en socket/FIFO; `npm run doctor` exit 1 con el error de parseo, antes del parche.
 - Con parche, misma simulación: `npm run doctor` exit 0, 20/20.
-- Ejecución normal con parche: `npm run doctor` exit 0, 20/20.
+- Ejecución normal con parche: `npm run doctor` exit 0, 20/20 en la última ejecución local. Se repitió 10 veces con éxito, pero el resultado no se considera estable porque algunos chequeos dependen de red.
 - Los subprocesos interceptados se registran con `stdout` y `stderr` en archivos regulares, no en sockets.
 
 ## Reproducción con el entorno correcto
@@ -76,7 +76,8 @@ npm run doctor
 
 ## Limitaciones
 
-- Algunos chequeos de Expo Doctor consultan `api.expo.dev`/`exp.host`. Sin red, el chequeo puede fallar por timeout aunque la configuración local sea válida. No se silencia ese error.
+- Algunos chequeos de Expo Doctor consultan `api.expo.dev`, `exp.host` y React Native Directory. Sin red o con red inestable, el comando puede terminar con 18/20 y exit 1 aunque la configuración local sea válida. Ese fallo se conserva y se reporta; no se silencia ni se convierte en éxito.
+- El CI ejecuta `npm run doctor` como paso obligatorio, sin `continue-on-error`; un fallo de red hace fallar el job, que es el comportamiento esperado para no ocultar el estado real.
 - El parche cubre los subprocesos que producen JSON. Herramientas nativas que no usan `--json` podrían seguir dependiendo del `stdio` del entorno; si fallan, Expo Doctor reportará el error real.
 - Si Expo Doctor cambia la forma de lanzar sus subprocesos, el parche debe revisarse o retirarse.
 - `verify:config` sigue siendo una validación parcial útil para aislar problemas de configuración de los de Expo Doctor.

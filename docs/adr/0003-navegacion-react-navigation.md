@@ -9,7 +9,7 @@
 
 La app necesitaba su primera navegación real para el flujo de acceso: inicio de sesión, registro, recuperación y sesión autenticada. La arquitectura ya reservaba `src/navigation/` para la navegación raíz y los flujos por rol, pero no había una librería decidida.
 
-El bootstrap actual vive en `src/app/`. Expo Router usa `src/app/` como directorio de rutas cuando se adopta, por lo que instalarlo ahora obligaría a mover el bootstrap y cambiar la estructura de entrada antes de necesitarlo.
+Expo Router usa `src/app/` como directorio de rutas cuando se adopta. Además, Expo CLI detecta la existencia de `src/app/` y emite `Using src/app as the root directory for Expo Router` incluso cuando `expo-router` no está instalado. El bootstrap estaba inicialmente en `src/app/`, lo que generaba ese aviso y reservaba el nombre para un enrutador no elegido.
 
 ## Decisión
 
@@ -20,7 +20,9 @@ Usar **React Navigation 7** con el stack nativo para la navegación de la app:
 - `react-native-screens` `~4.30.1`
 - `react-native-safe-area-context` `~5.11.1`
 
-Las versiones nativas se instalaron con `npx expo install` para respetar la matriz de Expo SDK 58. La raíz se compone en `src/navigation/RootNavigator.tsx` y el bootstrap envuelve la app con `SafeAreaProvider` y `AuthSessionProvider`.
+Las versiones nativas se instalaron con `npx expo install` para respetar la matriz de Expo SDK 58. La raíz se compone en `src/navigation/RootNavigator.tsx` y el bootstrap vive en `src/bootstrap/App.tsx`, envolviendo la app con `SafeAreaProvider` y `AuthSessionProvider`.
+
+El bootstrap se movió fuera de `src/app/` para que Expo CLI no lo detecte como raíz de Expo Router, eliminar el aviso engañoso y dejar `src/app/` libre si el equipo decide adoptar Expo Router en el futuro. No se instala Expo Router en esta feature.
 
 ## Alternativas consideradas
 
@@ -34,7 +36,8 @@ Las versiones nativas se instalaron con `npx expo install` para respetar la matr
 - Las pantallas de una feature se importan desde su índice público; la navegación no conoce detalles internos de la feature.
 - La sesión autenticada se refleja con pantallas condicionales del stack. La autorización efectiva sigue perteneciendo al backend.
 - Las nuevas pantallas nativas requieren rebuild del development build, no solo recarga de Metro.
-- Si se adopta Expo Router más adelante, se registrará un ADR de migración y se reubicará el bootstrap.
+- `src/app/` queda reservado para una eventual adopción de Expo Router; el bootstrap actual no activa rutas ni plugins de Router.
+- Si se adopta Expo Router más adelante, se registrará un ADR de migración y se moverán los archivos de `src/app/` al árbol de rutas.
 - Los deep links de recuperación no se implementan en esta feature; el código se captura manualmente en la pantalla de confirmación hasta que exista una decisión de enlace.
 
 ## Referencias
