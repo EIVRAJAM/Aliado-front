@@ -114,10 +114,10 @@ Verificado con Node 24.14.1 y npm 11.11.0:
 | `npm ci` | OK |
 | `npm run typecheck` | OK |
 | `npm run verify:config` | OK, JSON válido de 2326 bytes |
-| `npm run doctor` | Se ejecuta siempre. Depende de red: la última ejecución local terminó 0 con 20/20; un fallo de red (por ejemplo 18/20) mantiene exit 1. |
+| `npm run doctor` | **Falla actualmente.** Última ejecución: exit 1, 19/20 por versiones patch de Expo desactualizadas. También puede fallar por red. |
 | `npx expo config --json --full` | OK, JSON interpretado |
 
-La corrección de captura se verificó simulando el fallo original: un CLI de Expo que devuelve vacío cuando `stdout` es socket/FIFO. Sin el parche, Doctor falla con el error de parseo; con el parche, completa 20/20. Ese resultado no elimina la dependencia de red de algunos chequeos ni se declara estable de forma universal. El CI ejecuta `npm run doctor` como paso obligatorio, sin `continue-on-error`. Ver [docs/development/VALIDATION.md](docs/development/VALIDATION.md).
+La corrección de captura se verificó simulando el fallo original y el parche sigue activo. La última ejecución real de Doctor falla por `expo`, `expo-dev-client` y `expo-status-bar` en versiones patch anteriores a las esperadas por SDK 58; no es un fallo de red. El CI ejecuta `npm run doctor` como paso obligatorio, sin `continue-on-error`, por lo que este hallazgo bloquea la integración hasta actualizar las versiones patch o aceptar explícitamente el fallo. Ver [docs/development/VALIDATION.md](docs/development/VALIDATION.md).
 
 ## Estado y pendientes
 

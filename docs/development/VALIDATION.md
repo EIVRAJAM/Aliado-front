@@ -41,7 +41,7 @@ El parche no desactiva chequeos: solo cambia el transporte de salida de los subp
 - Config lanzado como subproceso con `stdout` a archivo: exit 0, JSON válido.
 - Fallo simulado: CLI que devuelve vacío en socket/FIFO; `npm run doctor` exit 1 con el error de parseo, antes del parche.
 - Con parche, misma simulación: `npm run doctor` exit 0, 20/20.
-- Ejecución normal con parche: `npm run doctor` exit 0, 20/20 en la última ejecución local. Se repitió 10 veces con éxito, pero el resultado no se considera estable porque algunos chequeos dependen de red.
+- Ejecución normal con parche: el resultado depende del estado de dependencias y red. En la última ejecución del 2026-11-12, `npm run doctor` terminó con exit 1 y 19/20 por versiones patch de Expo desactualizadas; no fue un fallo de red.
 - Los subprocesos interceptados se registran con `stdout` y `stderr` en archivos regulares, no en sockets.
 
 ## Reproducción con el entorno correcto
@@ -73,6 +73,20 @@ Validación completa:
 ```bash
 npm run doctor
 ```
+
+## Fallo actual: versiones patch de Expo
+
+La ejecución del 2026-11-12 reportó:
+
+```text
+✖ Check that packages match versions required by installed Expo SDK
+package          expected  found
+expo             ~58.0.25  58.0.23
+expo-dev-client  ~58.0.20  58.0.18
+expo-status-bar  ~58.0.5   58.0.4
+```
+
+Es un fallo real, reproducible y distinto de los errores de red. No se cambió el stack en esta tarea. Para resolverlo hay que decidir si se actualizan las versiones patch con `npx expo install --check`/`npx expo install` y se actualiza el ADR 0001, o si se acepta explícitamente el fallo. CI no lo oculta: `npm run doctor` es obligatorio y sin `continue-on-error`.
 
 ## Limitaciones
 

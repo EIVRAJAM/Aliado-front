@@ -10,7 +10,7 @@ La raíz de `docs/` debe mantenerse liviana. Los documentos vigentes se organiza
 - El stack y las versiones están fijados en [ADR 0001](adr/0001-stack-y-versiones-movil.md).
 - El flujo de ramas está documentado en [Gitflow](development/GITFLOW.md) y [ADR 0002](adr/0002-gitflow-fast-forward.md). `develop` existe como base y F01 se desarrolla en `feature/f01-acceso-identidad`; `main` sigue sin commits.
 - La estructura incorpora navegación y la feature `src/features/auth/` (SPEC-01). El resto de features se creará al iniciar su implementación.
-- Validación con Node 24.14.1/npm 11.11.0: `npm ci`, `typecheck` y `verify:config` pasan. `doctor` se ejecuta siempre, pero depende de red: la última ejecución local terminó 0 con 20/20 y un fallo de red debe reportarse como exit 1. Ver [Validación](development/VALIDATION.md).
+- Validación con Node 24.14.1/npm 11.11.0: `npm ci`, `typecheck` y `verify:config` pasan. `doctor` falla actualmente con 19/20 por versiones patch de Expo desactualizadas; también puede fallar por red. Ver [Validación](development/VALIDATION.md).
 - D-04 (sesión y almacenamiento seguro), la API desplegada y la versión de términos siguen pendientes; el detalle está en [F01 — Acceso e identidad](features/auth.md).
 
 ## Lectura recomendada
