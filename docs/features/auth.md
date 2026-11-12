@@ -67,30 +67,52 @@ Si la URL no está configurada, las pantallas muestran el bloqueo y el adaptador
 
 ## Diferencias OpenAPI frente al plan F01
 
-| Tema | OpenAPI | Plan F01 | Tratamiento actual |
-|---|---|---|---|
-| Registro exitoso | `200` | `201` | El cliente acepta cualquier 2xx; no depende del código exacto. |
-| Recuperación exitosa | `200` | `202` | El cliente acepta cualquier 2xx; la UI muestra el mensaje genérico. |
-| Logout exitoso | `200` | `204` | El cliente acepta cualquier 2xx; no espera body. |
-| Respuesta de registro | `object` genérico | `{ id, email, rol }` | El cliente no consume campos del body; el registro resuelve con la respuesta HTTP exitosa. |
-| Errores | No documentados | `400`, `401`, `409`, `410` | El cliente mantiene mapeo defensivo para esos estados; no se inventan nuevos endpoints. |
-| `aceptaTerminos` | No incluido en `required` | Obligatorio en SPEC | La UI sigue exigiendo consentimiento antes de enviar. |
-| `rol` | `string` sin enum | `CLIENTE`/`PRESTADOR` | La UI solo ofrece esos dos roles; login valida el valor recibido. |
-| Login response | Campos no marcados como requeridos | `sessionToken`, `rol` | El cliente exige ambos para crear la sesión; si faltan, reporta respuesta inválida. |
-| Seguridad | Global para todas las operaciones | Sin detalle de esquema | Bearer solo en logout; discrepancia pendiente con backend. |
-| Base URL | Servidor `http://localhost:8080` + rutas `/api/v1/...` | No fija servidor | `EXPO_PUBLIC_API_BASE_URL` es el origen y el cliente añade `/api/v1`. |
+| Tema | OpenAPI | Plan F01 | Backend local observado | Tratamiento actual |
+|---|---|---|---|---|
+| Registro exitoso | `200` | `201` | `201` | El cliente acepta cualquier 2xx; no depende del código exacto. |
+| Recuperación exitosa | `200` | `202` | `202` | El cliente acepta cualquier 2xx; la UI muestra el mensaje genérico. |
+| Logout exitoso | `200` | `204` | `204` | El cliente acepta cualquier 2xx; no espera body. |
+| Respuesta de registro | `object` genérico | `{ id, email, rol }` | `{ id, email, rol }` | El cliente no consume campos del body; el registro resuelve con la respuesta HTTP exitosa. |
+| Errores | No documentados | `400`, `401`, `409`, `410` | `400` términos/password, `401` credenciales/sesión, `409` correo duplicado, `410` token expirado | El cliente mantiene mapeo defensivo para esos estados; no se inventan nuevos endpoints. |
+| `aceptaTerminos` | No incluido en `required` | Obligatorio en SPEC | `false` produce `400 TERMINOS_NO_ACEPTADOS` | La UI sigue exigiendo consentimiento antes de enviar. |
+| `rol` | `string` sin enum | `CLIENTE`/`PRESTADOR` | Devuelve `CLIENTE`/`PRESTADOR` | La UI solo ofrece esos dos roles; login valida el valor recibido. |
+| Login response | Campos no marcados como requeridos | `sessionToken`, `rol` | Devuelve ambos | El cliente exige ambos para crear la sesión; si faltan, reporta respuesta inválida. |
+| Seguridad | Global para todas las operaciones | Sin detalle de esquema | `/api/v1/auth/**` público; logout exige bearer y responde `401` sin sesión | Bearer solo en logout; discrepancia pendiente con la declaración global de OpenAPI. |
+| Contraseña | `minLength: 1` | No define política | Mínimo 8, con letra y dígito | La UI replica la política del backend para registro y nueva contraseña; OpenAPI debe actualizarse. |
+| Idempotencia | Header opcional en registro | D-18 pendiente | El controlador soporta `Idempotency-Key` | No se envía ni se reintenta automáticamente. |
+| Base URL | Servidor `http://localhost:8080` + rutas `/api/v1/...` | No fija servidor | Escucha en `8080` en local | `EXPO_PUBLIC_API_BASE_URL` es el origen y el cliente añade `/api/v1`. |
 
 Estas diferencias no se corrigen en el SPEC ni en el plan desde este repositorio.
+
+## Verificación local contra backend
+
+El 2026-11-12 se levantó el backend local con PostgreSQL 17 en un contenedor temporal y se ejecutó el flujo con el `HttpAuthGateway` real del frontend:
+
+- `GET /api-docs`: `200`.
+- Registro Cliente y Prestador: `201`.
+- Correo duplicado: `409`, mapeado a `EMAIL_TAKEN`.
+- Login válido Cliente/Prestador: `200`, con `sessionToken` y `rol`.
+- Credenciales inválidas: `401`, mapeado a `INVALID_CREDENTIALS`.
+- Contraseña corta: `400`, mapeado a `VALIDATION`; el frontend ahora valida la política observada del backend.
+- Logout con bearer: `204`; segundo logout: `401`, mapeado a `SESSION_EXPIRED`.
+- Recuperación con correo existente o inexistente: `202` y misma respuesta observable.
+- Código de recuperación leído solo del log de desarrollo.
+- Confirmación de recuperación: `200`; reutilización del código: `410`, mapeado a `RECOVERY_TOKEN_INVALID`.
+- Login con contraseña anterior: `401`; con contraseña nueva: `200`.
+
+No se registraron tokens ni contraseñas en la documentación. Los datos de prueba eran efímeros y no se conservaron.
+
+CORS: la preflight de navegador no devolvió `Access-Control-Allow-Origin`. No se ajustó CORS porque el cliente móvil nativo no está sujeto a CORS y no había un cliente web en esta verificación. Si se prueba la app en navegador, ese ajuste queda pendiente.
 
 ## Decisiones y bloqueos
 
 - **D-04 abierta:** no se implementa persistencia de sesión ni almacenamiento de tokens. La sesión vive únicamente en memoria durante la ejecución actual. No se usa AsyncStorage, localStorage ni logs para tokens.
-- **API no disponible en la validación:** `http://localhost:8080` no respondió; no se probó integración real ni se simularon respuestas.
+- **API local verificada, sin entorno desplegado:** el flujo se probó contra el backend local en `localhost:8080`; no se definió todavía una URL de API desplegada para el equipo móvil.
 - **Versión de términos:** `EXPO_PUBLIC_TERMS_VERSION` debe ser definida por producto/legal. Sin ella el registro queda bloqueado y no se inventa una versión.
 - **Recuperación:** el contrato define token y nueva contraseña, pero no el canal ni el deep link. La app permite pegar el código manualmente hasta que exista una decisión de enlace.
 - **Idempotencia:** `Idempotency-Key` es opcional en OpenAPI, pero D-18 sigue abierta; no se implementa generación ni reintento automático.
 - **Login de Administrador:** fuera de alcance móvil.
-- **Reglas de contraseña:** OpenAPI solo exige `minLength: 1`; la app solo exige que no esté vacía. No se inventa complejidad adicional.
+- **Reglas de contraseña:** OpenAPI solo exige `minLength: 1`, pero el backend local aplica mínimo 8 con letra y dígito. La app replica esa política en registro y nueva contraseña; OpenAPI debe reconciliarse.
 
 ## Comportamiento implementado
 
@@ -104,9 +126,9 @@ Estas diferencias no se corrigen en el SPEC ni en el plan desde este repositorio
 
 - Reconciliar con backend las diferencias de status, errores, seguridad global y respuesta de registro.
 - Aprobar D-04: duración, concurrencia, transporte, revocación y almacenamiento seguro.
-- Disponer de la API de F01 y configurar `EXPO_PUBLIC_API_BASE_URL`.
+- Configurar la API desplegada de F01 en `EXPO_PUBLIC_API_BASE_URL`; la verificación local usó el backend en `localhost:8080`.
 - Definir la versión de términos aprobada y cargarla en el entorno.
 - Definir el canal y deep link de recuperación si producto lo requiere.
 - Resolver D-18 si el registro debe enviar `Idempotency-Key` y cómo se reintenta.
-- Añadir pruebas de interacción/E2E contra API real y evidencia de aislamiento por rol.
+- Añadir pruebas E2E de UI contra API real; la verificación actual cubrió el gateway y los flujos HTTP, no la interacción de pantallas.
 - Verificar builds nativos con `react-native-screens` y `react-native-safe-area-context`.
