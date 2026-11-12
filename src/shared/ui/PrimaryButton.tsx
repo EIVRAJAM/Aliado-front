@@ -1,6 +1,6 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { colors, radii, spacing } from './theme';
 
 interface PrimaryButtonProps {
   label: string;

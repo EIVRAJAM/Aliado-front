@@ -5,11 +5,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/types';
 import { appEnv } from '../../../shared/config/env';
 import { spacing } from '../../../shared/ui/theme';
-import { AuthScreenLayout } from '../components/AuthScreenLayout';
-import { FormField } from '../components/FormField';
-import { InlineMessage } from '../components/InlineMessage';
-import { LinkButton } from '../components/LinkButton';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
+import { FormField } from '../../../shared/ui/FormField';
+import { InlineMessage } from '../../../shared/ui/InlineMessage';
+import { LinkButton } from '../../../shared/ui/LinkButton';
+import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { useAuthSession } from '../session/AuthSessionProvider';
 import { getAuthErrorMessage } from '../utils/auth-error-message';
 import {
@@ -61,7 +61,7 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
   };
 
   return (
-    <AuthScreenLayout
+    <ScreenLayout
       title="Define una nueva contraseña"
       subtitle="Usa el código de recuperación que recibiste."
     >
@@ -100,7 +100,7 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
         />
         <LinkButton label="Volver a iniciar sesión" onPress={() => navigation.navigate('Login')} />
       </View>
-    </AuthScreenLayout>
+    </ScreenLayout>
   );
 }
 

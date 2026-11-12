@@ -9,14 +9,14 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, spacing } from '../../../shared/ui/theme';
+import { colors, spacing } from './theme';
 
-interface AuthScreenLayoutProps extends PropsWithChildren {
+interface ScreenLayoutProps extends PropsWithChildren {
   title: string;
   subtitle?: string;
 }
 
-export function AuthScreenLayout({ title, subtitle, children }: AuthScreenLayoutProps) {
+export function ScreenLayout({ title, subtitle, children }: ScreenLayoutProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView

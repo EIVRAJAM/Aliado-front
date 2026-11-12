@@ -5,11 +5,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { appEnv } from '../../../shared/config/env';
 import { spacing } from '../../../shared/ui/theme';
 import type { RootStackParamList } from '../../../navigation/types';
-import { AuthScreenLayout } from '../components/AuthScreenLayout';
-import { FormField } from '../components/FormField';
-import { InlineMessage } from '../components/InlineMessage';
-import { LinkButton } from '../components/LinkButton';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
+import { FormField } from '../../../shared/ui/FormField';
+import { InlineMessage } from '../../../shared/ui/InlineMessage';
+import { LinkButton } from '../../../shared/ui/LinkButton';
+import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { useAuthSession } from '../session/AuthSessionProvider';
 import { getAuthErrorMessage } from '../utils/auth-error-message';
 import {
@@ -54,7 +54,7 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
   };
 
   return (
-    <AuthScreenLayout
+    <ScreenLayout
       title="Inicia sesión"
       subtitle="Accede a tu cuenta de Cliente o Prestador."
     >
@@ -94,7 +94,7 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
           onPress={() => navigation.navigate('ForgotPassword')}
         />
       </View>
-    </AuthScreenLayout>
+    </ScreenLayout>
   );
 }
 

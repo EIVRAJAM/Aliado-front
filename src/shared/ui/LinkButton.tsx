@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors } from '../../../shared/ui/theme';
+import { colors } from './theme';
 
 interface LinkButtonProps {
   label: string;

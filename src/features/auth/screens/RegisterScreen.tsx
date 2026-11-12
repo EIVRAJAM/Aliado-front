@@ -5,12 +5,12 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/types';
 import { appEnv } from '../../../shared/config/env';
 import { spacing } from '../../../shared/ui/theme';
-import { AuthScreenLayout } from '../components/AuthScreenLayout';
+import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { ConsentCheckbox } from '../components/ConsentCheckbox';
-import { FormField } from '../components/FormField';
-import { InlineMessage } from '../components/InlineMessage';
-import { LinkButton } from '../components/LinkButton';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { FormField } from '../../../shared/ui/FormField';
+import { InlineMessage } from '../../../shared/ui/InlineMessage';
+import { LinkButton } from '../../../shared/ui/LinkButton';
+import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { RoleSelector } from '../components/RoleSelector';
 import { useAuthSession } from '../session/AuthSessionProvider';
 import type { AuthRole } from '../types/auth';
@@ -77,7 +77,7 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
   };
 
   return (
-    <AuthScreenLayout
+    <ScreenLayout
       title="Crea tu cuenta"
       subtitle="Regístrate como Cliente o Prestador para usar ALIADO."
     >
@@ -126,7 +126,7 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
       <View style={styles.links}>
         <LinkButton label="Ya tengo una cuenta" onPress={() => navigation.navigate('Login')} />
       </View>
-    </AuthScreenLayout>
+    </ScreenLayout>
   );
 }
 

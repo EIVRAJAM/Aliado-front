@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { colors, radii, spacing } from './theme';
 
 type MessageVariant = 'error' | 'success' | 'info';
 

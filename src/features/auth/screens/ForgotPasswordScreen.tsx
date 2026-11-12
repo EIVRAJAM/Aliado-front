@@ -5,11 +5,11 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../../navigation/types';
 import { appEnv } from '../../../shared/config/env';
 import { spacing } from '../../../shared/ui/theme';
-import { AuthScreenLayout } from '../components/AuthScreenLayout';
-import { FormField } from '../components/FormField';
-import { InlineMessage } from '../components/InlineMessage';
-import { LinkButton } from '../components/LinkButton';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
+import { FormField } from '../../../shared/ui/FormField';
+import { InlineMessage } from '../../../shared/ui/InlineMessage';
+import { LinkButton } from '../../../shared/ui/LinkButton';
+import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { useAuthSession } from '../session/AuthSessionProvider';
 import { getAuthErrorMessage } from '../utils/auth-error-message';
 import {
@@ -58,7 +58,7 @@ export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) 
   };
 
   return (
-    <AuthScreenLayout
+    <ScreenLayout
       title="Recupera tu acceso"
       subtitle="Te enviaremos un mecanismo de verificación si el correo está registrado."
     >
@@ -88,7 +88,7 @@ export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) 
         />
         <LinkButton label="Volver a iniciar sesión" onPress={() => navigation.navigate('Login')} />
       </View>
-    </AuthScreenLayout>
+    </ScreenLayout>
   );
 }
 
