@@ -4,4 +4,10 @@ export type RootStackParamList = {
   ForgotPassword: undefined;
   ResetPassword: { token?: string } | undefined;
   Session: undefined;
+  Profile: undefined;
+  ProfileEdit: undefined;
+  ProfileLocation: undefined;
+  ProfilePrivacy: undefined;
+  ProfilePublicPreview: { userId: string };
+  ProfileDelete: undefined;
 };

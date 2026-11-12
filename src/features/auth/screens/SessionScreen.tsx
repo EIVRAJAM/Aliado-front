@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import type { RootStackParamList } from '../../../navigation/types';
 
 import { colors, radii, spacing } from '../../../shared/ui/theme';
-import { AuthScreenLayout } from '../components/AuthScreenLayout';
-import { InlineMessage } from '../components/InlineMessage';
-import { PrimaryButton } from '../components/PrimaryButton';
+import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
+import { InlineMessage } from '../../../shared/ui/InlineMessage';
+import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
+import { LinkButton } from '../../../shared/ui/LinkButton';
 import { useAuthSession } from '../session/AuthSessionProvider';
 import { getAuthErrorMessage } from '../utils/auth-error-message';
 
-export function SessionScreen() {
+type SessionScreenProps = NativeStackScreenProps<RootStackParamList, 'Session'>;
+
+export function SessionScreen({ navigation }: SessionScreenProps) {
   const { session, signOut, isSigningOut } = useAuthSession();
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +36,7 @@ export function SessionScreen() {
   };
 
   return (
-    <AuthScreenLayout title="Sesión iniciada" subtitle={`Has accedido como ${roleLabel}.`}>
+    <ScreenLayout title="Sesión iniciada" subtitle={`Has accedido como ${roleLabel}.`}>
       <InlineMessage
         variant="info"
         message="La sesión se mantiene solo durante esta ejecución. Al cerrar la app deberás autenticarte de nuevo."
@@ -42,8 +48,9 @@ export function SessionScreen() {
         <Text style={styles.label}>Rol</Text>
         <Text style={styles.value}>{roleLabel}</Text>
       </View>
+      <LinkButton label="Mi perfil" onPress={() => navigation.navigate('Profile')} />
       <PrimaryButton label="Cerrar sesión" onPress={handleSignOut} loading={isSigningOut} />
-    </AuthScreenLayout>
+    </ScreenLayout>
   );
 }
 

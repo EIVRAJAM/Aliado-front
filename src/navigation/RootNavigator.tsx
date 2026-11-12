@@ -9,6 +9,14 @@ import {
   SessionScreen,
   useAuthSession,
 } from '../features/auth';
+import {
+  ProfileDeleteScreen,
+  ProfileEditScreen,
+  ProfileLocationScreen,
+  ProfileOverviewScreen,
+  ProfilePrivacyScreen,
+  ProfilePublicPreviewScreen,
+} from '../features/profile';
 import { colors } from '../shared/ui/theme';
 import type { RootStackParamList } from './types';
 
@@ -26,7 +34,18 @@ export function RootNavigator() {
         }}
       >
         {session ? (
-          <Stack.Screen name="Session" component={SessionScreen} />
+          <>
+            <Stack.Screen name="Session" component={SessionScreen} />
+            <Stack.Screen name="Profile" component={ProfileOverviewScreen} />
+            <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
+            <Stack.Screen name="ProfileLocation" component={ProfileLocationScreen} />
+            <Stack.Screen name="ProfilePrivacy" component={ProfilePrivacyScreen} />
+            <Stack.Screen
+              name="ProfilePublicPreview"
+              component={ProfilePublicPreviewScreen}
+            />
+            <Stack.Screen name="ProfileDelete" component={ProfileDeleteScreen} />
+          </>
         ) : (
           <>
             <Stack.Screen name="Login" component={LoginScreen} />
