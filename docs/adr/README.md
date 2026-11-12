@@ -15,7 +15,8 @@ Las decisiones compartidas de backend y producto se mantienen en `../aliado-prb/
 | ID fuente | Tema | Estado / impacto móvil |
 |---|---|---|
 | D-01 | Versiones de React Native, React, Node, TypeScript, gestor de dependencias y herramientas | **Resuelta para el cliente móvil** por [ADR 0001](0001-stack-y-versiones-movil.md). La parte backend conserva su propia decisión en `aliado-prb`. |
-| D-04 | Duración, concurrencia, transporte y almacenamiento de sesión | Pendiente. F01 mantiene la sesión solo en memoria; no hay persistencia de tokens hasta resolver duración, expiración, revocación y almacenamiento seguro. |
+| D-04 | Duración, concurrencia, transporte y almacenamiento de sesión | Pendiente. F01 mantiene la sesión solo en memoria; no hay persistencia de tokens hasta resolver duración, expiración, revocación y almacenamiento seguro. F02 reutiliza esa sesión en memoria. |
+| D-05 | Eliminación/anonimización, retención y relación con historial/auditoría | Pendiente. F02 solicita y confirma la eliminación; el backend bloquea la cuenta y cierra sesiones, pero no se promete borrado definitivo ni anonimización. |
 | D-06 | Proveedor y ciclo de vida de storage | Pendiente. La app necesita contrato de carga y acceso privado; puede avanzar con adaptadores de desarrollo. |
 | D-07 | MIME, tamaño y cantidad de archivos | Pendiente. Afecta carga móvil, validación y mensajes de error. |
 | D-08 | Push/correo, tokens de dispositivo y reintentos | Pendiente. No asumir push productivo ni inventar almacenamiento de tokens. |

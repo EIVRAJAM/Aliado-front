@@ -36,10 +36,18 @@ La estructura actual contiene el bootstrap, la navegación y la feature de acces
 │   │   ├── types/
 │   │   ├── utils/
 │   │   └── validation/
+│   ├── features/profile/              # SPEC-02: perfil, privacidad y eliminación
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   └── validation/
 │   └── shared/
 │       ├── api/http-client.ts         # transporte JSON y errores comunes
 │       ├── config/env.ts              # variables públicas validadas
-│       └── ui/theme.ts                # tokens visuales compartidos
+│       └── ui/                        # tema y componentes compartidos
 ├── assets/
 ├── app.json
 ├── package.json

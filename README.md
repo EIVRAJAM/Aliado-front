@@ -63,10 +63,18 @@ Los comandos nativos requieren SDKs locales y no se ejecutan en el CI mínimo. L
 │   │   ├── types/
 │   │   ├── utils/
 │   │   └── validation/
+│   ├── features/profile/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   └── validation/
 │   └── shared/
 │       ├── api/http-client.ts
 │       ├── config/env.ts
-│       └── ui/theme.ts
+│       └── ui/
 ├── assets/
 ├── app.json
 ├── package.json
@@ -87,6 +95,7 @@ La estructura se amplía solo cuando una feature real lo necesita. La arquitectu
 - Índice local: [docs/README.md](docs/README.md)
 - Arquitectura móvil: [docs/architecture/MOBILE_ARCHITECTURE.md](docs/architecture/MOBILE_ARCHITECTURE.md)
 - F01 Acceso e identidad: [docs/features/auth.md](docs/features/auth.md)
+- F02 Perfil, privacidad y eliminación: [docs/features/profile.md](docs/features/profile.md)
 - Entrega y alcance: [docs/core/DELIVERY_PLAN.md](docs/core/DELIVERY_PLAN.md)
 - Gitflow: [docs/development/GITFLOW.md](docs/development/GITFLOW.md)
 - ADRs: [docs/adr/README.md](docs/adr/README.md)
@@ -125,5 +134,6 @@ La corrección de captura se verificó simulando el fallo original y el parche s
 - Flujo de ramas: [ADR 0002](docs/adr/0002-gitflow-fast-forward.md). `develop` es la base y F01 se desarrolla en `feature/f01-acceso-identidad`.
 - Navegación: [ADR 0003](docs/adr/0003-navegacion-react-navigation.md).
 - F01: UI, validación y contrato de integración implementados; la autenticación real sigue bloqueada por API desplegada, D-04 y versión de términos. Ver [docs/features/auth.md](docs/features/auth.md).
-- Pendientes que bloquean la siguiente fase: D-04 (sesión segura), contrato API desplegado, versión de términos, canal/deep link de recuperación y cierre de las decisiones indicadas en [docs/adr/README.md](docs/adr/README.md).
+- F02: perfil propio, edición, ubicación, visibilidad, vista pública y eliminación implementados; D-05 sigue pendiente. Ver [docs/features/profile.md](docs/features/profile.md).
+- Pendientes que bloquean la siguiente fase: D-04 (sesión segura), D-05 (eliminación/retención), contrato API desplegado, versión de términos, canal/deep link de recuperación y cierre de las decisiones indicadas en [docs/adr/README.md](docs/adr/README.md).
 - Los iconos actuales son provisionales y los identificadores `com.aliado.movil` deben confirmarse antes de publicar.
