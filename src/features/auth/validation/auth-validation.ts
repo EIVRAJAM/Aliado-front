@@ -1,6 +1,8 @@
 import type { AuthRole } from '../types/auth';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const UNICODE_LETTER = /\p{L}/u;
+const UNICODE_DECIMAL_DIGIT = /\p{Nd}/u;
 
 export const PASSWORD_POLICY_HINT =
   'Mínimo 8 caracteres, con al menos una letra y un dígito.';
@@ -55,7 +57,7 @@ function getNewPasswordError(value: string): string | undefined {
   if (!value) {
     return 'Ingresa una contraseña.';
   }
-  if (value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value)) {
+  if (value.length < 8 || !UNICODE_LETTER.test(value) || !UNICODE_DECIMAL_DIGIT.test(value)) {
     return PASSWORD_POLICY_HINT;
   }
   return undefined;

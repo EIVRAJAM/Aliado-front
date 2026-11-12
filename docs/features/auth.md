@@ -78,7 +78,7 @@ Si la URL no está configurada, las pantallas muestran el bloqueo y el adaptador
 | `rol` | `string` sin enum | `CLIENTE`/`PRESTADOR` | Devuelve `CLIENTE`/`PRESTADOR` | La UI solo ofrece esos dos roles; login valida el valor recibido. |
 | Login response | Campos no marcados como requeridos | `sessionToken`, `rol` | Devuelve ambos | El cliente exige ambos para crear la sesión; si faltan, reporta respuesta inválida. |
 | Seguridad | Global para todas las operaciones | Sin detalle de esquema | `/api/v1/auth/**` público; logout exige bearer y responde `401` sin sesión | Bearer solo en logout; discrepancia pendiente con la declaración global de OpenAPI. |
-| Contraseña | `minLength: 1` | No define política | Mínimo 8, con letra y dígito | La UI replica la política del backend para registro y nueva contraseña; OpenAPI debe actualizarse. |
+| Contraseña | `minLength: 1` | No define política | Mínimo 8 unidades UTF-16 (`String.length`), al menos una letra Unicode (`Character.isLetter`) y un dígito decimal Unicode (`Character.isDigit`) | La UI replica la política del backend para registro y nueva contraseña; no la aplica en login. OpenAPI debe actualizarse. |
 | Idempotencia | Header opcional en registro | D-18 pendiente | El controlador soporta `Idempotency-Key` | No se envía ni se reintenta automáticamente. |
 | Base URL | Servidor `http://localhost:8080` + rutas `/api/v1/...` | No fija servidor | Escucha en `8080` en local | `EXPO_PUBLIC_API_BASE_URL` es el origen y el cliente añade `/api/v1`. |
 
@@ -93,7 +93,7 @@ El 2026-11-12 se levantó el backend local con PostgreSQL 17 en un contenedor te
 - Correo duplicado: `409`, mapeado a `EMAIL_TAKEN`.
 - Login válido Cliente/Prestador: `200`, con `sessionToken` y `rol`.
 - Credenciales inválidas: `401`, mapeado a `INVALID_CREDENTIALS`.
-- Contraseña corta: `400`, mapeado a `VALIDATION`; el frontend ahora valida la política observada del backend.
+- Contraseña corta: `400`, mapeado a `VALIDATION`; el frontend valida la política observada del backend.
 - Logout con bearer: `204`; segundo logout: `401`, mapeado a `SESSION_EXPIRED`.
 - Recuperación con correo existente o inexistente: `202` y misma respuesta observable.
 - Código de recuperación leído solo del log de desarrollo.
@@ -112,7 +112,7 @@ CORS: la preflight de navegador no devolvió `Access-Control-Allow-Origin`. No s
 - **Recuperación:** el contrato define token y nueva contraseña, pero no el canal ni el deep link. La app permite pegar el código manualmente hasta que exista una decisión de enlace.
 - **Idempotencia:** `Idempotency-Key` es opcional en OpenAPI, pero D-18 sigue abierta; no se implementa generación ni reintento automático.
 - **Login de Administrador:** fuera de alcance móvil.
-- **Reglas de contraseña:** OpenAPI solo exige `minLength: 1`, pero el backend local aplica mínimo 8 con letra y dígito. La app replica esa política en registro y nueva contraseña; OpenAPI debe reconciliarse.
+- **Reglas de contraseña:** OpenAPI solo exige `minLength: 1`, pero el backend aplica mínimo 8 unidades UTF-16 (`String.length`), al menos una letra Unicode (`Character.isLetter`) y un dígito decimal Unicode (`Character.isDigit`). El frontend replica esa política en registro y restablecimiento con `\p{L}` y `\p{Nd}`; no la aplica en login, que solo exige contraseña no vacía. OpenAPI debe reconciliarse.
 
 ## Comportamiento implementado
 
