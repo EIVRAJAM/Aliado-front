@@ -16,6 +16,7 @@ import { useAuthSession } from '../session/AuthSessionProvider';
 import type { AuthRole } from '../types/auth';
 import { getAuthErrorMessage } from '../utils/auth-error-message';
 import {
+  PASSWORD_POLICY_HINT,
   hasFieldErrors,
   validateRegistration,
   type RegisterFieldErrors,
@@ -112,6 +113,7 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
         autoComplete="new-password"
         textContentType="newPassword"
         error={errors.password}
+        hint={PASSWORD_POLICY_HINT}
       />
       <RoleSelector value={role} onChange={setRole} error={errors.role} />
       <ConsentCheckbox

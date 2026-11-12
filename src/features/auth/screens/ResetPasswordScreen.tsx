@@ -13,6 +13,7 @@ import { PrimaryButton } from '../components/PrimaryButton';
 import { useAuthSession } from '../session/AuthSessionProvider';
 import { getAuthErrorMessage } from '../utils/auth-error-message';
 import {
+  PASSWORD_POLICY_HINT,
   hasFieldErrors,
   validatePasswordReset,
   type PasswordResetFieldErrors,
@@ -89,6 +90,7 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
         autoComplete="new-password"
         textContentType="newPassword"
         error={errors.newPassword}
+        hint={PASSWORD_POLICY_HINT}
       />
       <PrimaryButton label="Actualizar contraseña" onPress={handleSubmit} loading={submitting} />
       <View style={styles.links}>

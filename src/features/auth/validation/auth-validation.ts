@@ -2,6 +2,9 @@ import type { AuthRole } from '../types/auth';
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export const PASSWORD_POLICY_HINT =
+  'Mínimo 8 caracteres, con al menos una letra y un dígito.';
+
 export interface LoginFormValues {
   email: string;
   password: string;
@@ -48,6 +51,16 @@ export function validatePassword(value: string, errors: { password?: string }): 
   }
 }
 
+function getNewPasswordError(value: string): string | undefined {
+  if (!value) {
+    return 'Ingresa una contraseña.';
+  }
+  if (value.length < 8 || !/[A-Za-z]/.test(value) || !/\d/.test(value)) {
+    return PASSWORD_POLICY_HINT;
+  }
+  return undefined;
+}
+
 export function validateLogin(values: LoginFormValues): LoginFieldErrors {
   const errors: LoginFieldErrors = {};
   validateEmail(values.email, errors);
@@ -58,7 +71,10 @@ export function validateLogin(values: LoginFormValues): LoginFieldErrors {
 export function validateRegistration(values: RegisterFormValues): RegisterFieldErrors {
   const errors: RegisterFieldErrors = {};
   validateEmail(values.email, errors);
-  validatePassword(values.password, errors);
+  const passwordError = getNewPasswordError(values.password);
+  if (passwordError) {
+    errors.password = passwordError;
+  }
 
   if (!values.role) {
     errors.role = 'Selecciona cómo usarás ALIADO.';
@@ -89,8 +105,9 @@ export function validatePasswordReset(values: PasswordResetFormValues): Password
     errors.token = 'Ingresa el código de recuperación.';
   }
 
-  if (!values.newPassword) {
-    errors.newPassword = 'Ingresa la nueva contraseña.';
+  const passwordError = getNewPasswordError(values.newPassword);
+  if (passwordError) {
+    errors.newPassword = passwordError;
   }
 
   return errors;
