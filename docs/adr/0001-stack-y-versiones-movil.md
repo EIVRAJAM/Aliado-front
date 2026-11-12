@@ -17,14 +17,20 @@ La app usará Continuous Native Generation (CNG) y development builds. En esta f
 |---|---|---|
 | Node.js | `24.14.1` (`.nvmrc`); `engines: >=24.3.0 <25` | Node 24 es LTS y cumple el mínimo de Expo SDK 58 (`22.13.x`). Se fija una línea LTS para evitar deriva entre desarrollo y CI. |
 | npm | `11.11.0` (`packageManager`) | Gestor integrado con Node y con el flujo oficial de Expo; `package-lock.json` reproducible y menos configuración adicional que pnpm/yarn. |
-| Expo SDK | `~58.0.23` | SDK estable vigente al 2026-11-06. |
+| Expo SDK | `~58.0.25` | SDK 58 estable; patch actualizado el 2026-11-12 por recomendación de `expo install --check`. |
 | React Native | `0.88.1` | Versión objetivo de Expo SDK 58. |
 | React | `19.3.0` | Versión objetivo de Expo SDK 58. |
 | TypeScript | `~6.0.3` | Versión validada por la plantilla oficial `blank-typescript` de SDK 58. No se adopta TypeScript 7 para evitar una combinación no validada por Expo. |
 | `@types/react` | `~19.3.0` | Tipos compatibles con React 19.3. |
-| `expo-status-bar` | `~58.0.4` | Módulo base de la plantilla para la barra de estado. |
-| `expo-dev-client` | `~58.0.18` | Requerido por la estrategia de development builds. |
+| `expo-status-bar` | `~58.0.5` | Módulo base de la plantilla; incluye config plugin nativo desde este patch. |
+| `expo-dev-client` | `~58.0.20` | Requerido por la estrategia de development builds. |
 | `expo-doctor` | `^1.21.6` | Validación de configuración y dependencias en local y CI. |
+
+### Actualización de patch 2026-11-12
+
+Motivo: Expo Doctor reportó 19/20 por desalineación de versiones patch recomendadas para SDK 58. `npx expo install --check` indicó actualizar `expo` a `~58.0.25`, `expo-dev-client` a `~58.0.20` y `expo-status-bar` a `~58.0.5`. Se aplicó `npx expo install --fix`; el lockfile se actualizó y Expo CLI añadió el config plugin `expo-status-bar` en `app.json`.
+
+Compatibilidad: se mantiene Expo SDK 58, React Native 0.88.1, React 19.3.0 y Node 24.14.1; no cambian las peer dependencies principales. Verificación posterior: `expo install --check` sin pendientes, `npm run doctor` 20/20, `npm run typecheck` y export Android correctos.
 
 Decisiones complementarias:
 
@@ -49,7 +55,7 @@ Decisiones complementarias:
 - El CI instala con `npm ci`, usa la versión de `.nvmrc` y ejecuta `typecheck` y `expo-doctor`.
 - Los comandos que generan proyectos nativos requieren Android SDK/Xcode en la máquina; el CI mínimo no compila binarios nativos.
 - No se deben añadir dependencias exóticas con `npm install` sin pasar por `npx expo install` cuando sean módulos Expo o nativos.
-- Al 2026-11-06, `npm audit` reporta 5 vulnerabilidades moderadas en dependencias transitivas del tooling de Expo (`glob`/`minimatch`). No se aplica `npm audit fix --force` porque degradaría Expo a SDK 53; se revisará al actualizar el SDK.
+- Al 2026-11-12, `npm audit` reporta 3 vulnerabilidades moderadas en dependencias transitivas del tooling de Expo. No se aplica `npm audit fix --force` porque degradaría Expo a SDK 53; se revisará al actualizar el SDK.
 - D-04 (sesión, expiración, revocación y almacenamiento seguro) sigue pendiente y no se resuelve con este ADR.
 
 ## Fuentes verificadas
