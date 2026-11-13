@@ -12,6 +12,8 @@ export type RootStackParamList = {
   ProfileDelete: undefined;
   ProfessionalProfile: undefined;
   ProfessionalProfileCreate: undefined;
+  Discovery: undefined;
+  ProviderProfile: { providerId: string };
   Requests: undefined;
   RequestForm: { requestId?: string } | undefined;
   RequestDetail: { requestId: string };

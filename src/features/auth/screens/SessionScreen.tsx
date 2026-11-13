@@ -65,11 +65,18 @@ export function SessionScreen({ navigation }: SessionScreenProps) {
         />
       ) : null}
       {session.role === 'CLIENTE' ? (
-        <PrimaryButton
-          label="Mis solicitudes"
-          variant="secondary"
-          onPress={() => navigation.navigate('Requests')}
-        />
+        <>
+          <PrimaryButton
+            label="Buscar prestadores"
+            variant="secondary"
+            onPress={() => navigation.navigate('Discovery')}
+          />
+          <PrimaryButton
+            label="Mis solicitudes"
+            variant="secondary"
+            onPress={() => navigation.navigate('Requests')}
+          />
+        </>
       ) : null}
       <PrimaryButton
         label="Cerrar sesión"

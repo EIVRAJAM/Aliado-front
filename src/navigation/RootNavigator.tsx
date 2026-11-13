@@ -17,6 +17,7 @@ import {
   ProfilePrivacyScreen,
   ProfilePublicPreviewScreen,
 } from '../features/profile';
+import { DiscoveryScreen, ProviderProfileScreen } from '../features/discovery';
 import {
   ProfessionalProfileCreateScreen,
   ProfessionalProfileScreen,
@@ -59,6 +60,8 @@ export function RootNavigator() {
               name="ProfessionalProfileCreate"
               component={ProfessionalProfileCreateScreen}
             />
+            <Stack.Screen name="Discovery" component={DiscoveryScreen} />
+            <Stack.Screen name="ProviderProfile" component={ProviderProfileScreen} />
             <Stack.Screen name="Requests" component={RequestListScreen} />
             <Stack.Screen name="RequestForm" component={RequestFormScreen} />
             <Stack.Screen name="RequestDetail" component={RequestDetailScreen} />
