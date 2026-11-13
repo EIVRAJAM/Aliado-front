@@ -36,6 +36,11 @@ type RequestFormScreenProps = NativeStackScreenProps<RootStackParamList, 'Reques
 
 type SubmitMode = 'draft' | 'publish';
 
+interface UncertainOutcome {
+  message: string;
+  reconciledRequestId: string | null;
+}
+
 export function RequestFormScreen({ navigation, route }: RequestFormScreenProps) {
   const requestId = route.params?.requestId;
   const isEditing = Boolean(requestId);
@@ -57,7 +62,7 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
   );
   const [submitting, setSubmitting] = useState(false);
   const [savedAfterFailureId, setSavedAfterFailureId] = useState<string | null>(null);
-  const [uncertainOutcome, setUncertainOutcome] = useState<string | null>(null);
+  const [uncertainOutcome, setUncertainOutcome] = useState<UncertainOutcome | null>(null);
 
   const request = detailState.request;
   const catalogs = catalogsState.catalogs;
@@ -123,6 +128,32 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
     setPhotoProgress(null);
   };
 
+  const findReconciledRequest = async (
+    token: string,
+    baselineIds: Set<string> | null,
+    input: CreateServiceRequestInput
+  ) => {
+    if (!baselineIds) {
+      return null;
+    }
+
+    try {
+      const current = await requestGateway.listMine(token);
+      const matches = current.filter(
+        (item) =>
+          !baselineIds.has(item.id) &&
+          item.estado === input.estadoDeseado &&
+          item.categoriaId === input.categoriaId &&
+          item.zonaId === input.zonaId &&
+          item.urgencia === input.urgencia &&
+          (item.descripcion ?? '').trim() === (input.descripcion ?? '').trim()
+      );
+      return matches.length === 1 ? matches[0] ?? null : null;
+    } catch {
+      return null;
+    }
+  };
+
   const handleSave = async (mode: SubmitMode) => {
     if (!session || submitting || savedAfterFailureId || uncertainOutcome) {
       return;
@@ -153,6 +184,8 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
     };
 
     let currentId: string | null = null;
+    let createInput: CreateServiceRequestInput | null = null;
+    let baselineIds: Set<string> | null = null;
 
     setSubmitting(true);
     try {
@@ -160,8 +193,14 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
         await requestGateway.update(session.token, requestId, updateInput);
         currentId = requestId;
       } else {
+        try {
+          const baseline = await requestGateway.listMine(session.token);
+          baselineIds = new Set(baseline.map((item) => item.id));
+        } catch {
+          baselineIds = null;
+        }
         const shouldStartAsDraft = photos.length > 0 || mode === 'draft';
-        const createInput: CreateServiceRequestInput = {
+        createInput = {
           categoriaId,
           descripcion: description || null,
           zonaId,
@@ -217,19 +256,32 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
         setSavedAfterFailureId(currentId);
         setFormError(
           uncertain
-            ? `${
-                isEditing ? 'Los cambios se guardaron' : 'La solicitud se creó'
-              }, pero no se pudo confirmar el resultado de las fotos o la publicación. Revisa el detalle para verificar el estado actual.`
+            ? isEditing
+              ? 'Los cambios se guardaron, pero no se pudo confirmar el resultado de las fotos. Revisa el detalle para verificar el estado actual.'
+              : 'La solicitud se creó, pero no se pudo confirmar el resultado de las fotos o la publicación. Revisa el detalle para verificar el estado actual.'
             : `${message ?? ''} La solicitud ya quedó guardada${
                 photos.length > 0 ? ' con las fotos que se pudieron subir' : ''
               }; puedes revisarla en el detalle.`.trim()
         );
       } else if (uncertain) {
-        setUncertainOutcome(
-          isEditing
-            ? 'No se pudo confirmar si los cambios se guardaron. No reenvíes este formulario; revisa la solicitud en Mis solicitudes y actualiza la lista.'
-            : 'No se pudo confirmar si la solicitud se guardó. No reenvíes este formulario para evitar una solicitud duplicada. Revisa Mis solicitudes y actualiza la lista; si no aparece, crea una nueva solicitud.'
-        );
+        if (isEditing) {
+          setUncertainOutcome({
+            message:
+              'No se pudo confirmar si los cambios se guardaron. No vuelvas a enviar este formulario; actualiza Mis solicitudes y revisa la solicitud antes de decidir el siguiente paso.',
+            reconciledRequestId: null,
+          });
+        } else {
+          const reconciled =
+            createInput && session
+              ? await findReconciledRequest(session.token, baselineIds, createInput)
+              : null;
+          setUncertainOutcome({
+            message: reconciled
+              ? 'La respuesta no se pudo confirmar, pero encontramos una solicitud nueva que coincide con los datos enviados. La coincidencia no garantiza que sea la misma operación; revisa su detalle antes de continuar.'
+              : 'No se pudo confirmar si la solicitud se guardó. No vuelvas a enviar este formulario: el servidor no garantiza la idempotencia y la solicitud podría aparecer en la lista más adelante. Actualiza Mis solicitudes y conserva estos datos hasta confirmar el resultado.',
+            reconciledRequestId: reconciled?.id ?? null,
+          });
+        }
         setFormError(null);
       } else if (message) {
         setFormError(message);
@@ -360,11 +412,22 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
           )}
           {uncertainOutcome ? (
             <>
-              <InlineMessage message={uncertainOutcome} />
+              <InlineMessage message={uncertainOutcome.message} />
               <InlineMessage
                 variant="info"
-                message="La lista se actualiza automáticamente al abrirla. Si la solicitud no aparece, puedes crear una nueva."
+                message="La lista se actualiza al abrirla. No se ofrece un reenvío automático mientras el resultado siga sin confirmarse."
               />
+              {uncertainOutcome.reconciledRequestId ? (
+                <PrimaryButton
+                  label="Revisar solicitud coincidente"
+                  onPress={() => {
+                    const reconciledId = uncertainOutcome.reconciledRequestId;
+                    if (reconciledId) {
+                      navigation.replace('RequestDetail', { requestId: reconciledId });
+                    }
+                  }}
+                />
+              ) : null}
               {isEditing && requestId ? (
                 <PrimaryButton
                   label="Ver solicitud"
@@ -375,7 +438,8 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
                 />
               ) : null}
               <PrimaryButton
-                label="Ir a Mis solicitudes"
+                label="Actualizar Mis solicitudes"
+                variant={uncertainOutcome.reconciledRequestId ? 'secondary' : 'primary'}
                 onPress={() => navigation.push('Requests')}
               />
             </>
@@ -383,7 +447,7 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
           {!isEditing && !uncertainOutcome && !savedAfterFailureId ? (
             <InlineMessage
               variant="info"
-              message="Si la conexión falla antes de recibir confirmación, conservaremos tus datos y te pediremos revisar Mis solicitudes antes de volver a enviar."
+              message="Si la conexión falla antes de recibir confirmación, conservaremos tus datos y bloquearemos el reenvío hasta que revises Mis solicitudes."
             />
           ) : null}
         </>

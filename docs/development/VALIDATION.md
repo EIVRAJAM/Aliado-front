@@ -99,7 +99,7 @@ F04 añadió `expo-image-picker` con `npx expo install expo-image-picker` (`~58.
 - `npx expo export --platform android`: 901 módulos, bundle correcto.
 - `npm run verify:config`: JSON válido de 2894 bytes.
 - `npm run doctor`: 20/20.
-- Recorrido manual en emulador: catálogos, creación, borrador, publicación, fotos, edición y cancelación. También se detuvo el backend para verificar el estado de resultado incierto: el formulario quedó bloqueado, conservó los datos y ofreció revisar “Mis solicitudes” sin reenviar. Ver [F04](../features/requests.md).
+- Recorrido manual en emulador: catálogos, creación, borrador, publicación, fotos, edición y cancelación. También se detuvo el backend para verificar el estado de resultado incierto: el formulario quedó bloqueado, conservó los datos y ofreció revisar “Mis solicitudes” sin reenviar. Se reprodujo el `500` posterior a la creación activando temporalmente la cabecera de idempotencia; la app releyó la lista y mostró “Revisar solicitud coincidente”. También se verificó una edición con backend detenido: el formulario se bloqueó, conservó el cambio local y no ofreció reenvío. La constante se restauró a `false`. Ver [F04](../features/requests.md).
 
 ## Limitaciones
 
