@@ -1,21 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { spacing } from '../../../shared/ui/theme';
 import type { RequestStatus } from '../types/request';
 import { requestStatusLabel } from '../utils/request-format';
-
-const palette: Record<RequestStatus, { background: string; text: string }> = {
-  BORRADOR: { background: colors.infoSurface, text: colors.primary },
-  PUBLICADA: { background: colors.successSurface, text: colors.success },
-  CANCELADA: { background: colors.dangerSurface, text: colors.danger },
-  CONTRATADA: { background: colors.tealSurface, text: colors.teal },
-};
+import { requestStatusTone } from '../utils/request-visuals';
 
 export function RequestStatusBadge({ status }: { status: RequestStatus }) {
-  const theme = palette[status];
+  const theme = requestStatusTone[status];
 
   return (
     <View style={[styles.badge, { backgroundColor: theme.background }]}>
+      <View style={[styles.dot, { backgroundColor: theme.text }]} />
       <Text style={[styles.text, { color: theme.text }]}>{requestStatusLabel(status)}</Text>
     </View>
   );
@@ -23,15 +18,20 @@ export function RequestStatusBadge({ status }: { status: RequestStatus }) {
 
 const styles = StyleSheet.create({
   badge: {
-    alignSelf: 'flex-start',
-    borderRadius: radii.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    borderRadius: 999,
     paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
+    paddingVertical: 4,
+  },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   text: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    fontSize: 12,
+    fontWeight: '700',
   },
 });

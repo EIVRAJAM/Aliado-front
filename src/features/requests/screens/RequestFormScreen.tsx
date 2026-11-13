@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -11,14 +12,16 @@ import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { SelectField, type SelectOption } from '../../../shared/ui/SelectField';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
+import { CategoryPicker } from '../components/CategoryPicker';
 import { PhotoAttachments } from '../components/PhotoAttachments';
+import { RequestSection } from '../components/RequestSection';
+import { UrgencySelector } from '../components/UrgencySelector';
 import { RequestStateView } from '../components/RequestStateView';
 import { useRequestCatalogs } from '../hooks/useRequestCatalogs';
 import { useRequestDetail } from '../hooks/useRequestDetail';
 import { useRequestError } from '../hooks/useRequestError';
 import { requestGateway } from '../services/request-gateway-instance';
 import {
-  urgencyOptions,
   type CreateServiceRequestInput,
   type LocalPhoto,
   type RequestUrgency,
@@ -96,11 +99,6 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
         description: zone.coberturaGeografica ?? undefined,
       })) ?? [],
     [catalogs]
-  );
-
-  const urgencySelectOptions = useMemo<SelectOption[]>(
-    () => urgencyOptions.map((option) => ({ value: option.value, label: option.label })),
-    []
   );
 
   const reload = () => {
@@ -298,7 +296,7 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
       subtitle={
         isEditing
           ? 'Actualiza los datos mientras la solicitud esté abierta.'
-          : 'Describe el servicio, elige la zona y define la urgencia.'
+          : 'Completa los datos y decide si publicas o guardas un borrador.'
       }
       onBack={() => navigation.goBack()}
     >
@@ -308,66 +306,88 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
         <>
           {formError ? <InlineMessage message={formError} /> : null}
           {savedAfterFailureId ? (
-            <>
+            <Card style={styles.resultCard}>
+              <View style={styles.resultHeader}>
+                <View style={styles.resultIcon}>
+                  <Ionicons name="checkmark-circle-outline" size={22} color={colors.success} />
+                </View>
+                <View style={styles.resultText}>
+                  <Text style={styles.resultTitle}>Solicitud guardada</Text>
+                  <Text style={styles.resultMessage}>
+                    Revisa el detalle para confirmar el estado actual antes de continuar.
+                  </Text>
+                </View>
+              </View>
               <PrimaryButton
                 label="Ver solicitud"
                 onPress={() =>
                   navigation.replace('RequestDetail', { requestId: savedAfterFailureId })
                 }
               />
-              <InlineMessage
-                variant="info"
-                message="La solicitud quedó guardada. Revisa el detalle para confirmar su estado actual."
-              />
-            </>
+            </Card>
           ) : (
-            <Card style={styles.formCard}>
-              <SelectField
-                label="Categoría"
-                placeholder="Selecciona una categoría"
-                value={categoriaId}
-                options={categoryOptions}
-                onChange={setCategoriaId}
-                error={errors.categoriaId}
-                disabled={submitting || Boolean(uncertainOutcome)}
-              />
-              <FormField
-                label="Descripción"
-                value={descripcion}
-                onChangeText={setDescripcion}
-                placeholder="Describe qué servicio necesitas y cualquier detalle útil."
-                multiline
-                numberOfLines={5}
-                textAlignVertical="top"
-                autoCapitalize="sentences"
-                error={errors.descripcion}
-                editable={!submitting && !uncertainOutcome}
-                style={styles.descriptionInput}
-              />
-              <SelectField
-                label="Zona"
-                placeholder="Selecciona una zona"
-                value={zonaId}
-                options={zoneOptions}
-                onChange={setZonaId}
-                error={errors.zonaId}
-                disabled={submitting || Boolean(uncertainOutcome)}
-              />
-              <SelectField
-                label="Urgencia"
-                placeholder="Selecciona el nivel de urgencia"
-                value={urgencia}
-                options={urgencySelectOptions}
-                onChange={(value) => setUrgencia(value as RequestUrgency)}
-                error={errors.urgencia}
-                disabled={submitting || Boolean(uncertainOutcome)}
-              />
+            <>
+              <RequestSection
+                icon="construct-outline"
+                title="¿Qué necesitas?"
+                description="Elige una categoría y describe el trabajo."
+              >
+                <CategoryPicker
+                  options={categoryOptions}
+                  value={categoriaId}
+                  onChange={setCategoriaId}
+                  error={errors.categoriaId}
+                  disabled={submitting || Boolean(uncertainOutcome)}
+                />
+                <FormField
+                  label="Descripción"
+                  value={descripcion}
+                  onChangeText={setDescripcion}
+                  placeholder="Ej.: El aire acondicionado dejó de enfriar."
+                  multiline
+                  numberOfLines={5}
+                  textAlignVertical="top"
+                  autoCapitalize="sentences"
+                  error={errors.descripcion}
+                  editable={!submitting && !uncertainOutcome}
+                  hint="Incluye detalles que ayuden a entender el problema."
+                  style={styles.descriptionInput}
+                />
+              </RequestSection>
+
+              <RequestSection
+                icon="location-outline"
+                title="Zona y urgencia"
+                description="Indica la zona aproximada y qué tan pronto lo necesitas."
+              >
+                <SelectField
+                  label="Zona aproximada"
+                  placeholder="Selecciona una zona"
+                  value={zonaId}
+                  options={zoneOptions}
+                  onChange={setZonaId}
+                  error={errors.zonaId}
+                  hint="Solo se muestra la zona aproximada, no tu dirección exacta."
+                  disabled={submitting || Boolean(uncertainOutcome)}
+                />
+                <View style={styles.fieldGroup}>
+                  <Text style={styles.fieldLabel}>Urgencia</Text>
+                  <UrgencySelector
+                    value={urgencia}
+                    onChange={setUrgencia}
+                    error={errors.urgencia}
+                    disabled={submitting || Boolean(uncertainOutcome)}
+                  />
+                </View>
+              </RequestSection>
+
               <PhotoAttachments
                 photos={photos}
                 existingCount={isEditing ? request?.fotos.length ?? 0 : 0}
                 onChange={setPhotos}
                 disabled={submitting || Boolean(uncertainOutcome)}
               />
+
               {photoProgress ? (
                 <View style={styles.progress}>
                   <Text style={styles.progressLabel}>{photoProgress.label}</Text>
@@ -381,42 +401,75 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
                   </View>
                 </View>
               ) : null}
-              {uncertainOutcome ? null : isEditing ? (
-                <PrimaryButton
-                  label="Guardar cambios"
-                  onPress={() => {
-                    void handleSave('draft');
-                  }}
-                  loading={submitting}
-                />
-              ) : (
-                <>
-                  <PrimaryButton
-                    label="Publicar solicitud"
-                    onPress={() => {
-                      void handleSave('publish');
-                    }}
-                    loading={submitting}
-                  />
-                  <PrimaryButton
-                    label="Guardar borrador"
-                    variant="secondary"
-                    onPress={() => {
-                      void handleSave('draft');
-                    }}
-                    disabled={submitting}
-                  />
-                </>
+
+              {uncertainOutcome ? null : (
+                <View style={styles.actions}>
+                  {isEditing ? (
+                    <>
+                      <PrimaryButton
+                        label="Guardar cambios"
+                        onPress={() => {
+                          void handleSave('draft');
+                        }}
+                        loading={submitting}
+                      />
+                      <PrimaryButton
+                        label="Volver"
+                        variant="ghost"
+                        onPress={() => navigation.goBack()}
+                        disabled={submitting}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <PrimaryButton
+                        label="Publicar solicitud"
+                        onPress={() => {
+                          void handleSave('publish');
+                        }}
+                        loading={submitting}
+                      />
+                      <PrimaryButton
+                        label="Guardar borrador"
+                        variant="secondary"
+                        onPress={() => {
+                          void handleSave('draft');
+                        }}
+                        disabled={submitting}
+                      />
+                      <PrimaryButton
+                        label="Cancelar"
+                        variant="ghost"
+                        onPress={() => navigation.goBack()}
+                        disabled={submitting}
+                      />
+                    </>
+                  )}
+                </View>
               )}
-            </Card>
+            </>
           )}
+
           {uncertainOutcome ? (
-            <>
-              <InlineMessage message={uncertainOutcome.message} />
-              <InlineMessage
-                variant="info"
-                message="La lista se actualiza al abrirla. No se ofrece un reenvío automático mientras el resultado siga sin confirmarse."
-              />
+            <Card style={styles.uncertainCard}>
+              <View style={styles.uncertainHeader}>
+                <View style={styles.uncertainIcon}>
+                  <Ionicons name="alert-circle-outline" size={22} color={colors.danger} />
+                </View>
+                <View style={styles.uncertainText}>
+                  <Text style={styles.uncertainTitle}>Resultado pendiente</Text>
+                  <Text style={styles.uncertainSubtitle}>
+                    No cierres esta pantalla hasta revisar el estado de tu solicitud.
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.uncertainMessage} accessibilityLiveRegion="polite">
+                {uncertainOutcome.message}
+              </Text>
+              <Text style={styles.uncertainHint}>
+                La lista se actualiza al abrirla. No se ofrece un reenvío automático mientras el
+                resultado siga sin confirmarse.
+              </Text>
               {uncertainOutcome.reconciledRequestId ? (
                 <PrimaryButton
                   label="Revisar solicitud coincidente"
@@ -432,9 +485,7 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
                 <PrimaryButton
                   label="Ver solicitud"
                   variant="secondary"
-                  onPress={() =>
-                    navigation.replace('RequestDetail', { requestId })
-                  }
+                  onPress={() => navigation.replace('RequestDetail', { requestId })}
                 />
               ) : null}
               <PrimaryButton
@@ -442,13 +493,17 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
                 variant={uncertainOutcome.reconciledRequestId ? 'secondary' : 'primary'}
                 onPress={() => navigation.push('Requests')}
               />
-            </>
+            </Card>
           ) : null}
+
           {!isEditing && !uncertainOutcome && !savedAfterFailureId ? (
-            <InlineMessage
-              variant="info"
-              message="Si la conexión falla antes de recibir confirmación, conservaremos tus datos y bloquearemos el reenvío hasta que revises Mis solicitudes."
-            />
+            <View style={styles.securityNote}>
+              <Ionicons name="lock-closed-outline" size={15} color={colors.muted} />
+              <Text style={styles.securityNoteText}>
+                Si la conexión falla antes de recibir confirmación, conservaremos tus datos y
+                bloquearemos el reenvío hasta que revises Mis solicitudes.
+              </Text>
+            </View>
           ) : null}
         </>
       )}
@@ -457,12 +512,91 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
 }
 
 const styles = StyleSheet.create({
-  formCard: {
-    gap: spacing.lg,
-  },
   descriptionInput: {
     minHeight: 120,
     paddingTop: spacing.md,
+  },
+  fieldGroup: {
+    gap: spacing.xs,
+  },
+  fieldLabel: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  actions: {
+    gap: spacing.sm,
+  },
+  resultCard: {
+    gap: spacing.lg,
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  resultIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.md,
+    backgroundColor: colors.successSurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultText: {
+    flex: 1,
+    gap: 2,
+  },
+  resultTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  resultMessage: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  uncertainCard: {
+    gap: spacing.md,
+    borderColor: colors.danger,
+  },
+  uncertainHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  uncertainIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.md,
+    backgroundColor: colors.dangerSurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  uncertainText: {
+    flex: 1,
+    gap: 2,
+  },
+  uncertainTitle: {
+    color: colors.danger,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  uncertainSubtitle: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  uncertainMessage: {
+    color: colors.text,
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  uncertainHint: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
   },
   progress: {
     gap: spacing.xs,
@@ -480,5 +614,17 @@ const styles = StyleSheet.create({
   progressFill: {
     height: '100%',
     backgroundColor: colors.primary,
+  },
+  securityNote: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.xs,
+  },
+  securityNoteText: {
+    flex: 1,
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
   },
 });

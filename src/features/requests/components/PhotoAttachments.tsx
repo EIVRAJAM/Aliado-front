@@ -1,9 +1,10 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
-import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import {
   ALLOWED_PHOTO_TYPES,
@@ -123,25 +124,38 @@ export function PhotoAttachments({
   };
 
   return (
-    <View style={styles.container}>
+    <Card style={styles.card}>
       <View style={styles.header}>
-        <Text style={styles.label}>Fotos (opcional)</Text>
+        <View style={styles.iconBadge}>
+          <Ionicons name="images-outline" size={18} color={colors.primary} />
+        </View>
+        <View style={styles.headerText}>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>Fotos</Text>
+            <View style={styles.optionalPill}>
+              <Text style={styles.optionalText}>Opcional</Text>
+            </View>
+          </View>
+          <Text style={styles.hint}>Ayudan a entender mejor el trabajo que necesitas.</Text>
+        </View>
         <Text style={styles.count}>
           {existingCount + photos.length}/{MAX_REQUEST_PHOTOS}
         </Text>
       </View>
-      <Text style={styles.hint}>
-        Hasta 10 imágenes JPG, PNG o WebP de 5 MB cada una. Las fotos no son obligatorias
-        para publicar.
+
+      <Text style={styles.limit}>
+        Hasta 10 imágenes JPG, PNG o WebP de 5 MB cada una.
       </Text>
+
       {existingCount > 0 ? (
         <InlineMessage
           variant="info"
           message={`La solicitud ya tiene ${existingCount} ${
             existingCount === 1 ? 'foto' : 'fotos'
-          }. Solo puedes agregar nuevas; reemplazar o eliminar fotos existentes no está disponible porque el contrato no expone sus identificadores.`}
+          }. Puedes agregar nuevas imágenes.`}
         />
       ) : null}
+
       {photos.length > 0 ? (
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
           <View style={styles.thumbnails}>
@@ -155,50 +169,100 @@ export function PhotoAttachments({
                   onPress={() => removePhoto(index)}
                   style={styles.remove}
                 >
-                  <Text style={styles.removeText}>×</Text>
+                  <Ionicons name="close" size={15} color={colors.surface} />
                 </Pressable>
               </View>
             ))}
           </View>
         </ScrollView>
       ) : null}
+
       {error ? <InlineMessage message={error} /> : null}
-      <PrimaryButton
-        label={remaining > 0 ? 'Agregar fotos' : 'Límite de fotos alcanzado'}
-        variant="secondary"
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={remaining > 0 ? 'Agregar fotos' : 'Límite de fotos alcanzado'}
+        disabled={disabled || remaining === 0}
         onPress={() => {
           void pickPhotos();
         }}
-        disabled={disabled || remaining === 0}
-      />
-    </View>
+        style={({ pressed }) => [
+          styles.addButton,
+          pressed && !disabled && remaining > 0 ? styles.addPressed : null,
+          disabled || remaining === 0 ? styles.addDisabled : null,
+        ]}
+      >
+        <Ionicons
+          name={remaining > 0 ? 'add-circle-outline' : 'checkmark-circle-outline'}
+          size={20}
+          color={remaining > 0 ? colors.primary : colors.muted}
+        />
+        <Text style={[styles.addText, remaining === 0 ? styles.addTextMuted : null]}>
+          {remaining > 0 ? 'Agregar fotos' : 'Límite de fotos alcanzado'}
+        </Text>
+      </Pressable>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: spacing.sm,
+  card: {
+    gap: spacing.md,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  iconBadge: {
+    width: 38,
+    height: 38,
+    borderRadius: radii.md,
+    backgroundColor: colors.infoSurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  headerText: {
+    flex: 1,
+    gap: 2,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
   },
-  label: {
+  title: {
     color: colors.text,
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  optionalPill: {
+    backgroundColor: colors.neutralSurface,
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+  },
+  optionalText: {
+    color: colors.neutral,
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  hint: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
   },
   count: {
     color: colors.muted,
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
-  hint: {
+  limit: {
     color: colors.muted,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 17,
   },
   thumbnails: {
     flexDirection: 'row',
@@ -229,10 +293,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  removeText: {
-    color: colors.surface,
-    fontSize: 18,
-    lineHeight: 18,
+  addButton: {
+    minHeight: 48,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: colors.primary,
+    borderRadius: radii.md,
+    backgroundColor: colors.infoSurface,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  addPressed: {
+    backgroundColor: '#DBEAFE',
+  },
+  addDisabled: {
+    borderColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  addText: {
+    color: colors.primary,
+    fontSize: 14,
     fontWeight: '700',
+  },
+  addTextMuted: {
+    color: colors.muted,
   },
 });

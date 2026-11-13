@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useState, type ComponentProps } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -7,7 +8,7 @@ import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
-import { colors, spacing } from '../../../shared/ui/theme';
+import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { RequestStateView } from '../components/RequestStateView';
 import { RequestStatusBadge } from '../components/RequestStatusBadge';
@@ -23,9 +24,10 @@ import {
   requestUrgencyLabel,
   zoneName,
 } from '../utils/request-format';
+import { requestStatusTone, urgencyTone } from '../utils/request-visuals';
 
 type RequestDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'RequestDetail'>;
-
+type IconName = ComponentProps<typeof Ionicons>['name'];
 type Action = 'publish' | 'cancel';
 
 export function RequestDetailScreen({ navigation, route }: RequestDetailScreenProps) {
@@ -114,129 +116,325 @@ export function RequestDetailScreen({ navigation, route }: RequestDetailScreenPr
   return (
     <ScreenLayout
       title="Detalle de solicitud"
-      subtitle="Consulta el estado y los datos de tu solicitud."
+      subtitle="Revisa la información y el estado de tu solicitud."
       onBack={() => navigation.goBack()}
     >
       {loading || error || !request ? (
         <RequestStateView loading={loading} error={error} onRetry={reload} />
       ) : (
         <>
-          <View style={styles.heading}>
-            <RequestStatusBadge status={request.estado} />
-            <Text style={styles.date}>Creada el {formatRequestDate(request.fechaCreacion)}</Text>
-          </View>
-          <Text style={styles.description}>{requestSummary(request)}</Text>
+          <Card
+            style={[
+              styles.hero,
+              {
+                borderTopColor: requestStatusTone[request.estado].accent,
+              },
+            ]}
+          >
+            <View style={styles.heroTop}>
+              <View style={styles.categoryRow}>
+                <Ionicons name="pricetag-outline" size={14} color={colors.primary} />
+                <Text style={styles.category} numberOfLines={1}>
+                  {categoryName(catalogs, request.categoriaId)}
+                </Text>
+              </View>
+              <RequestStatusBadge status={request.estado} />
+            </View>
+
+            <Text style={styles.title}>{requestSummary(request)}</Text>
+
+            <View style={styles.heroMeta}>
+              <View style={styles.metaChip}>
+                <Ionicons name="location-outline" size={15} color={colors.muted} />
+                <Text style={styles.metaText} numberOfLines={1}>
+                  {zoneName(catalogs, request.zonaId)}
+                </Text>
+              </View>
+              {request.urgencia ? (
+                <View
+                  style={[
+                    styles.metaChip,
+                    { backgroundColor: urgencyTone[request.urgencia].background },
+                  ]}
+                >
+                  <Ionicons
+                    name="time-outline"
+                    size={15}
+                    color={urgencyTone[request.urgencia].text}
+                  />
+                  <Text
+                    style={[
+                      styles.metaText,
+                      { color: urgencyTone[request.urgencia].text },
+                    ]}
+                  >
+                    {requestUrgencyLabel(request.urgencia)}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+
+            <View style={styles.heroFooter}>
+              <Ionicons name="calendar-outline" size={14} color={colors.muted} />
+              <Text style={styles.heroFooterText}>
+                Creada el {formatRequestDate(request.fechaCreacion)}
+              </Text>
+            </View>
+          </Card>
 
           {actionError ? <InlineMessage message={actionError} /> : null}
 
-          <Card style={styles.card}>
-            <DetailRow
-              label="Categoría"
-              value={categoryName(catalogs, request.categoriaId)}
+          <Text style={styles.sectionTitle}>Resumen</Text>
+          <View style={styles.grid}>
+            <InfoTile
+              icon="location-outline"
+              label="Zona"
+              value={zoneName(catalogs, request.zonaId)}
             />
-            <DetailRow label="Zona" value={zoneName(catalogs, request.zonaId)} />
-            <DetailRow label="Urgencia" value={requestUrgencyLabel(request.urgencia)} />
-            <DetailRow
+            <InfoTile
+              icon="time-outline"
+              label="Urgencia"
+              value={requestUrgencyLabel(request.urgencia)}
+              valueColor={request.urgencia ? urgencyTone[request.urgencia].text : undefined}
+            />
+            <InfoTile
+              icon="images-outline"
               label="Fotos"
               value={
-                request.fotos.length === 1 ? '1 foto' : `${request.fotos.length} fotos`
+                request.fotos.length === 0
+                  ? 'Sin fotos'
+                  : `${request.fotos.length} ${
+                      request.fotos.length === 1 ? 'foto' : 'fotos'
+                    }`
               }
             />
-            <DetailRow
-              label="Última actualización"
+            <InfoTile
+              icon="calendar-outline"
+              label="Actualizada"
               value={formatRequestDate(request.fechaActualizacion)}
             />
-          </Card>
-
-          {request.fotos.length > 0 ? (
-            <InlineMessage
-              variant="info"
-              message="Esta versión muestra el número de fotos adjuntas; la vista previa de imágenes queda pendiente."
-            />
-          ) : null}
+          </View>
 
           {isRequestOpen(request) ? (
-            <PrimaryButton
-              label="Editar solicitud"
-              variant="secondary"
-              onPress={() => navigation.navigate('RequestForm', { requestId: request.id })}
-              disabled={actionLoading !== null}
-            />
+            <>
+              <Text style={styles.sectionTitle}>Acciones</Text>
+              <View style={styles.actions}>
+                {request.estado === 'BORRADOR' ? (
+                  <PrimaryButton
+                    label="Publicar solicitud"
+                    onPress={() => {
+                      void handlePublish();
+                    }}
+                    loading={actionLoading === 'publish'}
+                    disabled={actionLoading !== null}
+                  />
+                ) : null}
+                <PrimaryButton
+                  label="Editar solicitud"
+                  variant="secondary"
+                  onPress={() => navigation.navigate('RequestForm', { requestId: request.id })}
+                  disabled={actionLoading !== null}
+                />
+                <PrimaryButton
+                  label="Cancelar solicitud"
+                  variant="danger"
+                  onPress={handleCancel}
+                  loading={actionLoading === 'cancel'}
+                  disabled={actionLoading !== null}
+                />
+              </View>
+            </>
           ) : (
-            <InlineMessage
-              variant="info"
-              message="Esta solicitud ya no admite cambios ni cancelación."
-            />
+            <Card
+              style={[
+                styles.closedCard,
+                { borderLeftColor: requestStatusTone[request.estado].accent },
+              ]}
+            >
+              <View style={styles.closedIcon}>
+                <Ionicons
+                  name={
+                    request.estado === 'CANCELADA'
+                      ? 'ban-outline'
+                      : 'checkmark-circle-outline'
+                  }
+                  size={22}
+                  color={requestStatusTone[request.estado].text}
+                />
+              </View>
+              <View style={styles.closedText}>
+                <Text style={styles.closedTitle}>
+                  {request.estado === 'CANCELADA'
+                    ? 'Solicitud cancelada'
+                    : 'Solicitud contratada'}
+                </Text>
+                <Text style={styles.closedMessage}>
+                  {request.estado === 'CANCELADA'
+                    ? 'Esta solicitud ya no admite cambios.'
+                    : 'La solicitud ya fue contratada y no admite cambios.'}
+                </Text>
+              </View>
+            </Card>
           )}
-
-          {request.estado === 'BORRADOR' ? (
-            <PrimaryButton
-              label="Publicar solicitud"
-              onPress={() => {
-                void handlePublish();
-              }}
-              loading={actionLoading === 'publish'}
-              disabled={actionLoading !== null}
-            />
-          ) : null}
-
-          {isRequestOpen(request) ? (
-            <PrimaryButton
-              label="Cancelar solicitud"
-              variant="danger"
-              onPress={handleCancel}
-              loading={actionLoading === 'cancel'}
-              disabled={actionLoading !== null}
-            />
-          ) : null}
         </>
       )}
     </ScreenLayout>
   );
 }
 
-function DetailRow({ label, value }: { label: string; value: string }) {
+function InfoTile({
+  icon,
+  label,
+  value,
+  valueColor,
+}: {
+  icon: IconName;
+  label: string;
+  value: string;
+  valueColor?: string;
+}) {
   return (
-    <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{value}</Text>
+    <View style={styles.tile}>
+      <Ionicons name={icon} size={16} color={colors.muted} />
+      <Text style={styles.tileLabel}>{label}</Text>
+      <Text style={[styles.tileValue, valueColor ? { color: valueColor } : null]} numberOfLines={2}>
+        {value}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  heading: {
+  hero: {
+    borderTopWidth: 4,
+    gap: spacing.md,
+    padding: spacing.xl,
+  },
+  heroTop: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  date: {
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    flex: 1,
+  },
+  category: {
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
+    flex: 1,
+  },
+  title: {
+    color: colors.text,
+    fontSize: 21,
+    fontWeight: '800',
+    lineHeight: 28,
+  },
+  heroMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  metaChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    backgroundColor: colors.background,
+    borderRadius: radii.sm,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 5,
+    maxWidth: '100%',
+  },
+  metaText: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: '600',
+    flexShrink: 1,
+  },
+  heroFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  heroFooterText: {
     color: colors.muted,
     fontSize: 12,
   },
-  description: {
+  sectionTitle: {
     color: colors.text,
-    fontSize: 18,
-    fontWeight: '700',
-    lineHeight: 25,
+    fontSize: 16,
+    fontWeight: '800',
+    marginTop: spacing.xs,
   },
-  card: {
-    gap: spacing.md,
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
-  row: {
-    gap: 2,
+  tile: {
+    flexBasis: '48%',
+    flexGrow: 1,
+    minHeight: 88,
+    backgroundColor: colors.surface,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    gap: 3,
   },
-  rowLabel: {
+  tileLabel: {
     color: colors.muted,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.6,
     textTransform: 'uppercase',
+    marginTop: 2,
   },
-  rowValue: {
+  tileValue: {
     color: colors.text,
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
+    lineHeight: 19,
+  },
+  actions: {
+    gap: spacing.sm,
+  },
+  closedCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    borderLeftWidth: 4,
+    padding: spacing.lg,
+  },
+  closedIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.md,
+    backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  closedText: {
+    flex: 1,
+    gap: 2,
+  },
+  closedTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  closedMessage: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

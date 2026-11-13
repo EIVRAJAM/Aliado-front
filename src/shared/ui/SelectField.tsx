@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -62,7 +63,7 @@ export function SelectField({
         >
           {selected?.label ?? placeholder}
         </Text>
-        <Text style={styles.chevron}>⌄</Text>
+        <Ionicons name="chevron-down" size={18} color={colors.muted} />
       </Pressable>
       {error ? (
         <Text style={styles.error} accessibilityLiveRegion="polite">
@@ -182,11 +183,6 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     color: colors.muted,
-  },
-  chevron: {
-    color: colors.muted,
-    fontSize: 20,
-    lineHeight: 20,
   },
   error: {
     color: colors.danger,

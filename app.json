@@ -27,7 +27,8 @@
         {
           "photosPermission": "ALIADO necesita acceso a tus fotos para adjuntarlas a una solicitud."
         }
-      ]
+      ],
+      "expo-font"
     ]
   }
 }

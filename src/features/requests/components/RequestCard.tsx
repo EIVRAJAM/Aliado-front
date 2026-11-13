@@ -1,3 +1,4 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../../../shared/ui/Card';
@@ -10,6 +11,7 @@ import {
   requestUrgencyLabel,
   zoneName,
 } from '../utils/request-format';
+import { requestStatusTone, urgencyTone } from '../utils/request-visuals';
 import { RequestStatusBadge } from './RequestStatusBadge';
 
 interface RequestCardProps {
@@ -19,8 +21,12 @@ interface RequestCardProps {
 }
 
 export function RequestCard({ request, catalogs, onPress }: RequestCardProps) {
+  const statusTone = requestStatusTone[request.estado];
+  const urgency = request.urgencia ? urgencyTone[request.urgencia] : null;
+  const photoCount = request.fotos.length;
+
   return (
-    <Card style={styles.card}>
+    <Card style={[styles.card, { borderLeftColor: statusTone.accent }]}>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${requestSummary(request)}. ${categoryName(
@@ -31,25 +37,57 @@ export function RequestCard({ request, catalogs, onPress }: RequestCardProps) {
         style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
       >
         <View style={styles.topRow}>
+          <View style={styles.categoryRow}>
+            <Ionicons name="pricetag-outline" size={13} color={colors.primary} />
+            <Text style={styles.category} numberOfLines={1}>
+              {categoryName(catalogs, request.categoriaId)}
+            </Text>
+          </View>
           <RequestStatusBadge status={request.estado} />
-          <Text style={styles.date}>{formatRequestDate(request.fechaCreacion)}</Text>
         </View>
+
         <Text style={styles.title} numberOfLines={2}>
           {requestSummary(request)}
         </Text>
-        <Text style={styles.meta}>
-          {categoryName(catalogs, request.categoriaId)} ·{' '}
-          {zoneName(catalogs, request.zonaId)}
-        </Text>
-        <View style={styles.footer}>
-          <Text style={styles.urgency}>
-            Urgencia: {requestUrgencyLabel(request.urgencia)}
-          </Text>
-          {request.fotos.length > 0 ? (
-            <Text style={styles.photos}>
-              {request.fotos.length} foto{request.fotos.length === 1 ? '' : 's'}
+
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
+            <Ionicons name="location-outline" size={15} color={colors.muted} />
+            <Text style={styles.metaText} numberOfLines={1}>
+              {zoneName(catalogs, request.zonaId)}
             </Text>
-          ) : null}
+          </View>
+          <View style={styles.metaItem}>
+            <Ionicons
+              name="time-outline"
+              size={15}
+              color={urgency?.text ?? colors.muted}
+            />
+            <Text
+              style={[styles.metaText, { color: urgency?.text ?? colors.muted }]}
+              numberOfLines={1}
+            >
+              {requestUrgencyLabel(request.urgencia)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.footer}>
+          <View style={styles.metaItem}>
+            <Ionicons name="calendar-outline" size={14} color={colors.muted} />
+            <Text style={styles.footerText}>{formatRequestDate(request.fechaCreacion)}</Text>
+          </View>
+          <View style={styles.footerRight}>
+            {photoCount > 0 ? (
+              <View style={styles.metaItem}>
+                <Ionicons name="images-outline" size={14} color={colors.muted} />
+                <Text style={styles.footerText}>
+                  {photoCount} {photoCount === 1 ? 'foto' : 'fotos'}
+                </Text>
+              </View>
+            ) : null}
+            <Ionicons name="chevron-forward" size={17} color={colors.chevron} />
+          </View>
         </View>
       </Pressable>
     </Card>
@@ -59,6 +97,8 @@ export function RequestCard({ request, catalogs, onPress }: RequestCardProps) {
 const styles = StyleSheet.create({
   card: {
     padding: 0,
+    borderLeftWidth: 4,
+    overflow: 'hidden',
   },
   row: {
     padding: spacing.lg,
@@ -74,35 +114,60 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  date: {
-    color: colors.muted,
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    flex: 1,
+  },
+  category: {
+    color: colors.primary,
     fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
+    flex: 1,
   },
   title: {
     color: colors.text,
-    fontSize: 16,
-    fontWeight: '700',
-    lineHeight: 22,
+    fontSize: 17,
+    fontWeight: '800',
+    lineHeight: 23,
   },
-  meta: {
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    columnGap: spacing.lg,
+    rowGap: spacing.xs,
+  },
+  metaItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    minWidth: 0,
+  },
+  metaText: {
     color: colors.muted,
     fontSize: 13,
-    lineHeight: 18,
+    flexShrink: 1,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
+    paddingTop: spacing.xs,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  urgency: {
-    color: colors.text,
-    fontSize: 12,
-    fontWeight: '600',
+  footerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
   },
-  photos: {
-    color: colors.primary,
+  footerText: {
+    color: colors.muted,
     fontSize: 12,
-    fontWeight: '700',
   },
 });
