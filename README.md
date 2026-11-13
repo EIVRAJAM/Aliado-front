@@ -2,7 +2,7 @@
 
 Repositorio de la aplicación móvil de ALIADO, construida con **Expo SDK 58**, **React Native 0.88.1**, **TypeScript 6.0.x** y **Continuous Native Generation (CNG)**. El backend, la base de datos y el panel administrativo viven en `../aliado-prb` y no forman parte de este repositorio.
 
-La base técnica está lista y F01 (acceso e identidad) tiene UI, validación y contrato de integración. La autenticación real sigue pendiente de API desplegada, D-04 y configuración de términos; no hay cuentas demo ni sesión simulada.
+La base técnica está lista. F01 (acceso e identidad), F02 (perfil) y F04 (solicitudes de servicio) tienen UI, validación e integración HTTP verificada contra backend local. La autenticación real sigue pendiente de API desplegada, D-04 y configuración de términos; no hay cuentas demo ni sesión simulada.
 
 ## Requisitos
 
@@ -71,6 +71,14 @@ Los comandos nativos requieren SDKs locales y no se ejecutan en el CI mínimo. L
 │   │   ├── types/
 │   │   ├── utils/
 │   │   └── validation/
+│   ├── features/requests/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   └── validation/
 │   └── shared/
 │       ├── api/http-client.ts
 │       ├── config/env.ts
@@ -96,6 +104,7 @@ La estructura se amplía solo cuando una feature real lo necesita. La arquitectu
 - Arquitectura móvil: [docs/architecture/MOBILE_ARCHITECTURE.md](docs/architecture/MOBILE_ARCHITECTURE.md)
 - F01 Acceso e identidad: [docs/features/auth.md](docs/features/auth.md)
 - F02 Perfil, privacidad y eliminación: [docs/features/profile.md](docs/features/profile.md)
+- F04 Solicitudes de servicio: [docs/features/requests.md](docs/features/requests.md)
 - Entrega y alcance: [docs/core/DELIVERY_PLAN.md](docs/core/DELIVERY_PLAN.md)
 - Gitflow: [docs/development/GITFLOW.md](docs/development/GITFLOW.md)
 - ADRs: [docs/adr/README.md](docs/adr/README.md)
@@ -122,7 +131,7 @@ Verificado con Node 24.14.1 y npm 11.11.0:
 |---|---|
 | `npm ci` | OK |
 | `npm run typecheck` | OK |
-| `npm run verify:config` | OK, JSON válido de 2466 bytes |
+| `npm run verify:config` | OK, JSON válido de 2894 bytes |
 | `npm run doctor` | OK, 20/20 en la última ejecución tras actualizar los patches de Expo. Puede fallar por red. |
 | `npx expo config --json --full` | OK, JSON interpretado |
 
@@ -131,9 +140,10 @@ La corrección de captura se verificó simulando el fallo original y el parche s
 ## Estado y pendientes
 
 - Stack y versiones: [ADR 0001](docs/adr/0001-stack-y-versiones-movil.md).
-- Flujo de ramas: [ADR 0002](docs/adr/0002-gitflow-fast-forward.md). `develop` es la base y F01 se desarrolla en `feature/f01-acceso-identidad`.
+- Flujo de ramas: [ADR 0002](docs/adr/0002-gitflow-fast-forward.md). `develop` integra F01/F02 y F04 se desarrolla en `feature/f04-solicitudes-servicio`.
 - Navegación: [ADR 0003](docs/adr/0003-navegacion-react-navigation.md).
 - F01: UI, validación y contrato de integración implementados; la autenticación real sigue bloqueada por API desplegada, D-04 y versión de términos. Ver [docs/features/auth.md](docs/features/auth.md).
 - F02: perfil propio, edición, ubicación, visibilidad, vista pública y eliminación implementados; D-05 sigue pendiente. Ver [docs/features/profile.md](docs/features/profile.md).
-- Pendientes que bloquean la siguiente fase: D-04 (sesión segura), D-05 (eliminación/retención), contrato API desplegado, versión de términos, canal/deep link de recuperación y cierre de las decisiones indicadas en [docs/adr/README.md](docs/adr/README.md).
+- F04: solicitudes propias, borrador, publicación, edición, cancelación y fotos opcionales implementados; no se declara cerrada mientras la idempotencia server-side y la gestión de fotos existentes sigan bloqueadas. Ver [docs/features/requests.md](docs/features/requests.md).
+- Pendientes que bloquean la siguiente fase: D-03 (regla temporal), D-04 (sesión segura), D-05 (eliminación/retención), D-06/D-07 (storage/archivos), contrato API desplegado, versión de términos, canal/deep link de recuperación y cierre de las decisiones indicadas en [docs/adr/README.md](docs/adr/README.md).
 - Los iconos actuales son provisionales y los identificadores `com.aliado.movil` deben confirmarse antes de publicar.

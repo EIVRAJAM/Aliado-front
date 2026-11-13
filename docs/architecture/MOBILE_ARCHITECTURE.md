@@ -1,6 +1,6 @@
 # Arquitectura de la app móvil ALIADO
 
-**Estado:** base inicializada y primera feature móvil (`auth`, SPEC-01) implementada en UI y contrato de integración. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La integración real con API, D-04 (sesión segura) y las decisiones funcionales de `aliado-prb` siguen pendientes.
+**Estado:** base inicializada y features `auth` (SPEC-01), `profile` (SPEC-02) y `requests` (SPEC-04) implementadas en UI e integración contra backend local. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La API desplegada, D-04 (sesión segura), D-06/D-07 (storage/archivos) y otras decisiones funcionales de `aliado-prb` siguen pendientes.
 
 ## Propósito y límites
 
@@ -37,6 +37,14 @@ La estructura actual contiene el bootstrap, la navegación y la feature de acces
 │   │   ├── utils/
 │   │   └── validation/
 │   ├── features/profile/              # SPEC-02: perfil, privacidad y eliminación
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── types/
+│   │   ├── utils/
+│   │   └── validation/
+│   ├── features/requests/             # SPEC-04: solicitudes, catálogo y fotos
 │   │   ├── components/
 │   │   ├── hooks/
 │   │   ├── screens/
@@ -111,11 +119,12 @@ Las rutas protegidas mejoran navegación y presentación, pero nunca sustituyen 
 
 - Usar una capa de transporte central que gestione URL por entorno, serialización, cancelación y errores comunes.
 - Mantener servicios y tipos específicos dentro de su feature; generar o compartir contratos desde OpenAPI cuando el contrato esté aprobado.
-- En F01, el cliente HTTP sigue el OpenAPI entregado por backend; las diferencias con el plan funcional se registran en [F01 — Acceso e identidad](../features/auth.md).
+- En F01, el cliente HTTP sigue el OpenAPI entregado por backend; las diferencias con el plan funcional se registran en [F01 — Acceso e identidad](../features/auth.md). F02 y F04 registran sus propias diferencias en [F02](../features/profile.md) y [F04](../features/requests.md).
+- F04 mantiene el contrato real del backend: la creación usa JSON, las fotos usan multipart y la respuesta del detalle solo expone claves de archivo. La cabecera `Idempotency-Key` está implementada en el cliente pero desactivada mientras el backend no corrija el fallo de `idempotency_keys`; ver [F04](../features/requests.md).
 - Modelar explícitamente respuestas exitosas, errores recuperables, validaciones, `401`, `403`, `404`, `409` y conectividad intermitente.
 - No asumir campos, endpoints o estados que no estén en los SPEC/contratos.
 - Las fixtures pueden habilitar trabajo visual temprano, pero deben estar aisladas del adaptador real y no presentarse como integración aceptada.
-- Los comandos que admitan reintento conservan su `Idempotency-Key`; una nueva intención de usuario genera una clave distinta.
+- Los comandos que admitan reintento conservan su `Idempotency-Key` cuando el backend lo soporta; una nueva intención de usuario genera una clave distinta. En F04 la cabecera está desactivada porque el backend falla al persistirla; ante un resultado incierto se bloquea el reenvío y se envía al Cliente a revisar “Mis solicitudes”.
 - La configuración de entorno parte de `.env.example`; las variables reales no se versionan. `EXPO_PUBLIC_API_BASE_URL` debe apuntar al servidor sin `/api/v1`; el cliente añade el prefijo `/api/v1` definido por OpenAPI. Si falta, el adaptador HTTP no simula éxito y la UI informa que la integración está pendiente. `EXPO_PUBLIC_TERMS_VERSION` habilita el registro.
 
 ## Estado, formularios y datos locales
@@ -157,4 +166,4 @@ Confirmadas por [ADR 0001](../adr/0001-stack-y-versiones-movil.md): Expo SDK 58,
 
 Navegación confirmada por [ADR 0003](../adr/0003-navegacion-react-navigation.md): React Navigation 7 con stack nativo.
 
-Siguen pendientes de decisión: herramientas de estado servidor/formularios/pruebas, generación de contratos y las decisiones D-04/D-06/D-07/D-08/D-18 que afectan sesión, archivos, notificaciones e idempotencia.
+Siguen pendientes de decisión: herramientas de estado servidor/formularios/pruebas, generación de contratos y las decisiones D-03/D-04/D-06/D-07/D-08/D-18 que afectan reglas temporales, sesión, archivos, notificaciones e idempotencia. F04 usa `expo-image-picker` para la selección nativa de fotos; es la única dependencia añadida por esa feature.

@@ -37,7 +37,7 @@ El parche no desactiva chequeos: solo cambia el transporte de salida de los subp
 
 ## Evidencia
 
-- `expo config --json --full` directo: exit 0, JSON válido (2466 bytes en el estado actual).
+- `expo config --json --full` directo: exit 0, JSON válido (2894 bytes en el estado actual, tras añadir el plugin de `expo-image-picker`).
 - Config lanzado como subproceso con `stdout` a archivo: exit 0, JSON válido.
 - Fallo simulado: CLI que devuelve vacío en socket/FIFO; `npm run doctor` exit 1 con el error de parseo, antes del parche.
 - Con parche, misma simulación: `npm run doctor` exit 0, 20/20.
@@ -90,6 +90,16 @@ Se mantiene SDK 58, React Native 0.88.1, React 19.3.0 y Node 24.14.1. La actuali
 - `npm run typecheck` y export Android: correctos.
 
 Este resultado no elimina la dependencia de red de algunos chequeos: si `api.expo.dev`, `exp.host` o React Native Directory fallan, Doctor puede volver a terminar con exit 1.
+
+## Resolución 2026-11-13: F04 y selector de fotos
+
+F04 añadió `expo-image-picker` con `npx expo install expo-image-picker` (`~58.0.10`) y el config plugin en `app.json` con el mensaje de permiso de fotos. El development build se regeneró con `npx expo run:android --no-bundler`:
+
+- Build nativo Android: `BUILD SUCCESSFUL` (360 tareas, 6m17s).
+- `npx expo export --platform android`: 901 módulos, bundle correcto.
+- `npm run verify:config`: JSON válido de 2894 bytes.
+- `npm run doctor`: 20/20.
+- Recorrido manual en emulador: catálogos, creación, borrador, publicación, fotos, edición y cancelación. También se detuvo el backend para verificar el estado de resultado incierto: el formulario quedó bloqueado, conservó los datos y ofreció revisar “Mis solicitudes” sin reenviar. Ver [F04](../features/requests.md).
 
 ## Limitaciones
 
