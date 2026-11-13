@@ -17,6 +17,11 @@ import {
   ProfilePrivacyScreen,
   ProfilePublicPreviewScreen,
 } from '../features/profile';
+import {
+  RequestDetailScreen,
+  RequestFormScreen,
+  RequestListScreen,
+} from '../features/requests';
 import { colors } from '../shared/ui/theme';
 import type { RootStackParamList } from './types';
 
@@ -45,6 +50,9 @@ export function RootNavigator() {
               component={ProfilePublicPreviewScreen}
             />
             <Stack.Screen name="ProfileDelete" component={ProfileDeleteScreen} />
+            <Stack.Screen name="Requests" component={RequestListScreen} />
+            <Stack.Screen name="RequestForm" component={RequestFormScreen} />
+            <Stack.Screen name="RequestDetail" component={RequestDetailScreen} />
           </>
         ) : (
           <>

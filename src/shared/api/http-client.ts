@@ -14,6 +14,7 @@ interface RequestJsonOptions {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   token?: string;
+  headers?: Record<string, string>;
   timeoutMs?: number;
 }
 
@@ -33,6 +34,7 @@ export async function requestJson<TResponse>(
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
+    ...options.headers,
   };
 
   if (options.body !== undefined) {

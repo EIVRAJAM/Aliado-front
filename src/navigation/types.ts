@@ -10,4 +10,7 @@ export type RootStackParamList = {
   ProfilePrivacy: undefined;
   ProfilePublicPreview: { userId: string };
   ProfileDelete: undefined;
+  Requests: undefined;
+  RequestForm: { requestId?: string } | undefined;
+  RequestDetail: { requestId: string };
 };

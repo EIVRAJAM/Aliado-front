@@ -21,7 +21,13 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ALIADO necesita acceso a tus fotos para adjuntarlas a una solicitud."
+        }
+      ]
     ]
   }
 }
