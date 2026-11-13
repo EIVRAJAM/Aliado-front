@@ -66,6 +66,13 @@ src/features/profile/
 
 `Mi perfil` es una pestaña de la barra inferior autenticada. Las pantallas de edición, ubicación, privacidad, vista pública y eliminación se abren fuera de la barra para conservar el historial.
 
+## Cuenta y cierre de sesión
+
+- `Mi perfil` concentra la información de cuenta y el aviso de que la sesión solo vive durante la ejecución actual.
+- `Cerrar sesión` aparece al final, también cuando el perfil está cargando o falla la API, porque la acción no depende de que existan datos de perfil.
+- La acción usa la misma limpieza de sesión de F01 y muestra error si el servidor no responde al logout.
+- Se presenta como acción de cuenta neutra, no como acción destructiva; `Eliminar cuenta` mantiene su tratamiento de peligro y su confirmación explícita.
+
 ## Privacidad y D-05
 
 - La dirección exacta solo se muestra en el perfil autenticado propio; nunca en la vista pública.

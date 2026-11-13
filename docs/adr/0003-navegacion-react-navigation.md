@@ -39,6 +39,8 @@ Los deep links se mantienen mediante React Navigation: `aliado://prestadores/:pr
 
 La barra usa `@react-navigation/bottom-tabs` con `react-native-safe-area-context` para respetar el inset inferior, feedback táctil nativo y estado activo/inactivo. Las pantallas fuera de `MainTabs` no muestran la barra.
 
+`Cerrar sesión` se movió de Inicio a `Mi perfil` para agrupar información y acciones de cuenta. Permanece disponible aunque el perfil esté cargando o falle la API, y se presenta con un tratamiento neutro distinto de `Eliminar cuenta`.
+
 ## Alternativas consideradas
 
 - **Expo Router:** viable y mantenida, pero implica convertir `src/app/` en el árbol de rutas y reubicar el bootstrap. Se podrá reevaluar cuando el crecimiento de la navegación lo justifique; no se adopta en esta feature.

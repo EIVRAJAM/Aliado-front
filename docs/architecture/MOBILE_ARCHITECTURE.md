@@ -133,7 +133,7 @@ La app presenta los flujos Cliente y Prestador según la identidad y permisos de
 - **Cliente:** Inicio, Buscar, Solicitudes y Mi perfil.
 - **Prestador:** Inicio, Profesional y Mi perfil.
 
-Los formularios, detalles, edición, privacidad, creación de perfil y perfil público se abren fuera de la barra inferior. `Inicio` no duplica los destinos de la barra: muestra saludo, cuenta, rol y una guía breve. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
+Los formularios, detalles, edición, privacidad, creación de perfil y perfil público se abren fuera de la barra inferior. `Inicio` no duplica los destinos de la barra: muestra un saludo contextual, cuenta, rol y una guía breve. Para Cliente se orienta a encontrar servicios y continuar con sus solicitudes; para Prestador, a su espacio profesional y a la consulta de perfil/agenda. No usa métricas ni datos no disponibles. `Cerrar sesión` vive al final de `Mi perfil`, junto al aviso de sesión en memoria y separado visualmente de la acción destructiva “Eliminar cuenta”. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
 
 Deep links: F03 registra `aliado://prestadores/:providerId` con React Navigation y rutas anidadas de tabs (`buscar`, `solicitudes`, `perfil`, `perfil-profesional`). Si no hay sesión, el ID se conserva y se navega después del acceso; la pantalla de detalle solo monta la consulta para `CLIENTE` y muestra acceso no permitido para otros roles. La validación de UUID se hace antes de navegar.
 
@@ -167,7 +167,7 @@ Patrón visual vigente:
 - **App autenticada:** fondo claro, cabecera blanca compacta con marca, título y acción de volver cuando aplique.
 - **Perfil:** avatar/resumen de identidad y filas de acción en tarjetas con icono, texto secundario y chevron; los botones primarios se reservan para guardar o confirmar.
 - **Solicitudes:** tarjetas con acento de estado, categoría como contexto, descripción como título visual y metadatos con iconos; el formulario agrupa secciones y el detalle separa hero, resumen y acciones contextuales.
-- **Shell autenticado:** barra inferior persistente con iconos Ionicons, estado activo/inactivo, safe area y feedback nativo; las subpantallas no muestran la barra. `Inicio` presenta saludo, cuenta y rol sin duplicar accesos de la barra.
+- **Shell autenticado:** barra inferior persistente con iconos Ionicons, estado activo/inactivo, safe area y feedback nativo; las subpantallas no muestran la barra. `Inicio` presenta un contenido contextual por rol sin duplicar accesos. `Mi perfil` concentra la información de cuenta, el aviso de sesión en memoria y `Cerrar sesión`, con una presentación neutra distinta de `Eliminar cuenta`.
 - **Estados:** los avisos de configuración de API y de versión de términos no se ocultan para mejorar la apariencia; se mantienen visibles cuando corresponden.
 
 Cada pantalla debe considerar, según corresponda: carga, vacío, datos, error recuperable, validación, sesión expirada, permiso denegado, conflicto de versión y acción en curso. La experiencia móvil debe cuidar etiquetas accesibles, lector de pantalla, foco, tamaño táctil y navegación atrás.

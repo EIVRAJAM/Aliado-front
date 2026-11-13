@@ -123,7 +123,7 @@ CORS: la preflight de navegador no devolvió `Access-Control-Allow-Origin`. No s
 - **Login:** validación de correo y contraseña, bloqueo de envío duplicado, mensaje genérico para credenciales inválidas y mensaje de configuración si falta la API.
 - **Registro:** correo, contraseña, rol, consentimiento y versión de términos; la navegación al login ocurre solo después de una respuesta HTTP exitosa; correo duplicado no revela el rol de la cuenta existente.
 - **Recuperación:** solicitud con mensaje idéntico exista o no la cuenta; confirmación con código y nueva contraseña; errores de token inválido, usado o expirado.
-- **Inicio autenticado:** la antigua pantalla “Sesión iniciada” se sustituye por Inicio dentro de la barra inferior. Muestra saludo, cuenta, rol, cierre de sesión y una guía breve sin duplicar los destinos de la barra. Un `401` al cerrar sesión se trata como sesión expirada y limpia el estado local.
+- **Inicio autenticado:** la antigua pantalla “Sesión iniciada” se sustituye por Inicio dentro de la barra inferior. Muestra saludo contextual, cuenta, rol y una guía breve sin duplicar los destinos de la barra. No muestra `Cerrar sesión`; esa acción vive al final de `Mi perfil`, junto al aviso de sesión en memoria. Un `401` al cerrar sesión se trata como sesión expirada y limpia el estado local.
 - **Accesibilidad:** etiquetas, roles de accesibilidad, estados de carga y mensajes anunciados.
 
 ## Pendientes para cerrar F01
