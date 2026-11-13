@@ -1,6 +1,6 @@
 # Arquitectura de la app móvil ALIADO
 
-**Estado:** base inicializada y features `auth` (SPEC-01), `profile` (SPEC-02) y `requests` (SPEC-04) implementadas en UI e integración contra backend local. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La API desplegada, D-04 (sesión segura), D-06/D-07 (storage/archivos) y otras decisiones funcionales de `aliado-prb` siguen pendientes.
+**Estado:** base inicializada y features `auth` (SPEC-01), `profile` (SPEC-02), `requests` (SPEC-04) y `professional-profile` (SPEC-05, creación inicial y lectura parcial) implementadas en UI e integración contra backend local. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La API desplegada, D-04 (sesión segura), D-06/D-07 (storage/archivos) y otras decisiones funcionales de `aliado-prb` siguen pendientes.
 
 ## Propósito y límites
 
@@ -52,6 +52,13 @@ La estructura actual contiene el bootstrap, la navegación y la feature de acces
 │   │   ├── types/
 │   │   ├── utils/
 │   │   └── validation/
+│   ├── features/professional-profile/ # SPEC-05: creación inicial, vista previa y agenda (parcial)
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── types/
+│   │   └── utils/
 │   └── shared/
 │       ├── api/http-client.ts         # transporte JSON y errores comunes
 │       ├── config/env.ts              # variables públicas validadas
