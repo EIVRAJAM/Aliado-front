@@ -1,15 +1,14 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '../../../navigation/types';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
-import { LinkButton } from '../../../shared/ui/LinkButton';
-import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
-import { spacing } from '../../../shared/ui/theme';
+import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { ProfileActionCard } from '../components/ProfileActionCard';
 import { ProfileStateView } from '../components/ProfileStateView';
-import { ProfileSummaryCard } from '../components/ProfileSummaryCard';
 import { useMyProfile } from '../hooks/useMyProfile';
+import { visibilityLabel } from '../utils/profile-format';
 
 type ProfileOverviewScreenProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;
 
@@ -20,47 +19,118 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
     <ScreenLayout
       title="Mi perfil"
       subtitle="Consulta y administra la información de tu cuenta."
+      onBack={() => navigation.goBack()}
     >
       {loading || error || !profile ? (
         <ProfileStateView loading={loading} error={error} onRetry={reload} />
       ) : (
         <>
-          <ProfileSummaryCard profile={profile} />
+          <View style={styles.identity}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {profile.nombre?.trim().charAt(0).toUpperCase() || 'A'}
+              </Text>
+            </View>
+            <Text style={styles.name}>{profile.nombre?.trim() || 'Tu cuenta'}</Text>
+            <Text style={styles.location}>
+              ◎ Ubicación aproximada: {profile.zonaAproximada?.trim() || 'Sin configurar'}
+            </Text>
+            <View style={styles.visibilityPill}>
+              <Text style={styles.visibilityText}>
+                Visibilidad: {visibilityLabel(profile.preferenciaVisibilidad)}
+              </Text>
+            </View>
+          </View>
+
+          <ProfileActionCard
+            icon="✎"
+            title="Datos personales"
+            subtitle={`${profile.nombre?.trim() || 'Sin nombre'} · ${
+              profile.telefono?.trim() || 'Sin teléfono'
+            }`}
+            onPress={() => navigation.navigate('ProfileEdit')}
+          />
+          <ProfileActionCard
+            icon="⌖"
+            title="Ubicación"
+            subtitle={`Zona aproximada: ${profile.zonaAproximada?.trim() || 'Sin configurar'}`}
+            tone="teal"
+            onPress={() => navigation.navigate('ProfileLocation')}
+          />
+          <ProfileActionCard
+            icon="◉"
+            title="Privacidad"
+            subtitle={`Visibilidad: ${visibilityLabel(profile.preferenciaVisibilidad)}`}
+            onPress={() => navigation.navigate('ProfilePrivacy')}
+          />
+          <ProfileActionCard
+            icon="◌"
+            title="Vista previa pública"
+            subtitle="Solo se muestra tu zona aproximada."
+            tone="green"
+            onPress={() =>
+              navigation.navigate('ProfilePublicPreview', { userId: profile.usuarioId })
+            }
+          />
+          <ProfileActionCard
+            icon="!"
+            title="Eliminar cuenta"
+            subtitle="Solicitud con confirmación explícita."
+            tone="danger"
+            onPress={() => navigation.navigate('ProfileDelete')}
+          />
+
           <InlineMessage
             variant="info"
             message="La zona aproximada es el dato público. La dirección exacta solo se muestra en tu perfil autenticado."
           />
-          <View style={styles.actions}>
-            <PrimaryButton
-              label="Editar datos"
-              onPress={() => navigation.navigate('ProfileEdit')}
-            />
-            <PrimaryButton
-              label="Actualizar ubicación"
-              onPress={() => navigation.navigate('ProfileLocation')}
-            />
-            <PrimaryButton
-              label="Configurar privacidad"
-              onPress={() => navigation.navigate('ProfilePrivacy')}
-            />
-          </View>
-          <LinkButton
-            label="Ver vista previa pública"
-            onPress={() => navigation.navigate('ProfilePublicPreview', { userId: profile.usuarioId })}
-          />
-          <LinkButton
-            label="Eliminar cuenta"
-            onPress={() => navigation.navigate('ProfileDelete')}
-          />
         </>
       )}
-      <LinkButton label="Volver a la sesión" onPress={() => navigation.goBack()} />
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  actions: {
-    gap: spacing.sm,
+  identity: {
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.lg,
+  },
+  avatar: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: colors.avatar,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
+  },
+  avatarText: {
+    color: colors.surface,
+    fontSize: 32,
+    fontWeight: '800',
+  },
+  name: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: '800',
+  },
+  location: {
+    color: colors.muted,
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  visibilityPill: {
+    borderRadius: radii.sm,
+    backgroundColor: colors.infoSurface,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    marginTop: spacing.xs,
+  },
+  visibilityText: {
+    color: colors.primary,
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

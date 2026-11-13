@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '../../../navigation/types';
+import { Card } from '../../../shared/ui/Card';
 import { FormField } from '../../../shared/ui/FormField';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
-import { LinkButton } from '../../../shared/ui/LinkButton';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { spacing } from '../../../shared/ui/theme';
@@ -86,13 +86,14 @@ export function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
 
   return (
     <ScreenLayout
-      title="Editar datos"
+      title="Datos personales"
       subtitle="Actualiza tu nombre y teléfono. Los campos vacíos conservan el valor actual."
+      onBack={() => navigation.goBack()}
     >
       {loading || error || !profile ? (
         <ProfileStateView loading={loading} error={error} onRetry={reload} />
       ) : (
-        <>
+        <Card style={styles.formCard}>
           {formError ? <InlineMessage message={formError} /> : null}
           <FormField
             label="Nombre"
@@ -113,17 +114,14 @@ export function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
             hint="Entre 7 y 30 caracteres: números, espacios, +, paréntesis o guiones."
           />
           <PrimaryButton label="Guardar cambios" onPress={handleSubmit} loading={submitting} />
-        </>
+        </Card>
       )}
-      <View style={styles.links}>
-        <LinkButton label="Volver a mi perfil" onPress={() => navigation.goBack()} />
-      </View>
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  links: {
-    marginTop: spacing.sm,
+  formCard: {
+    gap: spacing.lg,
   },
 });

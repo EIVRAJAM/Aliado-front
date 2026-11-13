@@ -3,8 +3,8 @@ import { Alert, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '../../../navigation/types';
+import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
-import { LinkButton } from '../../../shared/ui/LinkButton';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, spacing } from '../../../shared/ui/theme';
@@ -119,6 +119,7 @@ export function ProfileDeleteScreen({ navigation }: ProfileDeleteScreenProps) {
     <ScreenLayout
       title="Eliminar cuenta"
       subtitle="La eliminación requiere una solicitud y una confirmación explícita."
+      onBack={() => navigation.goBack()}
     >
       <InlineMessage
         variant="info"
@@ -141,28 +142,27 @@ export function ProfileDeleteScreen({ navigation }: ProfileDeleteScreenProps) {
           message="Hay una solicitud pendiente registrada. Puedes confirmarla ahora."
         />
       ) : null}
-      <View style={styles.card}>
-        <Text style={styles.label}>Cuenta</Text>
-        <Text style={styles.value}>{session.email}</Text>
-      </View>
+      <Card style={styles.card}>
+        <View style={styles.cardBody}>
+          <Text style={styles.label}>Cuenta</Text>
+          <Text style={styles.value}>{session.email}</Text>
+        </View>
+      </Card>
       {!confirmed && (pending || canConfirm) ? (
-        <PrimaryButton label="Confirmar eliminación" onPress={handleConfirm} loading={submitting} />
+        <PrimaryButton label="Confirmar eliminación" variant="danger" onPress={handleConfirm} loading={submitting} />
       ) : null}
       {!confirmed && !pending && !canConfirm ? (
-        <PrimaryButton label="Solicitar eliminación" onPress={handleRequest} loading={submitting} />
+        <PrimaryButton label="Solicitar eliminación" variant="danger" onPress={handleRequest} loading={submitting} />
       ) : null}
-      <LinkButton label="Volver a mi perfil" onPress={() => navigation.goBack()} />
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.lg,
+  },
+  cardBody: {
     gap: spacing.xs,
   },
   label: {

@@ -3,10 +3,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '../../../navigation/types';
+import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
-import { LinkButton } from '../../../shared/ui/LinkButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { colors, spacing } from '../../../shared/ui/theme';
 import { ProfileStateView } from '../components/ProfileStateView';
 import { profileGateway } from '../services/profile-gateway-instance';
 import type { PublicProfile } from '../types/profile';
@@ -45,17 +45,20 @@ export function ProfilePublicPreviewScreen({ navigation, route }: ProfilePublicP
     <ScreenLayout
       title="Vista previa pública"
       subtitle="Así se muestra tu zona a otras personas."
+      onBack={() => navigation.goBack()}
     >
       {loading || error || !publicProfile ? (
         <ProfileStateView loading={loading} error={error} onRetry={load} />
       ) : (
         <>
-          <View style={styles.card}>
-            <Text style={styles.label}>Zona aproximada</Text>
-            <Text style={styles.value}>
-              {publicProfile.zonaAproximada?.trim() || 'Sin zona configurada'}
-            </Text>
-          </View>
+          <Card style={styles.card}>
+            <View style={styles.cardBody}>
+              <Text style={styles.label}>Zona aproximada</Text>
+              <Text style={styles.value}>
+                {publicProfile.zonaAproximada?.trim() || 'Sin zona configurada'}
+              </Text>
+            </View>
+          </Card>
           <InlineMessage
             variant="info"
             message="La dirección exacta no se expone en esta vista pública."
@@ -68,18 +71,15 @@ export function ProfilePublicPreviewScreen({ navigation, route }: ProfilePublicP
           ) : null}
         </>
       )}
-      <LinkButton label="Volver a mi perfil" onPress={() => navigation.goBack()} />
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border,
     padding: spacing.lg,
+  },
+  cardBody: {
     gap: spacing.xs,
   },
   label: {

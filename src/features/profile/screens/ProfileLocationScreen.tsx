@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '../../../navigation/types';
+import { Card } from '../../../shared/ui/Card';
 import { FormField } from '../../../shared/ui/FormField';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
-import { LinkButton } from '../../../shared/ui/LinkButton';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { spacing } from '../../../shared/ui/theme';
@@ -75,6 +75,7 @@ export function ProfileLocationScreen({ navigation }: ProfileLocationScreenProps
     <ScreenLayout
       title="Ubicación"
       subtitle="La zona aproximada es pública; la dirección exacta solo se muestra a ti y a servicios autorizados."
+      onBack={() => navigation.goBack()}
     >
       {loading || error || !profile ? (
         <ProfileStateView loading={loading} error={error} onRetry={reload} />
@@ -84,37 +85,36 @@ export function ProfileLocationScreen({ navigation }: ProfileLocationScreenProps
             variant="info"
             message="La dirección exacta no se expone en búsquedas ni en la vista pública del perfil."
           />
-          {formError ? <InlineMessage message={formError} /> : null}
-          <FormField
-            label="Zona aproximada"
-            value={zonaAproximada}
-            onChangeText={setZonaAproximada}
-            autoCapitalize="words"
-            maxLength={100}
-            error={errors.zonaAproximada}
-            hint="Ejemplo: zona norte de la ciudad. Máximo 100 caracteres."
-          />
-          <FormField
-            label="Dirección exacta"
-            value={direccionExacta}
-            onChangeText={setDireccionExacta}
-            autoCapitalize="sentences"
-            maxLength={500}
-            error={errors.direccionExacta}
-            hint="Opcional. Dejarla vacía conserva la dirección actual."
-          />
-          <PrimaryButton label="Guardar ubicación" onPress={handleSubmit} loading={submitting} />
+          <Card style={styles.formCard}>
+            {formError ? <InlineMessage message={formError} /> : null}
+            <FormField
+              label="Zona aproximada"
+              value={zonaAproximada}
+              onChangeText={setZonaAproximada}
+              autoCapitalize="words"
+              maxLength={100}
+              error={errors.zonaAproximada}
+              hint="Ejemplo: zona norte de la ciudad. Máximo 100 caracteres."
+            />
+            <FormField
+              label="Dirección exacta"
+              value={direccionExacta}
+              onChangeText={setDireccionExacta}
+              autoCapitalize="sentences"
+              maxLength={500}
+              error={errors.direccionExacta}
+              hint="Opcional. Dejarla vacía conserva la dirección actual."
+            />
+            <PrimaryButton label="Guardar ubicación" onPress={handleSubmit} loading={submitting} />
+          </Card>
         </>
       )}
-      <View style={styles.links}>
-        <LinkButton label="Volver a mi perfil" onPress={() => navigation.goBack()} />
-      </View>
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  links: {
-    marginTop: spacing.sm,
+  formCard: {
+    gap: spacing.lg,
   },
 });

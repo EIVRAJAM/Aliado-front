@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Alert, StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '../../../navigation/types';
+import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
-import { LinkButton } from '../../../shared/ui/LinkButton';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { spacing } from '../../../shared/ui/theme';
@@ -58,6 +58,7 @@ export function ProfilePrivacyScreen({ navigation }: ProfilePrivacyScreenProps) 
     <ScreenLayout
       title="Privacidad"
       subtitle="Define cómo se muestra tu perfil a otras personas."
+      onBack={() => navigation.goBack()}
     >
       {loading || error || !profile ? (
         <ProfileStateView loading={loading} error={error} onRetry={reload} />
@@ -67,20 +68,19 @@ export function ProfilePrivacyScreen({ navigation }: ProfilePrivacyScreenProps) 
             variant="info"
             message="La configuración no puede superar las reglas de privacidad base del producto. La dirección exacta nunca se publica."
           />
-          {formError ? <InlineMessage message={formError} /> : null}
-          <VisibilitySelector value={visibility} onChange={setVisibility} disabled={submitting} />
-          <PrimaryButton label="Guardar privacidad" onPress={handleSubmit} loading={submitting} />
+          <Card style={styles.formCard}>
+            {formError ? <InlineMessage message={formError} /> : null}
+            <VisibilitySelector value={visibility} onChange={setVisibility} disabled={submitting} />
+            <PrimaryButton label="Guardar privacidad" onPress={handleSubmit} loading={submitting} />
+          </Card>
         </>
       )}
-      <View style={styles.links}>
-        <LinkButton label="Volver a mi perfil" onPress={() => navigation.goBack()} />
-      </View>
     </ScreenLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  links: {
-    marginTop: spacing.sm,
+  formCard: {
+    gap: spacing.lg,
   },
 });
