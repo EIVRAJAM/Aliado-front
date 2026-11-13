@@ -73,7 +73,7 @@ src/features/requests/
 ├── screens/           # lista, formulario y detalle
 ├── services/          # RequestGateway y adaptador HTTP/multipart
 ├── types/             # solicitud, catálogo, fotos y errores
-├── utils/             # formato, mensajes e idempotencia
+├── utils/             # formato, mensajes, visuales e idempotencia
 ├── validation/        # reglas de borrador y publicación
 └── index.ts
 ```
@@ -93,6 +93,29 @@ La navegación raíz incluye `Requests`, `RequestForm` y `RequestDetail` dentro 
 - **Conciliación de creación incierta:** antes de crear, la app intenta leer la lista propia; si la creación termina con un resultado incierto, vuelve a leerla una sola vez y busca una única solicitud nueva que coincida con categoría, zona, urgencia, descripción y estado deseados. Si existe exactamente una coincidencia, muestra “Revisar solicitud coincidente” y advierte que la coincidencia no garantiza que sea la misma operación. La conciliación solo usa `GET /solicitudes/mias`; no crea IDs de operación ni endpoints nuevos.
 - **Límites de la conciliación:** la lista puede no reflejar el resultado todavía, puede no estar disponible, o pueden existir varias solicitudes nuevas parecidas. En esos casos no se concilia nada, no se declara ausencia de duplicados y el formulario permanece bloqueado. La única acción ofrecida es revisar/actualizar “Mis solicitudes”.
 - **Sin garantía de idempotencia:** mientras el backend no procese `Idempotency-Key`, la app no presenta el reintento como seguro ni promete un único registro. La clave se conserva por formulario, pero no se envía. Si backend corrige el fallo y se activa `SERVER_IDEMPOTENCY_SUPPORTED`, un reintento de la misma pantalla reutilizaría la clave y una pantalla nueva generaría otra; ese caso exitoso no pudo verificarse contra el backend actual.
+
+## Iteración visual
+
+Referencia revisada: prototipo funcional web de ALIADO (vistas `ClienteSolicitudes`, `ClienteDetalleSolicitud` y `ClienteNuevaSolicitud`) y SPEC-04. Se tomó como referencia de jerarquía, composición y lenguaje visual, no su implementación ni sus datos simulados.
+
+### Comparación breve antes/después
+
+| Superficie | Antes | Después | Referencia del prototipo |
+|---|---|---|---|
+| Mis solicitudes | Tarjetas de texto casi idénticas, estado arriba a la izquierda y fecha arriba a la derecha; sin iconos ni acento por estado. | Barra de resumen con contador, actualizar y “Nueva”; tarjetas con acento de estado, categoría como eyebrow, descripción como título, metadatos con iconos y pie con fecha/fotos. | Tarjeta suave con categoría, título, estado arriba a la derecha, metadatos y acción “Nueva”. |
+| Detalle | Estado y fecha, descripción y una tarjeta genérica de etiqueta/valor; nota interna sobre la vista previa. | Hero con acento de estado, categoría, descripción, chips de zona/urgencia y fecha; resumen 2×2 con iconos; acciones contextuales; estado cerrado sin acciones. | Tarjeta de detalle con estado, datos principales y acciones contextuales. |
+| Formulario | Una sola tarjeta con campos apilados y selectores modales. | Secciones “¿Qué necesitas?”, “Zona y urgencia” y “Fotos”; categoría como chips, urgencia segmentada, acciones agrupadas. | Chips de categoría, urgencia segmentada, agrupación visual y acciones separadas. |
+
+### Decisiones visuales confirmadas
+
+- **Lista:** el estado se comunica con un badge suave y un acento lateral; la categoría funciona como eyebrow; la descripción ocupa el rol de título porque el contrato no expone un campo `titulo`; fecha y fotos quedan en el pie.
+- **Detalle:** el hero concentra estado, categoría, descripción y metadatos; el resumen usa cuatro tiles; las acciones se separan por estado. Una solicitud cancelada o contratada no muestra acciones.
+- **Formulario:** se usan chips de categoría, selector segmentado de urgencia y tarjetas de sección. La validación, el progreso de fotos, los errores y el estado de resultado incierto se conservan.
+- **Iconografía:** se usa `@expo/vector-icons` (Ionicons) en lugar de caracteres Unicode para iconos de ubicación, fecha, urgencia, fotos, acciones y estados.
+- **Mensajes:** se retiraron textos internos como “esta versión” o “queda pendiente”. La UI no promete previsualización, reemplazo o eliminación de fotos existentes; el bloqueo se mantiene en esta documentación.
+- **Alcance:** no se añadieron campos, endpoints, propuestas ni historial. El título visual es la descripción existente; no se inventó un `titulo` de solicitud.
+
+Las capturas de la revisión se guardaron fuera de Git en `/tmp/f04-visual-after-*.png`; incluyen lista, formulario, detalle publicado, borrador, cancelado y resultado incierto. Las capturas “antes” de referencia son `/tmp/f04-list.png`, `/tmp/f04-form.png` y `/tmp/f04-detail.png`.
 
 ## Verificación local
 

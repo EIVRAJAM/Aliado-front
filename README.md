@@ -131,7 +131,7 @@ Verificado con Node 24.14.1 y npm 11.11.0:
 |---|---|
 | `npm ci` | OK |
 | `npm run typecheck` | OK |
-| `npm run verify:config` | OK, JSON válido de 2894 bytes |
+| `npm run verify:config` | OK, JSON válido de 3025 bytes |
 | `npm run doctor` | OK, 20/20 en la última ejecución tras actualizar los patches de Expo. Puede fallar por red. |
 | `npx expo config --json --full` | OK, JSON interpretado |
 
@@ -144,6 +144,6 @@ La corrección de captura se verificó simulando el fallo original y el parche s
 - Navegación: [ADR 0003](docs/adr/0003-navegacion-react-navigation.md).
 - F01: UI, validación y contrato de integración implementados; la autenticación real sigue bloqueada por API desplegada, D-04 y versión de términos. Ver [docs/features/auth.md](docs/features/auth.md).
 - F02: perfil propio, edición, ubicación, visibilidad, vista pública y eliminación implementados; D-05 sigue pendiente. Ver [docs/features/profile.md](docs/features/profile.md).
-- F04: solicitudes propias, borrador, publicación, edición, cancelación y fotos opcionales implementados; no se declara cerrada mientras la idempotencia server-side y la gestión de fotos existentes sigan bloqueadas. Ver [docs/features/requests.md](docs/features/requests.md).
+- F04: solicitudes propias, borrador, publicación, edición, cancelación y fotos opcionales implementados, con una iteración visual alineada al prototipo; no se declara cerrada mientras la idempotencia server-side y la gestión de fotos existentes sigan bloqueadas. Ver [docs/features/requests.md](docs/features/requests.md).
 - Pendientes que bloquean la siguiente fase: D-03 (regla temporal), D-04 (sesión segura), D-05 (eliminación/retención), D-06/D-07 (storage/archivos), contrato API desplegado, versión de términos, canal/deep link de recuperación y cierre de las decisiones indicadas en [docs/adr/README.md](docs/adr/README.md).
 - Los iconos actuales son provisionales y los identificadores `com.aliado.movil` deben confirmarse antes de publicar.

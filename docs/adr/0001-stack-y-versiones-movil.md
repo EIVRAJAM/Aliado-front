@@ -25,6 +25,8 @@ La app usará Continuous Native Generation (CNG) y development builds. En esta f
 | `expo-status-bar` | `~58.0.5` | Módulo base de la plantilla; incluye config plugin nativo desde este patch. |
 | `expo-dev-client` | `~58.0.20` | Requerido por la estrategia de development builds. |
 | `expo-image-picker` | `~58.0.10` | Selección nativa de fotos para F04; instalado con `npx expo install` y config plugin en `app.json`. |
+| `@expo/vector-icons` | `^15.0.2` | Iconografía nativa de F04 (Ionicons) para evitar sustitutos Unicode inconsistentes; instalado con `npx expo install`. |
+| `expo-font` | `~58.0.12` | Peer dependency requerida por `@expo/vector-icons`; instalada directamente y registrada como config plugin. |
 | `expo-doctor` | `^1.21.6` | Validación de configuración y dependencias en local y CI. |
 
 ### Actualización de patch 2026-11-12
@@ -58,7 +60,7 @@ Decisiones complementarias:
 - No se deben añadir dependencias exóticas con `npm install` sin pasar por `npx expo install` cuando sean módulos Expo o nativos.
 - Al 2026-11-12, `npm audit` reporta 3 vulnerabilidades moderadas en dependencias transitivas del tooling de Expo. No se aplica `npm audit fix --force` porque degradaría Expo a SDK 53; se revisará al actualizar el SDK.
 - D-04 (sesión, expiración, revocación y almacenamiento seguro) sigue pendiente y no se resuelve con este ADR.
-- F04 añadió `expo-image-picker` como dependencia nativa para fotos opcionales; el development build se regeneró y la documentación de la feature registra el alcance y los bloqueos.
+- F04 añadió `expo-image-picker` para fotos opcionales, `@expo/vector-icons` para iconografía nativa y `expo-font` como peer directa; el development build se regeneró y la documentación de la feature registra el alcance y los bloqueos.
 
 ## Fuentes verificadas
 

@@ -11,7 +11,7 @@ La raíz de `docs/` debe mantenerse liviana. Los documentos vigentes se organiza
 - El flujo de ramas está documentado en [Gitflow](development/GITFLOW.md) y [ADR 0002](adr/0002-gitflow-fast-forward.md). `develop` integra F01 y F02; F04 se desarrolla en `feature/f04-solicitudes-servicio`; `main` sigue sin commits.
 - La estructura incorpora navegación, `src/features/auth/` (SPEC-01), `src/features/profile/` (SPEC-02) y `src/features/requests/` (SPEC-04). El resto de features se creará al iniciar su implementación.
 - Validación con Node 24.14.1/npm 11.11.0: `npm ci`, `typecheck`, `verify:config` y `doctor` (20/20) pasan tras actualizar los patches de Expo; Doctor puede fallar por red. Ver [Validación](development/VALIDATION.md).
-- F04 tiene UI, gateway y recorrido manual contra backend local; no se declara cerrada mientras la idempotencia server-side y la gestión de fotos existentes sigan bloqueadas. Ver [F04](features/requests.md).
+- F04 tiene UI, gateway, recorrido manual e iteración visual contra backend local; no se declara cerrada mientras la idempotencia server-side y la gestión de fotos existentes sigan bloqueadas. Ver [F04](features/requests.md).
 - D-03 (regla temporal), D-04 (sesión y almacenamiento seguro), D-05 (eliminación/retención), D-06 (storage), D-07 (archivos), la API desplegada y la versión de términos siguen pendientes; el detalle está en [F01](features/auth.md), [F02](features/profile.md) y [F04](features/requests.md).
 
 ## Lectura recomendada
