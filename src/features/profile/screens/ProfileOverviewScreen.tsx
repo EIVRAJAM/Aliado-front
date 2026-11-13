@@ -8,6 +8,7 @@ import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { ProfileActionCard } from '../components/ProfileActionCard';
+import { ProfileSignOutCard } from '../components/ProfileSignOutCard';
 import { ProfileStateView } from '../components/ProfileStateView';
 import { useMyProfile } from '../hooks/useMyProfile';
 import { visibilityLabel } from '../utils/profile-format';
@@ -25,6 +26,10 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
       title="Mi perfil"
       subtitle="Consulta y administra la información de tu cuenta."
     >
+      <InlineMessage
+        variant="info"
+        message="La sesión se mantiene solo durante esta ejecución. Al cerrar la app deberás autenticarte de nuevo."
+      />
       {loading || error || !profile ? (
         <ProfileStateView loading={loading} error={error} onRetry={reload} />
       ) : (
@@ -90,6 +95,7 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
           />
         </>
       )}
+      <ProfileSignOutCard />
     </ScreenLayout>
   );
 }
