@@ -86,6 +86,13 @@ Los comandos nativos requieren SDKs locales y no se ejecutan en el CI mínimo. L
 │   │   ├── services/
 │   │   ├── types/
 │   │   └── utils/
+│   ├── features/discovery/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── types/
+│   │   └── utils/
 │   └── shared/
 │       ├── api/http-client.ts
 │       ├── config/env.ts
@@ -113,6 +120,7 @@ La estructura se amplía solo cuando una feature real lo necesita. La arquitectu
 - F02 Perfil, privacidad y eliminación: [docs/features/profile.md](docs/features/profile.md)
 - F04 Solicitudes de servicio: [docs/features/requests.md](docs/features/requests.md)
 - F05 Perfil profesional: [docs/features/professional-profile.md](docs/features/professional-profile.md)
+- F03 Descubrimiento y perfil público: [docs/features/discovery.md](docs/features/discovery.md)
 - Entrega y alcance: [docs/core/DELIVERY_PLAN.md](docs/core/DELIVERY_PLAN.md)
 - Gitflow: [docs/development/GITFLOW.md](docs/development/GITFLOW.md)
 - ADRs: [docs/adr/README.md](docs/adr/README.md)
