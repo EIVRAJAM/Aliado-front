@@ -57,6 +57,13 @@ export function SessionScreen({ navigation }: SessionScreenProps) {
         </View>
       </Card>
       <PrimaryButton label="Mi perfil" onPress={() => navigation.navigate('Profile')} />
+      {session.role === 'PRESTADOR' ? (
+        <PrimaryButton
+          label="Perfil profesional"
+          variant="secondary"
+          onPress={() => navigation.navigate('ProfessionalProfile')}
+        />
+      ) : null}
       {session.role === 'CLIENTE' ? (
         <PrimaryButton
           label="Mis solicitudes"

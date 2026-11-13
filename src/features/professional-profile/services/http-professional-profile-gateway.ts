@@ -1,0 +1,360 @@
+import { ApiError, requestJson } from '../../../shared/api/http-client';
+import {
+  ProfessionalProfileError,
+  type AgendaCommitment,
+  type AvailabilityBlock,
+  type CreateProfessionalProfileInput,
+  type CreatedProfessionalProfile,
+  type ProfessionalCatalogs,
+  type ProfessionalPreview,
+  type PublicReview,
+} from '../types/professional-profile';
+import type { ProfessionalProfileGateway } from './professional-profile-gateway';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function requiredString(value: unknown): string {
+  if (typeof value !== 'string' || !value) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return value;
+}
+
+function nullableNumber(value: unknown): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return value;
+}
+
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return value.filter((item): item is string => typeof item === 'string');
+}
+
+function parseAvailability(value: unknown): AvailabilityBlock[] {
+  if (!Array.isArray(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return value.map((item) => {
+    if (!isRecord(item)) {
+      throw new ProfessionalProfileError(
+        'UNKNOWN',
+        'La respuesta del servidor no tiene el formato esperado.'
+      );
+    }
+    return {
+      id: typeof item.id === 'string' ? item.id : null,
+      diaSemana: nullableNumber(item.diaSemana),
+      horaInicio: requiredString(item.horaInicio),
+      horaFin: requiredString(item.horaFin),
+    };
+  });
+}
+
+function parseReviews(value: unknown): PublicReview[] {
+  if (!Array.isArray(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return value.map((item) => {
+    if (
+      !isRecord(item) ||
+      typeof item.valor !== 'number' ||
+      typeof item.texto !== 'string' ||
+      typeof item.fechaCreacion !== 'string'
+    ) {
+      throw new ProfessionalProfileError(
+        'UNKNOWN',
+        'La respuesta del servidor no tiene el formato esperado.'
+      );
+    }
+    return {
+      id: requiredString(item.id),
+      valor: item.valor,
+      texto: item.texto,
+      fechaCreacion: item.fechaCreacion,
+    };
+  });
+}
+
+function parsePreview(value: unknown): ProfessionalPreview {
+  if (
+    !isRecord(value) ||
+    typeof value.reputacion !== 'number' ||
+    typeof value.cantidadCalificaciones !== 'number' ||
+    typeof value.nivelVerificacion !== 'string'
+  ) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+
+  return {
+    prestadorId: requiredString(value.prestadorId),
+    categorias: stringArray(value.categorias),
+    zonas: stringArray(value.zonas),
+    reputacion: value.reputacion,
+    cantidadCalificaciones: value.cantidadCalificaciones,
+    nivelVerificacion: value.nivelVerificacion,
+    disponibilidad: parseAvailability(value.disponibilidad),
+    datosGenerales: isRecord(value.datosGenerales) ? value.datosGenerales : {},
+    resenas: parseReviews(value.resenas),
+  };
+}
+
+function parseAgenda(value: unknown): AgendaCommitment[] {
+  if (!Array.isArray(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return value.map((item) => {
+    if (!isRecord(item)) {
+      throw new ProfessionalProfileError(
+        'UNKNOWN',
+        'La respuesta del servidor no tiene el formato esperado.'
+      );
+    }
+    return {
+      id: requiredString(item.id),
+      fechaHoraInicio: requiredString(item.fechaHoraInicio),
+      fechaHoraFin: requiredString(item.fechaHoraFin),
+      origen: requiredString(item.origen),
+    };
+  });
+}
+
+function parseCategory(value: unknown) {
+  if (!isRecord(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return {
+    id: requiredString(value.id),
+    nombre: requiredString(value.nombre),
+  };
+}
+
+function parseZone(value: unknown) {
+  if (!isRecord(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return {
+    id: requiredString(value.id),
+    nombre: requiredString(value.nombre),
+    coberturaGeografica:
+      typeof value.coberturaGeografica === 'string' ? value.coberturaGeografica : null,
+  };
+}
+
+function parseCatalogs(categories: unknown, zones: unknown): ProfessionalCatalogs {
+  if (!Array.isArray(categories) || !Array.isArray(zones)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return {
+    categories: categories.map(parseCategory),
+    zones: zones.map(parseZone),
+  };
+}
+
+function parseCreatedProfile(value: unknown): CreatedProfessionalProfile {
+  if (!isRecord(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return {
+    id: requiredString(value.id),
+    prestadorId: requiredString(value.prestadorId),
+  };
+}
+
+function getServerCode(body: unknown): string | undefined {
+  if (isRecord(body) && typeof body.code === 'string') {
+    return body.code;
+  }
+  return undefined;
+}
+
+function getServerMessage(body: unknown): string | undefined {
+  if (isRecord(body) && typeof body.message === 'string' && body.message.trim()) {
+    return body.message;
+  }
+  return undefined;
+}
+
+function mapApiError(error: unknown, fallback: string): ProfessionalProfileError {
+  if (error instanceof ProfessionalProfileError) {
+    return error;
+  }
+
+  if (error instanceof ApiError) {
+    const serverCode = getServerCode(error.body);
+
+    if (error.status === 401) {
+      return new ProfessionalProfileError(
+        'SESSION_EXPIRED',
+        'Tu sesión expiró. Inicia sesión de nuevo.',
+        401,
+        serverCode
+      );
+    }
+    if (error.status === 403) {
+      return new ProfessionalProfileError(
+        'FORBIDDEN',
+        'Esta sección está disponible para cuentas de prestador.',
+        403,
+        serverCode
+      );
+    }
+    if (error.status === 404) {
+      return new ProfessionalProfileError(
+        'NOT_FOUND',
+        'Todavía no tienes un perfil profesional.',
+        404,
+        serverCode
+      );
+    }
+    if (error.status === 409) {
+      return new ProfessionalProfileError(
+        'PROFILE_ALREADY_EXISTS',
+        'Ya tienes un perfil profesional.',
+        409,
+        serverCode
+      );
+    }
+    if (error.status === 400) {
+      return new ProfessionalProfileError(
+        'VALIDATION',
+        getServerMessage(error.body) ?? 'Revisa los datos ingresados e intenta de nuevo.',
+        400,
+        serverCode
+      );
+    }
+
+    return new ProfessionalProfileError('UNKNOWN', fallback, error.status, serverCode);
+  }
+
+  if (error instanceof Error && error.name === 'AbortError') {
+    return new ProfessionalProfileError('NETWORK', 'La solicitud tardó demasiado. Intenta de nuevo.');
+  }
+
+  return new ProfessionalProfileError(
+    'NETWORK',
+    'No se pudo conectar con ALIADO. Revisa tu conexión e intenta de nuevo.'
+  );
+}
+
+export class HttpProfessionalProfileGateway implements ProfessionalProfileGateway {
+  private readonly baseUrl?: string;
+
+  constructor(baseUrl?: string) {
+    this.baseUrl = baseUrl;
+  }
+
+  private requireBaseUrl(): string {
+    if (!this.baseUrl) {
+      throw new ProfessionalProfileError(
+        'CONFIGURATION',
+        'La URL de la API no está configurada en este entorno.'
+      );
+    }
+    return this.baseUrl;
+  }
+
+  async getCatalogs(token: string): Promise<ProfessionalCatalogs> {
+    try {
+      const [categories, zones] = await Promise.all([
+        requestJson<unknown>(this.requireBaseUrl(), '/api/v1/catalogo/categorias', {
+          method: 'GET',
+          token,
+        }),
+        requestJson<unknown>(this.requireBaseUrl(), '/api/v1/catalogo/zonas', {
+          method: 'GET',
+          token,
+        }),
+      ]);
+      return parseCatalogs(categories, zones);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible cargar el catálogo de perfil.');
+    }
+  }
+
+  async getPreview(token: string): Promise<ProfessionalPreview> {
+    try {
+      const response = await requestJson<unknown>(
+        this.requireBaseUrl(),
+        '/api/v1/perfiles/mio/vista-previa',
+        { method: 'GET', token }
+      );
+      return parsePreview(response);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible cargar la vista previa del perfil.');
+    }
+  }
+
+  async createProfile(
+    token: string,
+    input: CreateProfessionalProfileInput
+  ): Promise<CreatedProfessionalProfile> {
+    try {
+      const response = await requestJson<unknown>(this.requireBaseUrl(), '/api/v1/perfiles', {
+        method: 'POST',
+        token,
+        body: {
+          categoriaIds: input.categoriaIds,
+          zonaIds: input.zonaIds,
+        },
+      });
+      return parseCreatedProfile(response);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible crear el perfil profesional.');
+    }
+  }
+
+  async getAgenda(token: string): Promise<AgendaCommitment[]> {
+    try {
+      const response = await requestJson<unknown>(
+        this.requireBaseUrl(),
+        '/api/v1/perfiles/mio/agenda',
+        { method: 'GET', token }
+      );
+      return parseAgenda(response);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible cargar la agenda.');
+    }
+  }
+}

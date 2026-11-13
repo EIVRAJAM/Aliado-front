@@ -10,6 +10,8 @@ export type RootStackParamList = {
   ProfilePrivacy: undefined;
   ProfilePublicPreview: { userId: string };
   ProfileDelete: undefined;
+  ProfessionalProfile: undefined;
+  ProfessionalProfileCreate: undefined;
   Requests: undefined;
   RequestForm: { requestId?: string } | undefined;
   RequestDetail: { requestId: string };

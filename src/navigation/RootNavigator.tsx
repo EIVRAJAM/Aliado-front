@@ -18,6 +18,10 @@ import {
   ProfilePublicPreviewScreen,
 } from '../features/profile';
 import {
+  ProfessionalProfileCreateScreen,
+  ProfessionalProfileScreen,
+} from '../features/professional-profile';
+import {
   RequestDetailScreen,
   RequestFormScreen,
   RequestListScreen,
@@ -50,6 +54,11 @@ export function RootNavigator() {
               component={ProfilePublicPreviewScreen}
             />
             <Stack.Screen name="ProfileDelete" component={ProfileDeleteScreen} />
+            <Stack.Screen name="ProfessionalProfile" component={ProfessionalProfileScreen} />
+            <Stack.Screen
+              name="ProfessionalProfileCreate"
+              component={ProfessionalProfileCreateScreen}
+            />
             <Stack.Screen name="Requests" component={RequestListScreen} />
             <Stack.Screen name="RequestForm" component={RequestFormScreen} />
             <Stack.Screen name="RequestDetail" component={RequestDetailScreen} />
