@@ -62,6 +62,7 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
 
   return (
     <ScreenLayout
+      variant="auth"
       title="Define una nueva contraseña"
       subtitle="Usa el código de recuperación que recibiste."
     >

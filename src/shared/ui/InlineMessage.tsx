@@ -9,20 +9,17 @@ interface InlineMessageProps {
   variant?: MessageVariant;
 }
 
-const palette: Record<MessageVariant, { background: string; border: string; text: string }> = {
+const palette: Record<MessageVariant, { background: string; text: string }> = {
   error: {
     background: colors.dangerSurface,
-    border: colors.danger,
     text: colors.danger,
   },
   success: {
     background: colors.successSurface,
-    border: colors.success,
     text: colors.success,
   },
   info: {
     background: colors.infoSurface,
-    border: colors.info,
     text: colors.info,
   },
 };
@@ -33,7 +30,7 @@ export function InlineMessage({ message, variant = 'error' }: InlineMessageProps
   return (
     <View
       accessibilityLiveRegion="polite"
-      style={[styles.container, { backgroundColor: theme.background, borderColor: theme.border }]}
+      style={[styles.container, { backgroundColor: theme.background }]}
     >
       <Text style={[styles.text, { color: theme.text }]}>{message}</Text>
     </View>
@@ -42,8 +39,7 @@ export function InlineMessage({ message, variant = 'error' }: InlineMessageProps
 
 const styles = StyleSheet.create({
   container: {
-    borderLeftWidth: 4,
-    borderRadius: radii.sm,
+    borderRadius: radii.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },

@@ -59,6 +59,7 @@ export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) 
 
   return (
     <ScreenLayout
+      variant="auth"
       title="Recupera tu acceso"
       subtitle="Te enviaremos un mecanismo de verificación si el correo está registrado."
     >

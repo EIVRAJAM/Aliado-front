@@ -2,15 +2,48 @@ import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
 import { colors, radii, spacing } from './theme';
 
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+
 interface PrimaryButtonProps {
   label: string;
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
+  variant?: ButtonVariant;
 }
 
-export function PrimaryButton({ label, onPress, loading = false, disabled = false }: PrimaryButtonProps) {
+const palette: Record<ButtonVariant, { background: string; pressed: string; text: string; border?: string }> = {
+  primary: {
+    background: colors.primary,
+    pressed: colors.primaryPressed,
+    text: colors.surface,
+  },
+  secondary: {
+    background: colors.infoSurface,
+    pressed: '#DBEAFE',
+    text: colors.primary,
+  },
+  ghost: {
+    background: 'transparent',
+    pressed: colors.background,
+    text: colors.muted,
+  },
+  danger: {
+    background: colors.danger,
+    pressed: '#B91C1C',
+    text: colors.surface,
+  },
+};
+
+export function PrimaryButton({
+  label,
+  onPress,
+  loading = false,
+  disabled = false,
+  variant = 'primary',
+}: PrimaryButtonProps) {
   const isDisabled = disabled || loading;
+  const theme = palette[variant];
 
   return (
     <Pressable
@@ -21,14 +54,17 @@ export function PrimaryButton({ label, onPress, loading = false, disabled = fals
       onPress={onPress}
       style={({ pressed }) => [
         styles.button,
-        pressed && !isDisabled ? styles.pressed : null,
+        {
+          backgroundColor: pressed && !isDisabled ? theme.pressed : theme.background,
+          borderColor: theme.border ?? theme.background,
+        },
         isDisabled ? styles.disabled : null,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={colors.surface} />
+        <ActivityIndicator color={theme.text} />
       ) : (
-        <Text style={styles.label}>{label}</Text>
+        <Text style={[styles.label, { color: theme.text }]}>{label}</Text>
       )}
     </Pressable>
   );
@@ -36,22 +72,23 @@ export function PrimaryButton({ label, onPress, loading = false, disabled = fals
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 50,
+    minHeight: 52,
     borderRadius: radii.md,
-    backgroundColor: colors.primary,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-  },
-  pressed: {
-    backgroundColor: colors.primaryPressed,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    elevation: 2,
   },
   disabled: {
-    backgroundColor: colors.disabled,
+    opacity: 0.5,
   },
   label: {
-    color: colors.surface,
     fontSize: 16,
     fontWeight: '700',
   },

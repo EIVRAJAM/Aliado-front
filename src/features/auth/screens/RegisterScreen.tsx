@@ -78,6 +78,7 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
 
   return (
     <ScreenLayout
+      variant="auth"
       title="Crea tu cuenta"
       subtitle="Regístrate como Cliente o Prestador para usar ALIADO."
     >

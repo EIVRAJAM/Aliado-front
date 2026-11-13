@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
 import { colors, radii, spacing } from './theme';
@@ -9,6 +10,8 @@ interface FormFieldProps extends TextInputProps {
 }
 
 export function FormField({ label, error, hint, style, ...inputProps }: FormFieldProps) {
+  const [focused, setFocused] = useState(false);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -17,7 +20,20 @@ export function FormField({ label, error, hint, style, ...inputProps }: FormFiel
         accessibilityLabel={label}
         accessibilityHint={error ?? hint}
         placeholderTextColor={colors.muted}
-        style={[styles.input, error ? styles.inputError : null, style]}
+        onFocus={(event) => {
+          setFocused(true);
+          inputProps.onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          inputProps.onBlur?.(event);
+        }}
+        style={[
+          styles.input,
+          focused ? styles.inputFocused : null,
+          error ? styles.inputError : null,
+          style,
+        ]}
       />
       {error ? (
         <Text style={styles.error} accessibilityLiveRegion="polite">
@@ -40,7 +56,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   input: {
-    minHeight: 48,
+    minHeight: 52,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radii.md,
@@ -49,6 +65,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
+  },
+  inputFocused: {
+    borderColor: colors.primary,
   },
   inputError: {
     borderColor: colors.danger,
@@ -60,5 +79,6 @@ const styles = StyleSheet.create({
   hint: {
     color: colors.muted,
     fontSize: 13,
+    lineHeight: 18,
   },
 });

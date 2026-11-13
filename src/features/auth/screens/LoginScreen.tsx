@@ -55,6 +55,7 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
 
   return (
     <ScreenLayout
+      variant="auth"
       title="Inicia sesión"
       subtitle="Accede a tu cuenta de Cliente o Prestador."
     >

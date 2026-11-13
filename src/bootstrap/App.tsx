@@ -1,4 +1,3 @@
-import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthSessionProvider, createAuthGateway } from '../features/auth';
@@ -12,7 +11,6 @@ export default function App() {
       <AuthSessionProvider gateway={authGateway}>
         <RootNavigator />
       </AuthSessionProvider>
-      <StatusBar style="dark" />
     </SafeAreaProvider>
   );
 }
