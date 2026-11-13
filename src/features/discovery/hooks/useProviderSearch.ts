@@ -15,7 +15,7 @@ export function useProviderSearch() {
 
   const search = useCallback(
     async (categoriaId: string, zonaId: string) => {
-      if (!session || loading) {
+      if (!session || session.role !== 'CLIENTE' || loading) {
         return;
       }
 

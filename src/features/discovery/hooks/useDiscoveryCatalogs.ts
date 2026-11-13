@@ -13,7 +13,7 @@ export function useDiscoveryCatalogs() {
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    if (!session) {
+    if (!session || session.role !== 'CLIENTE') {
       setLoading(false);
       return;
     }

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -28,15 +30,23 @@ import {
   RequestListScreen,
 } from '../features/requests';
 import { colors } from '../shared/ui/theme';
+import { DeepLinkHandler } from './DeepLinkHandler';
+import { linking, navigationRef } from './deep-links';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
   const { session } = useAuthSession();
+  const [navigationReady, setNavigationReady] = useState(false);
 
   return (
-    <NavigationContainer>
+    <>
+      <NavigationContainer
+        ref={navigationRef}
+        linking={linking}
+        onReady={() => setNavigationReady(true)}
+      >
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
@@ -75,6 +85,8 @@ export function RootNavigator() {
           </>
         )}
       </Stack.Navigator>
-    </NavigationContainer>
+      </NavigationContainer>
+      <DeepLinkHandler navigationReady={navigationReady} />
+    </>
   );
 }

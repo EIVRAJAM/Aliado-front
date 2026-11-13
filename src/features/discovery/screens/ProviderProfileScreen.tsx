@@ -16,9 +16,6 @@ type ProviderProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'Pr
 
 export function ProviderProfileScreen({ navigation, route }: ProviderProfileScreenProps) {
   const { session } = useAuthSession();
-  const { provider, loading, notFound, error, reload } = useProviderProfile(
-    route.params.providerId
-  );
 
   if (!session) {
     return null;
@@ -38,6 +35,14 @@ export function ProviderProfileScreen({ navigation, route }: ProviderProfileScre
       </ScreenLayout>
     );
   }
+
+  return <ClientProviderProfileScreen navigation={navigation} route={route} />;
+}
+
+function ClientProviderProfileScreen({ navigation, route }: ProviderProfileScreenProps) {
+  const { provider, loading, notFound, error, reload } = useProviderProfile(
+    route.params.providerId
+  );
 
   return (
     <ScreenLayout

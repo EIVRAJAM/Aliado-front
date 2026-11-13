@@ -25,13 +25,6 @@ interface FilterErrors {
 
 export function DiscoveryScreen({ navigation }: DiscoveryScreenProps) {
   const { session } = useAuthSession();
-  const { catalogs, loading: catalogsLoading, error: catalogsError, reload } =
-    useDiscoveryCatalogs();
-  const { result, loading: searchLoading, error: searchError, searched, search, clear } =
-    useProviderSearch();
-  const [categoriaId, setCategoriaId] = useState<string | null>(null);
-  const [zonaId, setZonaId] = useState<string | null>(null);
-  const [errors, setErrors] = useState<FilterErrors>({});
 
   if (!session) {
     return null;
@@ -51,6 +44,18 @@ export function DiscoveryScreen({ navigation }: DiscoveryScreenProps) {
       </ScreenLayout>
     );
   }
+
+  return <ClientDiscoveryScreen navigation={navigation} />;
+}
+
+function ClientDiscoveryScreen({ navigation }: { navigation: DiscoveryScreenProps['navigation'] }) {
+  const { catalogs, loading: catalogsLoading, error: catalogsError, reload } =
+    useDiscoveryCatalogs();
+  const { result, loading: searchLoading, error: searchError, searched, search, clear } =
+    useProviderSearch();
+  const [categoriaId, setCategoriaId] = useState<string | null>(null);
+  const [zonaId, setZonaId] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FilterErrors>({});
 
   const categoryOptions = (catalogs?.categories ?? []).map((category) => ({
     value: category.id,
