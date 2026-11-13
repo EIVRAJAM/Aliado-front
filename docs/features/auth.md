@@ -30,6 +30,10 @@ src/features/auth/
 
 La navegación raíz vive en `src/navigation/` y el bootstrap en `src/bootstrap/App.tsx`.
 
+## Patrón visual
+
+El acceso usa fondo azul oscuro, marca ALIADO visible y una tarjeta blanca para el formulario, siguiendo el lenguaje visual del prototipo sin copiar su implementación web. Los avisos de API no configurada y de versión de términos faltante permanecen visibles.
+
 ## Fuente técnica del contrato
 
 El cliente HTTP se alinea con el OpenAPI local entregado por backend:

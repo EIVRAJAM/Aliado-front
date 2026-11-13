@@ -128,6 +128,13 @@ En F01 la sesión vive solo en memoria durante la ejecución actual; no se imple
 
 ## UX, accesibilidad y estados
 
+Patrón visual vigente:
+
+- **Acceso:** fondo azul oscuro, marca ALIADO y formulario dentro de una tarjeta blanca con esquinas amplias.
+- **App autenticada:** fondo claro, cabecera blanca compacta con marca, título y acción de volver cuando aplique.
+- **Perfil:** avatar/resumen de identidad y filas de acción en tarjetas con icono, texto secundario y chevron; los botones primarios se reservan para guardar o confirmar.
+- **Estados:** los avisos de configuración de API y de versión de términos no se ocultan para mejorar la apariencia; se mantienen visibles cuando corresponden.
+
 Cada pantalla debe considerar, según corresponda: carga, vacío, datos, error recuperable, validación, sesión expirada, permiso denegado, conflicto de versión y acción en curso. La experiencia móvil debe cuidar etiquetas accesibles, lector de pantalla, foco, tamaño táctil y navegación atrás.
 
 No mostrar éxito antes de confirmación del backend ni reintentar automáticamente todos los comandos.

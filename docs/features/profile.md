@@ -46,6 +46,10 @@ El cliente se alinea con el backend local confirmado y con el OpenAPI entregado:
 | Solicitar eliminación | `POST /api/v1/perfil/me/eliminacion` | Crea solicitud pendiente con expiración. |
 | Confirmar eliminación | `POST /api/v1/perfil/me/eliminacion/confirmar` | Bloquea la cuenta y cierra sesiones. |
 
+## Patrón visual
+
+La pantalla principal prioriza avatar, nombre, ubicación aproximada y visibilidad. Las acciones se presentan como tarjetas con icono, texto secundario y chevron; no como una pila de botones primarios idénticos. Las pantallas de edición agrupan los campos y el botón de guardado en una tarjeta blanca sobre fondo claro. La cabecera de la app incluye marca, título y control de volver.
+
 ## Pantallas
 
 ```text
