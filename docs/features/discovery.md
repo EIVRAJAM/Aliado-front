@@ -46,6 +46,15 @@ El DTO público contiene `id`, `categorias`, `zonas`, `reputacionAgregada`, `can
 - La búsqueda con categoría/zona desconocida devuelve `200` con `sugerencias`; la app las muestra sin inventar una selección automática.
 - El detalle `404` se muestra como “Perfil no disponible” sin distinguir perfil inexistente, oculto o incompleto.
 
+## Enlace directo al perfil
+
+- Esquema: `aliado://prestadores/{providerId}`.
+- React Navigation resuelve la ruta `ProviderProfile` desde `linking` y entrega `providerId`.
+- Si la app está abierta con sesión Cliente, el enlace abre el detalle directamente.
+- Si no hay sesión, se conserva el ID pendiente y se muestra el acceso. Tras iniciar sesión se navega al perfil solo cuando la sesión ya existe; la pantalla vuelve a comprobar el rol.
+- Con rol distinto de Cliente se muestra acceso no permitido y el hook de detalle no se monta, por lo que no se ejecuta `GET /perfil`.
+- El `404` se sigue mostrando como “Perfil no disponible” sin revelar la causa.
+
 ## Verificación realizada
 
 - API de solo lectura con sesión Cliente:
@@ -59,6 +68,10 @@ El DTO público contiene `id`, `categorias`, `zonas`, `reputacionAgregada`, `can
   - selección de categoría y zona;
   - búsqueda ejecutada y estado “Sin resultados”;
   - acción “Ajustar criterios”.
+- Deep link `aliado://prestadores/22222222-2222-4222-8222-222222222222` sin sesión: se mantuvo en login y no consultó el perfil.
+- Tras iniciar sesión Cliente, el mismo enlace pendiente abrió el detalle y mostró el `404` genérico “Perfil no disponible”.
+- Deep link con sesión Cliente ya abierta: abrió el detalle directamente.
+- No se pudo verificar el deep link con sesión Prestador: no había credenciales disponibles y no se modificaron cuentas. La protección está implementada con el wrapper de rol que evita montar el hook de detalle.
 - No se pudo verificar una búsqueda con resultados ni el detalle público en UI porque no existen perfiles profesionales en el entorno y F05 sigue bloqueada por BE-01. Tampoco se crearon datos para forzarlo.
 - No se probó la denegación UI para Prestador; el backend y la comprobación de pantalla están implementados, pero no se dispone de una sesión Prestador verificada en esta prueba.
 

@@ -127,6 +127,8 @@ La navegación usa React Navigation 7 con stack nativo, según [ADR 0003](../adr
 
 La app presenta los flujos Cliente y Prestador según la identidad y permisos devueltos por el backend. En F01 el stack muestra el flujo de acceso sin sesión y una pantalla de sesión autenticada mínima. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
 
+Deep links: F03 registra `aliado://prestadores/:providerId` con React Navigation. Si no hay sesión, el ID se conserva y se navega después del acceso; la pantalla de detalle solo monta la consulta para `CLIENTE` y muestra acceso no permitido para otros roles. La validación de UUID se hace antes de navegar.
+
 Las rutas protegidas mejoran navegación y presentación, pero nunca sustituyen la verificación de rol y propiedad de recursos en el servidor.
 
 ## Integración con API
