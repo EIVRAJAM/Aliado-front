@@ -1,6 +1,6 @@
 # F02 — Perfil personal, privacidad y eliminación (app móvil)
 
-**Estado:** UI y gateway implementados. Integración HTTP con backend local pendiente de la validación visual final. D-05 sigue abierta.
+**Estado:** UI y gateway implementados; integración HTTP y recorrido manual en emulador verificados contra backend local el 2026-11-12. Las pruebas E2E automatizadas y D-05 siguen pendientes.
 
 ## Alcance móvil
 
@@ -72,10 +72,15 @@ La navegación raíz incluye estas pantallas dentro de la sesión autenticada. L
 - La eliminación definitiva, anonimización, retención y tratamiento de servicios activos siguen pendientes de D-05. La UI no promete borrado completo.
 - La sesión sigue únicamente en memoria; D-04 no se resuelve en F02.
 
+## Verificación manual en emulador
+
+El 2026-11-12 se recorrieron en Android Emulator los flujos con el backend local: consulta y edición de perfil, actualización de zona y dirección exacta, cambios de visibilidad, vista pública en modos `PRIVADO` y `SOLO_ZONA`, solicitud y confirmación de eliminación. La vista `SOLO_ZONA` mostró la zona aproximada sin dirección exacta. La confirmación bloqueó la cuenta desechable y cerró la sesión; no se ejecutó ni se promete borrado físico definitivo. La cuenta de prueba principal permanece activa; sus credenciales se conservan solo localmente y fuera de Git.
+
+Esta evidencia corresponde a una prueba manual en un emulador contra backend local; no sustituye E2E automatizados ni resuelve D-05.
+
 ## Pendientes
 
-- Validar visualmente la feature en el emulador contra el backend local.
 - Confirmar la reconciliación del esquema OpenAPI de perfil con backend.
 - Aprobar D-05 y ajustar copia/comportamiento de eliminación cuando exista política definitiva.
 - Definir API desplegada por entorno.
-- Añadir E2E de UI y pruebas de conflicto/eliminación cuando el entorno esté estable.
+- Añadir E2E automatizados de UI y cobertura de conflicto/eliminación cuando el entorno esté estable.
