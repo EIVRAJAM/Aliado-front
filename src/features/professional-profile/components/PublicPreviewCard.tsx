@@ -6,8 +6,8 @@ import { colors, radii, spacing } from '../../../shared/ui/theme';
 import {
   PUBLIC_PROFILE_FIELDS,
   formatPublicValue,
-  type ProfessionalPreview,
-} from '../types/professional-profile';
+} from '../../../shared/profile/public-profile-data';
+import type { ProfessionalPreview } from '../types/professional-profile';
 import {
   formatAvailability,
   formatReviewDate,
