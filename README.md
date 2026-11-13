@@ -63,6 +63,8 @@ Los comandos nativos requieren SDKs locales y no se ejecutan en el CI mínimo. L
 │   │   ├── types/
 │   │   ├── utils/
 │   │   └── validation/
+│   ├── features/home/
+│   │   └── screens/
 │   ├── features/profile/
 │   │   ├── components/
 │   │   ├── hooks/
@@ -147,7 +149,7 @@ Verificado con Node 24.14.1 y npm 11.11.0:
 |---|---|
 | `npm ci` | OK |
 | `npm run typecheck` | OK |
-| `npm run verify:config` | OK, JSON válido de 3025 bytes |
+| `npm run verify:config` | OK, JSON válido de 3067 bytes |
 | `npm run doctor` | OK, 20/20 en la última ejecución tras actualizar los patches de Expo. Puede fallar por red. |
 | `npx expo config --json --full` | OK, JSON interpretado |
 

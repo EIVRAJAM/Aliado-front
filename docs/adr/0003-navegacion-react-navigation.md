@@ -2,8 +2,9 @@
 
 - **Estado:** aceptada
 - **Fecha:** 2026-11-06
-- **Alcance:** navegación raíz y flujo de acceso de la app móvil
+- **Alcance:** navegación raíz, flujo de acceso y shell autenticado de la app móvil
 - **Feature que la inicia:** F01 — Acceso e identidad
+- **Actualizado:** 2026-11-13 — shell autenticado con barra inferior MVP
 
 ## Contexto
 
@@ -17,12 +18,26 @@ Usar **React Navigation 7** con el stack nativo para la navegación de la app:
 
 - `@react-navigation/native` `^7.5.1`
 - `@react-navigation/native-stack` `^7.21.0`
+- `@react-navigation/bottom-tabs` `^7.21.0`
 - `react-native-screens` `~4.30.1`
 - `react-native-safe-area-context` `~5.11.1`
 
 Las versiones nativas se instalaron con `npx expo install` para respetar la matriz de Expo SDK 58. La raíz se compone en `src/navigation/RootNavigator.tsx` y el bootstrap vive en `src/bootstrap/App.tsx`, envolviendo la app con `SafeAreaProvider` y `AuthSessionProvider`.
 
 El bootstrap se movió fuera de `src/app/` para que Expo CLI no lo detecte como raíz de Expo Router, eliminar el aviso engañoso y dejar `src/app/` libre si el equipo decide adoptar Expo Router en el futuro. No se instala Expo Router en esta feature.
+
+### Actualización 2026-11-13: shell autenticado MVP
+
+La sesión autenticada se organiza con una barra inferior persistente para las superficies principales:
+
+- **Cliente:** Inicio, Buscar, Solicitudes y Mi perfil.
+- **Prestador:** Inicio, Profesional y Mi perfil.
+
+La raíz sigue siendo un stack nativo. `MainTabs` es una pantalla del stack y las subpantallas —formularios, detalles, edición, privacidad, creación de perfil y perfil público— se abren fuera de la barra para preservar jerarquía e historial. `Inicio` sustituye a la antigua pantalla mínima “Sesión iniciada” y no duplica los destinos ya presentes en la barra.
+
+Los deep links se mantienen mediante React Navigation: `aliado://prestadores/:providerId` resuelve al stack raíz, y las rutas de tabs se declaran anidadas en `MainTabs`. La autenticación y los roles siguen siendo condiciones de entrada; la barra solo adapta la experiencia.
+
+La barra usa `@react-navigation/bottom-tabs` con `react-native-safe-area-context` para respetar el inset inferior, feedback táctil nativo y estado activo/inactivo. Las pantallas fuera de `MainTabs` no muestran la barra.
 
 ## Alternativas consideradas
 
@@ -34,7 +49,8 @@ El bootstrap se movió fuera de `src/app/` para que Expo CLI no lo detecte como 
 
 - La navegación raíz y los tipos de rutas viven en `src/navigation/`.
 - Las pantallas de una feature se importan desde su índice público; la navegación no conoce detalles internos de la feature.
-- La sesión autenticada se refleja con pantallas condicionales del stack. La autorización efectiva sigue perteneciendo al backend.
+- La sesión autenticada se refleja con un stack raíz y un navegador de tabs por rol. La autorización efectiva sigue perteneciendo al backend.
+- Los formularios, detalles y subpantallas se mantienen fuera de la barra inferior para no romper el historial ni la jerarquía.
 - Las nuevas pantallas nativas requieren rebuild del development build, no solo recarga de Metro.
 - `src/app/` queda reservado para una eventual adopción de Expo Router; el bootstrap actual no activa rutas ni plugins de Router.
 - Si se adopta Expo Router más adelante, se registrará un ADR de migración y se moverán los archivos de `src/app/` al árbol de rutas.

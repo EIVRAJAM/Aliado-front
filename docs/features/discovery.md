@@ -10,7 +10,7 @@ Cubre SPEC-03 para el rol **Cliente**:
 - resultados con categorías, zonas, reputación, verificación y disponibilidad;
 - detalle público reutilizando el mismo DTO;
 - estado vacío, sugerencias, error, carga y perfil no disponible genérico;
-- acceso desde la sesión del Cliente y protección de rutas.
+- acceso desde la pestaña **Buscar** del Cliente y protección de rutas.
 
 No incluye coincidencia por cercanía, búsqueda parcial por nombre, paginación local ni datos de contacto/privados. Esas capacidades no están en el contrato disponible.
 

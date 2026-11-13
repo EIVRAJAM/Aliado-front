@@ -37,7 +37,7 @@ El parche no desactiva chequeos: solo cambia el transporte de salida de los subp
 
 ## Evidencia
 
-- `expo config --json --full` directo: exit 0, JSON válido (3025 bytes en el estado actual, tras añadir el plugin de `expo-image-picker`).
+- `expo config --json --full` directo: exit 0, JSON válido (3067 bytes en el estado actual, tras añadir el plugin de `expo-image-picker`).
 - Config lanzado como subproceso con `stdout` a archivo: exit 0, JSON válido.
 - Fallo simulado: CLI que devuelve vacío en socket/FIFO; `npm run doctor` exit 1 con el error de parseo, antes del parche.
 - Con parche, misma simulación: `npm run doctor` exit 0, 20/20.
@@ -97,7 +97,7 @@ F04 añadió `expo-image-picker` con `npx expo install expo-image-picker` (`~58.
 
 - Build nativo Android: `BUILD SUCCESSFUL` (360 tareas, 6m17s).
 - `npx expo export --platform android`: 928 módulos, bundle correcto; solo se incluye la fuente Ionicons tras el import directo.
-- `npm run verify:config`: JSON válido de 3025 bytes.
+- `npm run verify:config`: JSON válido de 3067 bytes.
 - `npm run doctor`: 20/20.
 - Recorrido manual en emulador: catálogos, creación, borrador, publicación, fotos, edición y cancelación. También se detuvo el backend para verificar el estado de resultado incierto: el formulario quedó bloqueado, conservó los datos y ofreció revisar “Mis solicitudes” sin reenviar. Se reprodujo el `500` posterior a la creación activando temporalmente la cabecera de idempotencia; la app releyó la lista y mostró “Revisar solicitud coincidente”. También se verificó una edición con backend detenido: el formulario se bloqueó, conservó el cambio local y no ofreció reenvío. La constante se restauró a `false`. La iteración visual F04 se revisó con capturas de lista, formulario y detalle en estados publicado, borrador y cancelado; las capturas quedaron en `/tmp` fuera de Git. Ver [F04](../features/requests.md).
 

@@ -1,6 +1,6 @@
 # Arquitectura de la app móvil ALIADO
 
-**Estado:** base inicializada y features `auth` (SPEC-01), `profile` (SPEC-02), `requests` (SPEC-04) y `professional-profile` (SPEC-05, creación inicial y lectura parcial), `discovery` (SPEC-03) implementadas en UI e integración contra backend local. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La API desplegada, D-04 (sesión segura), D-06/D-07 (storage/archivos) y otras decisiones funcionales de `aliado-prb` siguen pendientes.
+**Estado:** base inicializada, shell autenticado MVP con barra inferior y features `auth` (SPEC-01), `profile` (SPEC-02), `requests` (SPEC-04), `professional-profile` (SPEC-05, parcial) y `discovery` (SPEC-03) implementadas en UI e integración contra backend local. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La API desplegada, D-04 (sesión segura), D-06/D-07 (storage/archivos) y otras decisiones funcionales de `aliado-prb` siguen pendientes.
 
 ## Propósito y límites
 
@@ -30,12 +30,14 @@ La estructura actual contiene el bootstrap, la navegación y la feature de acces
 │   ├── navigation/                    # RootNavigator y tipos de rutas
 │   ├── features/auth/                 # SPEC-01: acceso e identidad
 │   │   ├── components/
-│   │   ├── screens/
+│   │   ├── screens/                   # login, registro y recuperación
 │   │   ├── services/
 │   │   ├── session/
 │   │   ├── types/
 │   │   ├── utils/
 │   │   └── validation/
+│   ├── features/home/                 # Inicio autenticado y resumen de cuenta
+│   │   └── screens/
 │   ├── features/profile/              # SPEC-02: perfil, privacidad y eliminación
 │   │   ├── components/
 │   │   ├── hooks/
@@ -85,6 +87,7 @@ src/
 ├── navigation/            # navegación raíz y flujos por rol (se creará al implementar navegación)
 ├── features/
 │   ├── auth/              # se creará con la primera feature que lo requiera
+│   ├── home/              # inicio autenticado
 │   ├── profile/
 │   ├── discovery/
 │   ├── service-requests/
@@ -125,9 +128,14 @@ Los nombres finales deben seguir las convenciones del stack ratificado. No crear
 
 La navegación usa React Navigation 7 con stack nativo, según [ADR 0003](../adr/0003-navegacion-react-navigation.md). `src/navigation/RootNavigator.tsx` contiene la raíz y `src/navigation/types.ts` los tipos de rutas. Expo Router no se adopta en esta fase. El bootstrap vive en `src/bootstrap/` para no usar el directorio reservado `src/app/` de Expo Router y evitar su detección accidental. Si se adopta Expo Router más adelante, `src/app/` pasará a ser su directorio de rutas y el bootstrap se reubicará con un ADR de migración.
 
-La app presenta los flujos Cliente y Prestador según la identidad y permisos devueltos por el backend. En F01 el stack muestra el flujo de acceso sin sesión y una pantalla de sesión autenticada mínima. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
+La app presenta los flujos Cliente y Prestador según la identidad y permisos devueltos por el backend. Sin sesión, el stack muestra acceso, registro y recuperación. Con sesión, el stack raíz contiene `MainTabs` y las subpantallas; `MainTabs` separa las superficies principales por rol:
 
-Deep links: F03 registra `aliado://prestadores/:providerId` con React Navigation. Si no hay sesión, el ID se conserva y se navega después del acceso; la pantalla de detalle solo monta la consulta para `CLIENTE` y muestra acceso no permitido para otros roles. La validación de UUID se hace antes de navegar.
+- **Cliente:** Inicio, Buscar, Solicitudes y Mi perfil.
+- **Prestador:** Inicio, Profesional y Mi perfil.
+
+Los formularios, detalles, edición, privacidad, creación de perfil y perfil público se abren fuera de la barra inferior. `Inicio` no duplica los destinos de la barra: muestra saludo, cuenta, rol y una guía breve. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
+
+Deep links: F03 registra `aliado://prestadores/:providerId` con React Navigation y rutas anidadas de tabs (`buscar`, `solicitudes`, `perfil`, `perfil-profesional`). Si no hay sesión, el ID se conserva y se navega después del acceso; la pantalla de detalle solo monta la consulta para `CLIENTE` y muestra acceso no permitido para otros roles. La validación de UUID se hace antes de navegar.
 
 Las rutas protegidas mejoran navegación y presentación, pero nunca sustituyen la verificación de rol y propiedad de recursos en el servidor.
 
@@ -159,6 +167,7 @@ Patrón visual vigente:
 - **App autenticada:** fondo claro, cabecera blanca compacta con marca, título y acción de volver cuando aplique.
 - **Perfil:** avatar/resumen de identidad y filas de acción en tarjetas con icono, texto secundario y chevron; los botones primarios se reservan para guardar o confirmar.
 - **Solicitudes:** tarjetas con acento de estado, categoría como contexto, descripción como título visual y metadatos con iconos; el formulario agrupa secciones y el detalle separa hero, resumen y acciones contextuales.
+- **Shell autenticado:** barra inferior persistente con iconos Ionicons, estado activo/inactivo, safe area y feedback nativo; las subpantallas no muestran la barra. `Inicio` presenta saludo, cuenta y rol sin duplicar accesos de la barra.
 - **Estados:** los avisos de configuración de API y de versión de términos no se ocultan para mejorar la apariencia; se mantienen visibles cuando corresponden.
 
 Cada pantalla debe considerar, según corresponda: carga, vacío, datos, error recuperable, validación, sesión expirada, permiso denegado, conflicto de versión y acción en curso. La experiencia móvil debe cuidar etiquetas accesibles, lector de pantalla, foco, tamaño táctil y navegación atrás.
@@ -181,6 +190,6 @@ La estrategia de pruebas de interacción, builds nativos y E2E sigue pendiente d
 
 Confirmadas por [ADR 0001](../adr/0001-stack-y-versiones-movil.md): Expo SDK 58, React Native 0.88.1, React 19.3.0, TypeScript 6.0.x, Node 24 LTS y npm con lockfile. La API es REST/JSON.
 
-Navegación confirmada por [ADR 0003](../adr/0003-navegacion-react-navigation.md): React Navigation 7 con stack nativo.
+Navegación confirmada por [ADR 0003](../adr/0003-navegacion-react-navigation.md): React Navigation 7 con stack nativo y bottom tabs para el shell autenticado.
 
 Siguen pendientes de decisión: herramientas de estado servidor/formularios/pruebas, generación de contratos y las decisiones D-03/D-04/D-06/D-07/D-08/D-18 que afectan reglas temporales, sesión, archivos, notificaciones e idempotencia. F04 usa `expo-image-picker` para la selección nativa de fotos; es la única dependencia añadida por esa feature.

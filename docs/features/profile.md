@@ -64,7 +64,7 @@ src/features/profile/
 └── index.ts
 ```
 
-La navegación raíz incluye estas pantallas dentro de la sesión autenticada. La pantalla de sesión de F01 enlaza a `Mi perfil`.
+`Mi perfil` es una pestaña de la barra inferior autenticada. Las pantallas de edición, ubicación, privacidad, vista pública y eliminación se abren fuera de la barra para conservar el historial.
 
 ## Privacidad y D-05
 

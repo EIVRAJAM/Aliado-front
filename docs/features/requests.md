@@ -78,7 +78,7 @@ src/features/requests/
 └── index.ts
 ```
 
-La navegación raíz incluye `Requests`, `RequestForm` y `RequestDetail` dentro de la sesión autenticada. La pantalla de sesión muestra “Mis solicitudes” solo para `CLIENTE`; la lista vuelve a comprobar el rol. El backend exige `CLIENTE` en todas las rutas de solicitudes y la app no sustituye esa autorización.
+La barra inferior incluye `Solicitudes` solo para `CLIENTE`. `RequestForm` y `RequestDetail` se abren fuera de la barra para conservar jerarquía e historial. La lista vuelve a comprobar el rol y el backend exige `CLIENTE` en todas las rutas; la app no sustituye esa autorización.
 
 ## Flujos y estados
 

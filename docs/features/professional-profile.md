@@ -52,7 +52,7 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
 
 ## Implementación frontend actual
 
-- Entrada **“Perfil profesional”** desde la pantalla de sesión para el rol `PRESTADOR`.
+- Entrada **“Profesional”** en la barra inferior para el rol `PRESTADOR`; las subpantallas de creación se abren fuera de la barra.
 - Pantalla `ProfessionalProfileCreateScreen`:
   - Carga real de catálogos, selección múltiple, validación local y POST de creación.
   - Manejo de carga, error, `400`, `401`, `403`, `409`, resultado incierto y reconciliación por vista previa.
