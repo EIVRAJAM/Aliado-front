@@ -8,29 +8,21 @@ import {
   LoginScreen,
   RegisterScreen,
   ResetPasswordScreen,
-  SessionScreen,
   useAuthSession,
 } from '../features/auth';
 import {
   ProfileDeleteScreen,
   ProfileEditScreen,
   ProfileLocationScreen,
-  ProfileOverviewScreen,
   ProfilePrivacyScreen,
   ProfilePublicPreviewScreen,
 } from '../features/profile';
-import { DiscoveryScreen, ProviderProfileScreen } from '../features/discovery';
-import {
-  ProfessionalProfileCreateScreen,
-  ProfessionalProfileScreen,
-} from '../features/professional-profile';
-import {
-  RequestDetailScreen,
-  RequestFormScreen,
-  RequestListScreen,
-} from '../features/requests';
+import { ProviderProfileScreen } from '../features/discovery';
+import { ProfessionalProfileCreateScreen } from '../features/professional-profile';
+import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
 import { colors } from '../shared/ui/theme';
 import { DeepLinkHandler } from './DeepLinkHandler';
+import { MainTabs } from './MainTabs';
 import { linking, navigationRef } from './deep-links';
 import type { RootStackParamList } from './types';
 
@@ -55,8 +47,8 @@ export function RootNavigator() {
       >
         {session ? (
           <>
-            <Stack.Screen name="Session" component={SessionScreen} />
-            <Stack.Screen name="Profile" component={ProfileOverviewScreen} />
+            <Stack.Screen name="MainTabs" component={MainTabs} />
+            <Stack.Screen name="ProviderProfile" component={ProviderProfileScreen} />
             <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
             <Stack.Screen name="ProfileLocation" component={ProfileLocationScreen} />
             <Stack.Screen name="ProfilePrivacy" component={ProfilePrivacyScreen} />
@@ -65,14 +57,10 @@ export function RootNavigator() {
               component={ProfilePublicPreviewScreen}
             />
             <Stack.Screen name="ProfileDelete" component={ProfileDeleteScreen} />
-            <Stack.Screen name="ProfessionalProfile" component={ProfessionalProfileScreen} />
             <Stack.Screen
               name="ProfessionalProfileCreate"
               component={ProfessionalProfileCreateScreen}
             />
-            <Stack.Screen name="Discovery" component={DiscoveryScreen} />
-            <Stack.Screen name="ProviderProfile" component={ProviderProfileScreen} />
-            <Stack.Screen name="Requests" component={RequestListScreen} />
             <Stack.Screen name="RequestForm" component={RequestFormScreen} />
             <Stack.Screen name="RequestDetail" component={RequestDetailScreen} />
           </>

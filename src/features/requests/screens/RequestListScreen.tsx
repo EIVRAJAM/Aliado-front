@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { RootStackParamList } from '../../../navigation/types';
+import type { MainTabParamList, RootStackParamList } from '../../../navigation/types';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
@@ -12,7 +14,10 @@ import { RequestCard } from '../components/RequestCard';
 import { RequestStateView } from '../components/RequestStateView';
 import { useMyRequests } from '../hooks/useMyRequests';
 
-type RequestListScreenProps = NativeStackScreenProps<RootStackParamList, 'Requests'>;
+type RequestListScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'Requests'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 export function RequestListScreen({ navigation }: RequestListScreenProps) {
   const { session } = useAuthSession();
@@ -27,7 +32,6 @@ export function RequestListScreen({ navigation }: RequestListScreenProps) {
       <ScreenLayout
         title="Mis solicitudes"
         subtitle="Esta sección pertenece a las cuentas de cliente."
-        onBack={() => navigation.goBack()}
       >
         <InlineMessage
           variant="info"
@@ -47,7 +51,6 @@ export function RequestListScreen({ navigation }: RequestListScreenProps) {
     <ScreenLayout
       title="Mis solicitudes"
       subtitle="Consulta el estado de cada solicitud y retoma la que necesites."
-      onBack={() => navigation.goBack()}
     >
       <View style={styles.toolbar}>
         <View style={styles.toolbarText}>

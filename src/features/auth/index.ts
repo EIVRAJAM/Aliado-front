@@ -4,7 +4,6 @@ export { ForgotPasswordScreen } from './screens/ForgotPasswordScreen';
 export { LoginScreen } from './screens/LoginScreen';
 export { RegisterScreen } from './screens/RegisterScreen';
 export { ResetPasswordScreen } from './screens/ResetPasswordScreen';
-export { SessionScreen } from './screens/SessionScreen';
 export type {
   AuthErrorCode,
   AuthRole,

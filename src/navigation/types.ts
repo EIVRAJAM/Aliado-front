@@ -1,20 +1,26 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
+
+export type MainTabParamList = {
+  Home: undefined;
+  Discovery: undefined;
+  Requests: undefined;
+  ProfessionalProfile: undefined;
+  Profile: undefined;
+};
+
 export type RootStackParamList = {
   Login: { notice?: string } | undefined;
   Register: undefined;
   ForgotPassword: undefined;
   ResetPassword: { token?: string } | undefined;
-  Session: undefined;
-  Profile: undefined;
+  MainTabs: NavigatorScreenParams<MainTabParamList> | undefined;
+  ProviderProfile: { providerId: string };
   ProfileEdit: undefined;
   ProfileLocation: undefined;
   ProfilePrivacy: undefined;
   ProfilePublicPreview: { userId: string };
   ProfileDelete: undefined;
-  ProfessionalProfile: undefined;
   ProfessionalProfileCreate: undefined;
-  Discovery: undefined;
-  ProviderProfile: { providerId: string };
-  Requests: undefined;
   RequestForm: { requestId?: string } | undefined;
   RequestDetail: { requestId: string };
 };

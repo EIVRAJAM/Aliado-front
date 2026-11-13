@@ -1,7 +1,9 @@
 import { StyleSheet, Text, View } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { RootStackParamList } from '../../../navigation/types';
+import type { MainTabParamList, RootStackParamList } from '../../../navigation/types';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
@@ -10,7 +12,10 @@ import { ProfileStateView } from '../components/ProfileStateView';
 import { useMyProfile } from '../hooks/useMyProfile';
 import { visibilityLabel } from '../utils/profile-format';
 
-type ProfileOverviewScreenProps = NativeStackScreenProps<RootStackParamList, 'Profile'>;
+type ProfileOverviewScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'Profile'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps) {
   const { profile, loading, error, reload } = useMyProfile();
@@ -19,7 +24,6 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
     <ScreenLayout
       title="Mi perfil"
       subtitle="Consulta y administra la información de tu cuenta."
-      onBack={() => navigation.goBack()}
     >
       {loading || error || !profile ? (
         <ProfileStateView loading={loading} error={error} onRetry={reload} />

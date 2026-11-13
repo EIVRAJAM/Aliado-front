@@ -1,9 +1,11 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { RootStackParamList } from '../../../navigation/types';
+import type { MainTabParamList, RootStackParamList } from '../../../navigation/types';
 import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { LinkButton } from '../../../shared/ui/LinkButton';
@@ -16,7 +18,10 @@ import { ProviderResultCard } from '../components/ProviderResultCard';
 import { useDiscoveryCatalogs } from '../hooks/useDiscoveryCatalogs';
 import { useProviderSearch } from '../hooks/useProviderSearch';
 
-type DiscoveryScreenProps = NativeStackScreenProps<RootStackParamList, 'Discovery'>;
+type DiscoveryScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'Discovery'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
 
 interface FilterErrors {
   category?: string;
@@ -35,7 +40,6 @@ export function DiscoveryScreen({ navigation }: DiscoveryScreenProps) {
       <ScreenLayout
         title="Buscar prestadores"
         subtitle="Esta sección pertenece a las cuentas de cliente."
-        onBack={() => navigation.goBack()}
       >
         <InlineMessage
           variant="info"
@@ -93,7 +97,6 @@ function ClientDiscoveryScreen({ navigation }: { navigation: DiscoveryScreenProp
     <ScreenLayout
       title="Buscar prestadores"
       subtitle="Encuentra prestadores por categoría y zona."
-      onBack={() => navigation.goBack()}
     >
       {catalogsLoading ? (
         <Card style={styles.stateCard}>

@@ -1,8 +1,10 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { RootStackParamList } from '../../../navigation/types';
+import type { MainTabParamList, RootStackParamList } from '../../../navigation/types';
 import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
@@ -13,9 +15,9 @@ import { AgendaSection } from '../components/AgendaSection';
 import { PublicPreviewCard } from '../components/PublicPreviewCard';
 import { useProfessionalProfileOverview } from '../hooks/useProfessionalProfileOverview';
 
-type ProfessionalProfileScreenProps = NativeStackScreenProps<
-  RootStackParamList,
-  'ProfessionalProfile'
+type ProfessionalProfileScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'ProfessionalProfile'>,
+  NativeStackScreenProps<RootStackParamList>
 >;
 
 export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScreenProps) {
@@ -41,7 +43,6 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
       <ScreenLayout
         title="Perfil profesional"
         subtitle="Esta sección pertenece a las cuentas de prestador."
-        onBack={() => navigation.goBack()}
       >
         <InlineMessage
           variant="info"
@@ -57,7 +58,6 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
     <ScreenLayout
       title="Perfil profesional"
       subtitle="Consulta tu vista pública y tu agenda."
-      onBack={() => navigation.goBack()}
     >
       {loading ? (
         <View style={styles.loading}>

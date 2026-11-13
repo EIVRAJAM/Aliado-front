@@ -11,7 +11,15 @@ export const linking: LinkingOptions<RootStackParamList> = {
   prefixes: ['aliado://'],
   config: {
     screens: {
-      Discovery: 'buscar',
+      MainTabs: {
+        screens: {
+          Home: '',
+          Discovery: 'buscar',
+          Requests: 'solicitudes',
+          ProfessionalProfile: 'perfil-profesional',
+          Profile: 'perfil',
+        },
+      },
       ProviderProfile: 'prestadores/:providerId',
     },
   },
