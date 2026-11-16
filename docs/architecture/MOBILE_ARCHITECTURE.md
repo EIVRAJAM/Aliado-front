@@ -1,6 +1,6 @@
 # Arquitectura de la app móvil ALIADO
 
-**Estado:** base inicializada, shell autenticado MVP con barra inferior y features `auth` (SPEC-01), `profile` (SPEC-02), `requests` (SPEC-04), `professional-profile` (SPEC-05, parcial) y `discovery` (SPEC-03) implementadas en UI e integración contra backend local. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La API desplegada, D-04 (sesión segura), D-06/D-07 (storage/archivos) y otras decisiones funcionales de `aliado-prb` siguen pendientes.
+**Estado:** base inicializada, shell autenticado MVP con barra inferior y features `auth` (SPEC-01), `profile` (SPEC-02), `requests` (SPEC-04), `professional-profile` (SPEC-05, parcial), `discovery` (SPEC-03) y `opportunities` (SPEC-06) implementadas en UI e integración contra backend local. El stack está confirmado en [ADR 0001](../adr/0001-stack-y-versiones-movil.md) y la navegación en [ADR 0003](../adr/0003-navegacion-react-navigation.md). La API desplegada, D-04 (sesión segura), D-06/D-07 (storage/archivos) y otras decisiones funcionales de `aliado-prb` siguen pendientes.
 
 ## Propósito y límites
 
@@ -62,6 +62,13 @@ La estructura actual contiene el bootstrap, la navegación y la feature de acces
 │   │   ├── types/
 │   │   └── utils/
 │   ├── features/discovery/            # SPEC-03: búsqueda y perfil público
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── screens/
+│   │   ├── services/
+│   │   ├── types/
+│   │   └── utils/
+│   ├── features/opportunities/        # SPEC-06: tablero, detalle y avisos del Prestador
 │   │   ├── components/
 │   │   ├── hooks/
 │   │   ├── screens/
@@ -131,9 +138,9 @@ La navegación usa React Navigation 7 con stack nativo, según [ADR 0003](../adr
 La app presenta los flujos Cliente y Prestador según la identidad y permisos devueltos por el backend. Sin sesión, el stack muestra acceso, registro y recuperación. Con sesión, el stack raíz contiene `MainTabs` y las subpantallas; `MainTabs` separa las superficies principales por rol:
 
 - **Cliente:** Inicio, Buscar, Solicitudes y Mi perfil.
-- **Prestador:** Inicio, Profesional y Mi perfil.
+- **Prestador:** Inicio, Oportunidades, Profesional y Mi perfil.
 
-Los formularios, detalles, edición, privacidad, creación de perfil y perfil público se abren fuera de la barra inferior. `Inicio` no duplica los destinos de la barra: muestra un saludo contextual, cuenta, rol y una guía breve. Para Cliente se orienta a encontrar servicios y continuar con sus solicitudes; para Prestador, a su espacio profesional y a la consulta de perfil/agenda. No usa métricas ni datos no disponibles. `Cerrar sesión` vive al final de `Mi perfil`, junto al aviso de sesión en memoria y separado visualmente de la acción destructiva “Eliminar cuenta”. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
+Los formularios, detalles, edición, privacidad, creación de perfil y perfil público se abren fuera de la barra inferior. `Inicio` no duplica los destinos de la barra: muestra un saludo contextual, cuenta, rol y una guía breve. Para Cliente se orienta a encontrar servicios y continuar con sus solicitudes; para Prestador, a revisar oportunidades compatibles y a consultar perfil/agenda. No usa métricas ni datos no disponibles. `Cerrar sesión` vive al final de `Mi perfil`, junto al aviso de sesión en memoria y separado visualmente de la acción destructiva “Eliminar cuenta”. Las rutas deben responder a sesión ausente, expirada o revocada y a cambios de cuenta. Si el producto confirma que una cuenta puede operar con ambos roles, la selección/cambio de contexto se ajustará al contrato; no se debe inferir del prototipo.
 
 Deep links: F03 registra `aliado://prestadores/:providerId` con React Navigation y rutas anidadas de tabs (`buscar`, `solicitudes`, `perfil`, `perfil-profesional`). Si no hay sesión, el ID se conserva y se navega después del acceso; la pantalla de detalle solo monta la consulta para `CLIENTE` y muestra acceso no permitido para otros roles. La validación de UUID se hace antes de navegar.
 
@@ -143,8 +150,9 @@ Las rutas protegidas mejoran navegación y presentación, pero nunca sustituyen 
 
 - Usar una capa de transporte central que gestione URL por entorno, serialización, cancelación y errores comunes.
 - Mantener servicios y tipos específicos dentro de su feature; generar o compartir contratos desde OpenAPI cuando el contrato esté aprobado.
-- En F01, el cliente HTTP sigue el OpenAPI entregado por backend; las diferencias con el plan funcional se registran en [F01 — Acceso e identidad](../features/auth.md). F02 y F04 registran sus propias diferencias en [F02](../features/profile.md) y [F04](../features/requests.md).
+- En F01, el cliente HTTP sigue el OpenAPI entregado por backend; las diferencias con el plan funcional se registran en [F01 — Acceso e identidad](../features/auth.md). F02, F04 y F06 registran sus propias diferencias en [F02](../features/profile.md), [F04](../features/requests.md) y [F06](../features/opportunities.md).
 - F04 mantiene el contrato real del backend: la creación usa JSON, las fotos usan multipart y la respuesta del detalle solo expone claves de archivo. La cabecera `Idempotency-Key` está implementada en el cliente pero desactivada mientras el backend no corrija el fallo de `idempotency_keys`; ver [F04](../features/requests.md).
+- F06 consume `GET /api/v1/oportunidades`, `GET /api/v1/oportunidades/{solicitudId}` y `GET /api/v1/notificaciones/oportunidades`. Los filtros de categoría y urgencia se delegan al servidor; la app no calcula compatibilidad ni filtra localmente. Las fotos llegan como claves internas sin contrato de descarga, y la bandeja de avisos se consulta al abrir, sin push ni polling; ver [F06](../features/opportunities.md).
 - Modelar explícitamente respuestas exitosas, errores recuperables, validaciones, `401`, `403`, `404`, `409` y conectividad intermitente.
 - No asumir campos, endpoints o estados que no estén en los SPEC/contratos.
 - Las fixtures pueden habilitar trabajo visual temprano, pero deben estar aisladas del adaptador real y no presentarse como integración aceptada.
@@ -167,7 +175,7 @@ Patrón visual vigente:
 - **App autenticada:** fondo claro, cabecera blanca compacta con marca, título y acción de volver cuando aplique.
 - **Perfil:** avatar/resumen de identidad y filas de acción en tarjetas con icono, texto secundario y chevron; los botones primarios se reservan para guardar o confirmar.
 - **Solicitudes:** tarjetas con acento de estado, categoría como contexto, descripción como título visual y metadatos con iconos; el formulario agrupa secciones y el detalle separa hero, resumen y acciones contextuales.
-- **Shell autenticado:** barra inferior persistente con iconos Ionicons, estado activo/inactivo, safe area y feedback nativo; las subpantallas no muestran la barra. `Inicio` presenta un contenido contextual por rol sin duplicar accesos. `Mi perfil` concentra la información de cuenta, el aviso de sesión en memoria y `Cerrar sesión`, con una presentación neutra distinta de `Eliminar cuenta`.
+- **Shell autenticado:** barra inferior persistente con iconos Ionicons, estado activo/inactivo, safe area y feedback nativo; las subpantallas no muestran la barra. `Inicio` presenta un contenido contextual por rol sin duplicar accesos. `Oportunidades` usa tarjetas con acento de urgencia, filtros enviados al servidor y estados de carga/error/vacío; el detalle separa resumen, metadatos, fotos y privacidad. `Mi perfil` concentra la información de cuenta, el aviso de sesión en memoria y `Cerrar sesión`, con una presentación neutra distinta de `Eliminar cuenta`.
 - **Estados:** los avisos de configuración de API y de versión de términos no se ocultan para mejorar la apariencia; se mantienen visibles cuando corresponden.
 
 Cada pantalla debe considerar, según corresponda: carga, vacío, datos, error recuperable, validación, sesión expirada, permiso denegado, conflicto de versión y acción en curso. La experiencia móvil debe cuidar etiquetas accesibles, lector de pantalla, foco, tamaño táctil y navegación atrás.
