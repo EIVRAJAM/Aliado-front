@@ -4,6 +4,7 @@ export type MainTabParamList = {
   Home: undefined;
   Discovery: undefined;
   Requests: undefined;
+  Opportunities: undefined;
   ProfessionalProfile: undefined;
   Profile: undefined;
 };
@@ -21,6 +22,8 @@ export type RootStackParamList = {
   ProfilePublicPreview: { userId: string };
   ProfileDelete: undefined;
   ProfessionalProfileCreate: undefined;
+  OpportunityDetail: { solicitudId: string };
+  OpportunityNotifications: undefined;
   RequestForm: { requestId?: string } | undefined;
   RequestDetail: { requestId: string };
 };

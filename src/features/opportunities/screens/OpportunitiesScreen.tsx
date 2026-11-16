@@ -1,0 +1,329 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+
+import type { MainTabParamList, RootStackParamList } from '../../../navigation/types';
+import { Card } from '../../../shared/ui/Card';
+import { InlineMessage } from '../../../shared/ui/InlineMessage';
+import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
+import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
+import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { useAuthSession } from '../../auth';
+import { OpportunityCard } from '../components/OpportunityCard';
+import { OpportunityFilterCard } from '../components/OpportunityFilterCard';
+import { OpportunityStateView } from '../components/OpportunityStateView';
+import { useOpportunitiesBoard } from '../hooks/useOpportunitiesBoard';
+import type { OpportunityUrgency } from '../types/opportunity';
+
+type OpportunitiesScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'Opportunities'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export function OpportunitiesScreen({ navigation }: OpportunitiesScreenProps) {
+  const { session } = useAuthSession();
+
+  if (!session) {
+    return null;
+  }
+
+  if (session.role !== 'PRESTADOR') {
+    return (
+      <ScreenLayout
+        title="Oportunidades"
+        subtitle="Esta sección pertenece a las cuentas de prestador."
+      >
+        <InlineMessage
+          variant="info"
+          message="Tu cuenta no tiene el rol Prestador, por lo que no puede consultar oportunidades."
+        />
+      </ScreenLayout>
+    );
+  }
+
+  return <ProviderOpportunitiesScreen navigation={navigation} />;
+}
+
+function ProviderOpportunitiesScreen({
+  navigation,
+}: {
+  navigation: OpportunitiesScreenProps['navigation'];
+}) {
+  const {
+    categories,
+    categoriesLoading,
+    categoriesError,
+    opportunities,
+    filters,
+    loading,
+    error,
+    applyFilters,
+    clearFilters,
+    reload,
+    reloadCategories,
+  } = useOpportunitiesBoard();
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [urgency, setUrgency] = useState<OpportunityUrgency | null>(null);
+
+  const hasAppliedFilters = Boolean(filters.categoriaId || filters.urgencia);
+  const hasSelectedFilters = Boolean(categoryId || urgency || hasAppliedFilters);
+
+  const countLabel = loading
+    ? 'Cargando oportunidades…'
+    : error
+      ? 'No se pudieron cargar'
+      : `${opportunities.length} ${
+          opportunities.length === 1 ? 'oportunidad' : 'oportunidades'
+        }`;
+
+  const handleApply = () => {
+    applyFilters({ categoriaId: categoryId, urgencia: urgency });
+  };
+
+  const handleClear = () => {
+    setCategoryId(null);
+    setUrgency(null);
+    clearFilters();
+  };
+
+  return (
+    <ScreenLayout
+      title="Oportunidades"
+      subtitle="Revisa solicitudes compatibles con tu perfil y tu disponibilidad."
+    >
+      <View style={styles.toolbar}>
+        <View style={styles.toolbarText}>
+          <Text style={styles.count}>{countLabel}</Text>
+          <Text style={styles.countHint}>
+            {hasAppliedFilters
+              ? 'Filtros aplicados sobre tu tablero compatible.'
+              : 'Solo aparecen solicitudes compatibles con tu perfil.'}
+          </Text>
+        </View>
+        <View style={styles.toolbarActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Actualizar oportunidades"
+            onPress={() => {
+              void reload();
+            }}
+            style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
+          >
+            <Ionicons name="refresh-outline" size={20} color={colors.primary} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Avisos de oportunidades"
+            onPress={() => navigation.navigate('OpportunityNotifications')}
+            style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
+          >
+            <Ionicons name="notifications-outline" size={20} color={colors.primary} />
+          </Pressable>
+        </View>
+      </View>
+
+      <OpportunityFilterCard
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        categoriesError={categoriesError}
+        onRetryCategories={() => {
+          void reloadCategories();
+        }}
+        categoryId={categoryId}
+        urgency={urgency}
+        onCategoryChange={setCategoryId}
+        onUrgencyChange={setUrgency}
+        onApply={handleApply}
+        onClear={handleClear}
+        hasFilters={hasSelectedFilters}
+        disabled={loading}
+      />
+
+      {loading || error ? (
+        <OpportunityStateView
+          loading={loading}
+          error={error}
+          onRetry={() => {
+            void reload();
+          }}
+          loadingLabel="Cargando oportunidades compatibles…"
+        />
+      ) : opportunities.length === 0 ? (
+        <Card style={styles.emptyCard}>
+          <View style={styles.emptyIcon}>
+            <Ionicons
+              name={hasAppliedFilters ? 'filter-outline' : 'briefcase-outline'}
+              size={28}
+              color={colors.primary}
+            />
+          </View>
+          <Text style={styles.emptyTitle}>
+            {hasAppliedFilters
+              ? 'Sin resultados con estos filtros'
+              : 'Aún no hay oportunidades compatibles'}
+          </Text>
+          <Text style={styles.emptyText}>
+            {hasAppliedFilters
+              ? 'No hay oportunidades compatibles que cumplan los filtros seleccionados.'
+              : 'No hay coincidencias disponibles en este momento. Puedes revisar las categorías, zonas y disponibilidad de tu perfil profesional.'}
+          </Text>
+          {hasAppliedFilters ? (
+            <PrimaryButton
+              label="Limpiar filtros"
+              variant="secondary"
+              onPress={handleClear}
+            />
+          ) : (
+            <PrimaryButton
+              label="Revisar Perfil profesional"
+              variant="secondary"
+              onPress={() => navigation.navigate('ProfessionalProfile')}
+            />
+          )}
+        </Card>
+      ) : (
+        <>
+          <View style={styles.resultsHeader}>
+            <Text style={styles.resultsTitle}>
+              {opportunities.length}{' '}
+              {opportunities.length === 1 ? 'oportunidad compatible' : 'oportunidades compatibles'}
+            </Text>
+            <Text style={styles.resultsHint}>
+              {hasAppliedFilters
+                ? 'Resultados que cumplen los filtros seleccionados.'
+                : 'Revisa el detalle antes de decidir.'}
+            </Text>
+          </View>
+          <View style={styles.list}>
+            {opportunities.map((opportunity) => (
+              <OpportunityCard
+                key={opportunity.solicitudId}
+                opportunity={opportunity}
+                onPress={() =>
+                  navigation.navigate('OpportunityDetail', {
+                    solicitudId: opportunity.solicitudId,
+                  })
+                }
+              />
+            ))}
+          </View>
+        </>
+      )}
+
+      <Card style={styles.noteCard}>
+        <View style={styles.noteHeader}>
+          <Ionicons name="information-circle-outline" size={18} color={colors.muted} />
+          <Text style={styles.noteTitle}>Alcance del tablero</Text>
+        </View>
+        <Text style={styles.noteText}>
+          La compatibilidad la calcula el servidor con categoría, zona y disponibilidad. La app
+          no agrega coincidencias ni filtra por su cuenta.
+        </Text>
+      </Card>
+    </ScreenLayout>
+  );
+}
+
+const styles = StyleSheet.create({
+  toolbar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  toolbarText: {
+    flex: 1,
+    gap: 2,
+  },
+  count: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  countHint: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  toolbarActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  iconButton: {
+    width: 42,
+    height: 42,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pressed: {
+    backgroundColor: colors.background,
+  },
+  resultsHeader: {
+    gap: 2,
+  },
+  resultsTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  resultsHint: {
+    color: colors.muted,
+    fontSize: 12,
+  },
+  list: {
+    gap: spacing.md,
+  },
+  emptyCard: {
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.xl,
+  },
+  emptyIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: radii.xl,
+    backgroundColor: colors.infoSurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.xs,
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  emptyText: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: 'center',
+    marginBottom: spacing.sm,
+  },
+  noteCard: {
+    gap: spacing.sm,
+  },
+  noteHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  noteTitle: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: '800',
+  },
+  noteText: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 18,
+  },
+});

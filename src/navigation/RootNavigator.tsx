@@ -18,6 +18,10 @@ import {
   ProfilePublicPreviewScreen,
 } from '../features/profile';
 import { ProviderProfileScreen } from '../features/discovery';
+import {
+  OpportunityDetailScreen,
+  OpportunityNotificationsScreen,
+} from '../features/opportunities';
 import { ProfessionalProfileCreateScreen } from '../features/professional-profile';
 import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
 import { colors } from '../shared/ui/theme';
@@ -61,6 +65,18 @@ export function RootNavigator() {
               name="ProfessionalProfileCreate"
               component={ProfessionalProfileCreateScreen}
             />
+            {session.role === 'PRESTADOR' ? (
+              <>
+                <Stack.Screen
+                  name="OpportunityDetail"
+                  component={OpportunityDetailScreen}
+                />
+                <Stack.Screen
+                  name="OpportunityNotifications"
+                  component={OpportunityNotificationsScreen}
+                />
+              </>
+            ) : null}
             <Stack.Screen name="RequestForm" component={RequestFormScreen} />
             <Stack.Screen name="RequestDetail" component={RequestDetailScreen} />
           </>

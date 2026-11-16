@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthSession } from '../features/auth';
 import { DiscoveryScreen } from '../features/discovery';
 import { HomeScreen } from '../features/home';
+import { OpportunitiesScreen } from '../features/opportunities';
 import { ProfileOverviewScreen } from '../features/profile';
 import { ProfessionalProfileScreen } from '../features/professional-profile';
 import { RequestListScreen } from '../features/requests';
@@ -20,6 +21,7 @@ const icons: Record<
   Home: { active: 'home', inactive: 'home-outline' },
   Discovery: { active: 'search', inactive: 'search-outline' },
   Requests: { active: 'document-text', inactive: 'document-text-outline' },
+  Opportunities: { active: 'flash', inactive: 'flash-outline' },
   ProfessionalProfile: { active: 'briefcase', inactive: 'briefcase-outline' },
   Profile: { active: 'person', inactive: 'person-outline' },
 };
@@ -82,11 +84,18 @@ export function MainTabs() {
         </>
       ) : null}
       {session.role === 'PRESTADOR' ? (
-        <Tab.Screen
-          name="ProfessionalProfile"
-          component={ProfessionalProfileScreen}
-          options={{ title: 'Profesional' }}
-        />
+        <>
+          <Tab.Screen
+            name="Opportunities"
+            component={OpportunitiesScreen}
+            options={{ title: 'Oportunidades' }}
+          />
+          <Tab.Screen
+            name="ProfessionalProfile"
+            component={ProfessionalProfileScreen}
+            options={{ title: 'Profesional' }}
+          />
+        </>
       ) : null}
       <Tab.Screen name="Profile" component={ProfileOverviewScreen} options={{ title: 'Mi perfil' }} />
     </Tab.Navigator>

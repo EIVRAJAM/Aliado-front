@@ -26,7 +26,7 @@ export function HomeScreen() {
         <Text style={styles.heroSubtitle}>
           {isClient
             ? 'Explora prestadores por categoría y zona, y continúa con tus solicitudes desde la barra inferior.'
-            : 'Consulta tu perfil público y tu agenda desde la barra inferior.'}
+            : 'Revisa oportunidades compatibles y consulta tu perfil y agenda desde la barra inferior.'}
         </Text>
       </View>
 
@@ -57,12 +57,12 @@ export function HomeScreen() {
         </View>
         <View style={styles.contextText}>
           <Text style={styles.contextTitle}>
-            {isClient ? 'Tu actividad empieza en Buscar' : 'Tu perfil vive en Profesional'}
+            {isClient ? 'Tu actividad empieza en Buscar' : 'Tu demanda está en Oportunidades'}
           </Text>
           <Text style={styles.contextMessage}>
             {isClient
               ? 'Usa Buscar para elegir categoría y zona. En Solicitudes puedes revisar lo que ya publicaste.'
-              : 'Desde Profesional puedes consultar tu vista pública y tu agenda. La información de tu cuenta está en Mi perfil.'}
+              : 'En Oportunidades puedes revisar solicitudes compatibles. Tu perfil público y agenda están en Profesional.'}
           </Text>
         </View>
       </Card>
