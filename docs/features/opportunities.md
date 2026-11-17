@@ -9,7 +9,7 @@ Cubre SPEC-06 para el rol **Prestador**:
 - pestaña **Oportunidades** en la barra inferior, con Inicio, Oportunidades, Profesional y Mi perfil;
 - tablero de solicitudes compatibles calculado por el servidor;
 - filtros opcionales por categoría y urgencia enviados a la API desde un botón compacto y un modal;
-- detalle de una oportunidad con encabezado compacto, descripción principal, fecha y cantidad de fotos como metadatos secundarios;
+- detalle de una oportunidad con encabezado compacto, descripción completa, referencia de solicitud, fecha y cantidad de fotos como metadatos secundarios;
 - bandeja de avisos `NUEVA_OPORTUNIDAD` consultada desde la API, sin simular push, polling ni notificaciones locales;
 - estados de carga, error recuperable, vacío, resultados y sesión expirada;
 - control de rol en navegación y pantallas, con el backend como autoridad final.
@@ -86,9 +86,9 @@ src/features/opportunities/
 └── utils/            # formato y mensajes
 ```
 
-- `OpportunitiesScreen`: carga el tablero y el catálogo, muestra un botón de filtros con indicador de estado activo, y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal.
+- `OpportunitiesScreen`: carga el tablero y el catálogo, muestra un botón de filtros con indicador de estado activo, y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal. El conteo aparece una sola vez junto a las acciones; el subtítulo es la única explicación general de compatibilidad y se retiró la tarjeta redundante de alcance.
 - `OpportunityFilterModal`: usa el patrón modal de la app, respeta safe areas, cierra con botón, overlay y Atrás, y mantiene áreas táctiles de al menos 44 puntos.
-- `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` al recibir foco y presenta un único bloque principal con categoría, urgencia, zona, descripción, fecha y fotos; la privacidad queda como aviso secundario.
+- `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` al recibir foco y presenta un único bloque con categoría, urgencia, zona aproximada, descripción completa, fecha, referencia corta de `solicitudId` y cantidad de fotos. No repite campos y usa un aviso compacto para privacidad y límites del contrato.
 - `OpportunityNotificationsScreen`: consulta la bandeja al abrir y al actualizar; cada aviso abre el detalle, que se valida de nuevo en el servidor.
 - No se muestra identidad, correo, teléfono ni dirección exacta del Cliente; el DTO real tampoco los expone.
 
@@ -128,16 +128,15 @@ Sin sesión, los tres endpoints respondieron `401 NO_AUTENTICADO`. Los datos dem
 
 La sesión Prestador existente se usó contra los datos `[DEMO LOCAL F06]`:
 
-- tablero sin filtros: `4` oportunidades compatibles;
+- tablero sin filtros: `4` oportunidades, con el conteo una sola vez en la cabecera y sin encabezado de resultados duplicado ni tarjeta de alcance;
 - modal abierto/cerrado con botón de cierre, toque fuera y botón Atrás de Android;
-- filtro por urgencia `Urgente`: `1` oportunidad, con indicador activo en el botón;
+- filtro por urgencia `Urgente`: `1` oportunidad, con indicador activo y un solo conteo;
 - filtro combinado `Aire acondicionado` + `Urgente`: `1` oportunidad; al reabrir el modal, ambas selecciones se conservaron;
 - limpiar desde el modal: volvió a `4` oportunidades y retiró el indicador;
 - filtro `Pintura`: `0` resultados con estado vacío; la acción de limpiar devolvió las `4` oportunidades;
-- detalle de una oportunidad demo: un bloque compacto con categoría, urgencia, zona, descripción, fecha, “Sin fotos” y aviso de privacidad; sin secciones duplicadas.
-- No se visualizó la limitación de fotos porque las solicitudes demo no tienen fotos; la rama condicional está implementada para cuando exista cantidad mayor que cero.
+- detalle de una oportunidad demo: categoría, urgencia, zona aproximada, descripción completa, fecha de publicación, referencia `Ref. 66000000…0001`, “Sin fotos” y aviso compacto de privacidad y límites; sin campos repetidos.
 
-No se repitieron en esta iteración el `404` unificado, la notificación real ni la denegación `403`; no son comportamientos modificados por este cambio de UI. No se crearon datos para forzarlos.
+Los datos demo no incluyen descripciones nulas/vacías, saltos de línea ni fotos, por lo que no se pudieron verificar visualmente esos estados. La UI implementa el texto de reemplazo para descripción ausente y la nota de fotos no descargables; no se crearon registros para forzarlos. Tampoco se repitieron el `404` unificado, la notificación real ni la denegación `403`, que no forman parte de este ajuste.
 
 ## Enlaces
 
