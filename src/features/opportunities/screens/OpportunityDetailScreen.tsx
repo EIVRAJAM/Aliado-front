@@ -14,7 +14,7 @@ import { useOpportunityDetail } from '../hooks/useOpportunityDetail';
 import type { Opportunity } from '../types/opportunity';
 import {
   formatOpportunityDate,
-  opportunitySummary,
+  formatOpportunityReference,
   photoCountLabel,
   urgencyLabel,
   urgencyTone,
@@ -107,7 +107,9 @@ function ProviderOpportunityDetailScreen({
 
 function OpportunityDetailContent({ opportunity }: { opportunity: Opportunity }) {
   const tone = urgencyTone(opportunity.urgencia);
-  const summary = opportunitySummary(opportunity);
+  const description = opportunity.descripcion?.trim() ?? '';
+  const hasDescription = description.length > 0;
+  const photoCount = opportunity.fotos.length;
 
   return (
     <>
@@ -119,22 +121,33 @@ function OpportunityDetailContent({ opportunity }: { opportunity: Opportunity })
               {opportunity.categoria}
             </Text>
           </View>
-          <View style={[styles.urgencyBadge, { backgroundColor: tone.background }]}>
+          <View
+            accessibilityLabel={`Urgencia ${urgencyLabel(opportunity.urgencia)}`}
+            style={[styles.urgencyBadge, { backgroundColor: tone.background }]}
+          >
             <View style={[styles.urgencyDot, { backgroundColor: tone.text }]} />
             <Text style={[styles.urgencyText, { color: tone.text }]}>
-              {urgencyLabel(opportunity.urgencia)}
+              Urgencia {urgencyLabel(opportunity.urgencia)}
             </Text>
           </View>
         </View>
 
         <View style={styles.zoneRow}>
           <Ionicons name="location-outline" size={15} color={colors.muted} />
-          <Text style={styles.zoneText} numberOfLines={1}>
+          <Text style={styles.zoneLabel}>Zona aproximada</Text>
+          <Text style={styles.zoneValue} numberOfLines={1}>
             {opportunity.zonaAproximada}
           </Text>
         </View>
 
-        <Text style={styles.description}>{summary}</Text>
+        <View style={styles.descriptionBlock}>
+          <Text style={styles.descriptionLabel}>Descripción</Text>
+          <Text
+            style={[styles.description, hasDescription ? null : styles.descriptionEmpty]}
+          >
+            {hasDescription ? description : 'La solicitud no incluye una descripción.'}
+          </Text>
+        </View>
 
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
@@ -144,17 +157,23 @@ function OpportunityDetailContent({ opportunity }: { opportunity: Opportunity })
             </Text>
           </View>
           <View style={styles.metaItem}>
+            <Ionicons name="document-text-outline" size={14} color={colors.muted} />
+            <Text style={styles.metaText}>
+              {formatOpportunityReference(opportunity.solicitudId)}
+            </Text>
+          </View>
+          <View style={styles.metaItem}>
             <Ionicons name="images-outline" size={14} color={colors.muted} />
-            <Text style={styles.metaText}>{photoCountLabel(opportunity.fotos.length)}</Text>
+            <Text style={styles.metaText}>{photoCountLabel(photoCount)}</Text>
           </View>
         </View>
       </Card>
 
-      {opportunity.fotos.length > 0 ? (
+      {photoCount > 0 ? (
         <View style={styles.photoNotice}>
           <Ionicons name="images-outline" size={16} color={colors.info} />
           <Text style={styles.photoNoticeText}>
-            Las fotos no se muestran: el contrato actual entrega solo referencias internas, no
+            Las fotos no pueden abrirse: el contrato actual entrega solo referencias internas, no
             una URL de descarga.
           </Text>
         </View>
@@ -163,7 +182,8 @@ function OpportunityDetailContent({ opportunity }: { opportunity: Opportunity })
       <View style={styles.privacyNotice}>
         <Ionicons name="shield-checkmark-outline" size={16} color={colors.teal} />
         <Text style={styles.privacyText}>
-          No se muestra identidad, correo, teléfono ni dirección exacta del Cliente.
+          Solo se muestran los datos autorizados para Prestador. No se incluye nombre, contacto
+          ni dirección exacta del Cliente, estado, horarios ni precio.
         </Text>
       </View>
     </>
@@ -217,17 +237,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.xs,
   },
-  zoneText: {
+  zoneLabel: {
     color: colors.muted,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  zoneValue: {
+    color: colors.text,
     fontSize: 13,
     flexShrink: 1,
+  },
+  descriptionBlock: {
+    gap: spacing.xs,
+  },
+  descriptionLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.6,
+    textTransform: 'uppercase',
   },
   description: {
     color: colors.text,
     fontSize: 18,
     fontWeight: '500',
     lineHeight: 27,
-    paddingVertical: spacing.xs,
+  },
+  descriptionEmpty: {
+    color: colors.muted,
+    fontSize: 15,
+    fontWeight: '400',
+    lineHeight: 22,
   },
   metaRow: {
     flexDirection: 'row',
@@ -245,6 +285,7 @@ const styles = StyleSheet.create({
   metaText: {
     color: colors.muted,
     fontSize: 12,
+    flexShrink: 1,
   },
   photoNotice: {
     flexDirection: 'row',

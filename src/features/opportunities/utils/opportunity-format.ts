@@ -84,3 +84,14 @@ export function photoCountLabel(count: number): string {
   }
   return `${count} ${count === 1 ? 'foto adjunta' : 'fotos adjuntas'}`;
 }
+
+export function formatOpportunityReference(solicitudId: string): string {
+  const value = solicitudId.trim();
+  if (!value) {
+    return 'Ref. no disponible';
+  }
+  if (value.length <= 12) {
+    return `Ref. ${value}`;
+  }
+  return `Ref. ${value.slice(0, 8)}…${value.slice(-4)}`;
+}

@@ -82,14 +82,7 @@ function ProviderOpportunitiesScreen({
       subtitle="Revisa solicitudes compatibles con tu perfil y tu disponibilidad."
     >
       <View style={styles.toolbar}>
-        <View style={styles.toolbarText}>
-          <Text style={styles.count}>{countLabel}</Text>
-          <Text style={styles.countHint}>
-            {hasAppliedFilters
-              ? 'Filtros aplicados sobre tu tablero compatible.'
-              : 'Solo aparecen solicitudes compatibles con tu perfil.'}
-          </Text>
-        </View>
+        <Text style={styles.count}>{countLabel}</Text>
         <View style={styles.toolbarActions}>
           <Pressable
             accessibilityRole="button"
@@ -169,44 +162,20 @@ function ProviderOpportunitiesScreen({
           )}
         </Card>
       ) : (
-        <>
-          <View style={styles.resultsHeader}>
-            <Text style={styles.resultsTitle}>
-              {opportunities.length}{' '}
-              {opportunities.length === 1 ? 'oportunidad compatible' : 'oportunidades compatibles'}
-            </Text>
-            <Text style={styles.resultsHint}>
-              {hasAppliedFilters
-                ? 'Resultados que cumplen los filtros seleccionados.'
-                : 'Revisa el detalle antes de decidir.'}
-            </Text>
-          </View>
-          <View style={styles.list}>
-            {opportunities.map((opportunity) => (
-              <OpportunityCard
-                key={opportunity.solicitudId}
-                opportunity={opportunity}
-                onPress={() =>
-                  navigation.navigate('OpportunityDetail', {
-                    solicitudId: opportunity.solicitudId,
-                  })
-                }
-              />
-            ))}
-          </View>
-        </>
-      )}
-
-      <Card style={styles.noteCard}>
-        <View style={styles.noteHeader}>
-          <Ionicons name="information-circle-outline" size={18} color={colors.muted} />
-          <Text style={styles.noteTitle}>Alcance del tablero</Text>
+        <View style={styles.list}>
+          {opportunities.map((opportunity) => (
+            <OpportunityCard
+              key={opportunity.solicitudId}
+              opportunity={opportunity}
+              onPress={() =>
+                navigation.navigate('OpportunityDetail', {
+                  solicitudId: opportunity.solicitudId,
+                })
+              }
+            />
+          ))}
         </View>
-        <Text style={styles.noteText}>
-          La compatibilidad la calcula el servidor con categoría, zona y disponibilidad. La app
-          no agrega coincidencias ni filtra por su cuenta.
-        </Text>
-      </Card>
+      )}
 
       <OpportunityFilterModal
         visible={filterModalVisible}
@@ -232,19 +201,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-  toolbarText: {
-    flex: 1,
-    gap: 2,
-  },
   count: {
     color: colors.text,
     fontSize: 18,
     fontWeight: '800',
-  },
-  countHint: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
+    flexShrink: 1,
   },
   toolbarActions: {
     flexDirection: 'row',
@@ -276,18 +237,6 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.surface,
   },
-  resultsHeader: {
-    gap: 2,
-  },
-  resultsTitle: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  resultsHint: {
-    color: colors.muted,
-    fontSize: 12,
-  },
   list: {
     gap: spacing.md,
   },
@@ -317,23 +266,5 @@ const styles = StyleSheet.create({
     lineHeight: 19,
     textAlign: 'center',
     marginBottom: spacing.sm,
-  },
-  noteCard: {
-    gap: spacing.sm,
-  },
-  noteHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  noteTitle: {
-    color: colors.text,
-    fontSize: 14,
-    fontWeight: '800',
-  },
-  noteText: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 18,
   },
 });
