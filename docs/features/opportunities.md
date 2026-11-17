@@ -1,6 +1,6 @@
 # F06 — Compatibilidad y oportunidades (app móvil)
 
-**Estado:** tablero, detalle y bandeja de avisos implementados contra el contrato real del backend. La verificación con datos reales está bloqueada porque el entorno local no tiene usuarios, perfiles profesionales ni solicitudes, y no se crearon datos ni cuentas para forzar escenarios. No se usan mocks ni fixtures en la integración.
+**Estado:** tablero, detalle y bandeja de avisos implementados contra el contrato real del backend. La iteración visual reduce la carga del tablero con filtros en modal y reorganiza el detalle en una lectura compacta. La UI se verificó en emulador Android con los datos locales `[DEMO LOCAL F06]`; no se crearon ni modificaron datos. No se usan mocks ni fixtures en la integración.
 
 ## Alcance móvil
 
@@ -8,8 +8,8 @@ Cubre SPEC-06 para el rol **Prestador**:
 
 - pestaña **Oportunidades** en la barra inferior, con Inicio, Oportunidades, Profesional y Mi perfil;
 - tablero de solicitudes compatibles calculado por el servidor;
-- filtros opcionales por categoría y urgencia enviados a la API;
-- detalle de una oportunidad con categoría, zona aproximada, urgencia, descripción, fecha y referencia de fotos;
+- filtros opcionales por categoría y urgencia enviados a la API desde un botón compacto y un modal;
+- detalle de una oportunidad con encabezado compacto, descripción principal, fecha y cantidad de fotos como metadatos secundarios;
 - bandeja de avisos `NUEVA_OPORTUNIDAD` consultada desde la API, sin simular push, polling ni notificaciones locales;
 - estados de carga, error recuperable, vacío, resultados y sesión expirada;
 - control de rol en navegación y pantallas, con el backend como autoridad final.
@@ -60,6 +60,8 @@ Todas las operaciones requieren sesión bearer. El tablero, el detalle y los avi
 - `categoria` acepta el UUID de una categoría o su nombre exacto; la app envía el UUID del catálogo.
 - `urgencia` acepta los nombres exactos `BAJA`, `MEDIA`, `ALTA` y `URGENTE`.
 - Los filtros se envían al servidor; la app no filtra localmente el resultado ni cambia el cálculo de compatibilidad.
+- El tablero abre los filtros en un modal con cierre por botón, toque fuera y botón Atrás de Android.
+- El botón de filtros muestra un punto discreto cuando hay filtros activos.
 - La opción “Todas” no envía el parámetro correspondiente.
 - Una categoría desconocida devuelve una lista vacía; no se inventan coincidencias.
 
@@ -84,8 +86,9 @@ src/features/opportunities/
 └── utils/            # formato y mensajes
 ```
 
-- `OpportunitiesScreen`: carga el tablero y el catálogo de categorías, aplica filtros contra la API, muestra resultados, vacío, error y acceso a avisos.
-- `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` cada vez que la pantalla recibe foco.
+- `OpportunitiesScreen`: carga el tablero y el catálogo, muestra un botón de filtros con indicador de estado activo, y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal.
+- `OpportunityFilterModal`: usa el patrón modal de la app, respeta safe areas, cierra con botón, overlay y Atrás, y mantiene áreas táctiles de al menos 44 puntos.
+- `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` al recibir foco y presenta un único bloque principal con categoría, urgencia, zona, descripción, fecha y fotos; la privacidad queda como aviso secundario.
 - `OpportunityNotificationsScreen`: consulta la bandeja al abrir y al actualizar; cada aviso abre el detalle, que se valida de nuevo en el servidor.
 - No se muestra identidad, correo, teléfono ni dirección exacta del Cliente; el DTO real tampoco los expone.
 
@@ -119,18 +122,22 @@ El backend arrancó en `8080` y el OpenAPI confirmó:
 - `GET /api/v1/oportunidades/{solicitudId}`;
 - `GET /api/v1/notificaciones/oportunidades`.
 
-Sin sesión, los tres endpoints respondieron `401 NO_AUTENTICADO`. La base local tenía `3` usuarios, `0` perfiles profesionales, `0` solicitudes y `0` notificaciones. No se encontraron credenciales autorizadas para iniciar sesión con esos usuarios y no se crearon cuentas ni datos.
+Sin sesión, los tres endpoints respondieron `401 NO_AUTENTICADO`. Los datos demo locales tenían `4` usuarios, `3` perfiles profesionales, `4` solicitudes publicadas, `0` notificaciones y `0` fotos. No se crearon ni modificaron registros durante esta iteración.
 
-### Pendiente de verificación con datos reales
+### UI en emulador Android
 
-No había emulador disponible (`adb devices` vacío) ni una sesión Prestador autenticada. No se declara revisión visual. Quedan sin verificar:
+La sesión Prestador existente se usó contra los datos `[DEMO LOCAL F06]`:
 
-- tablero con oportunidades compatibles y sin coincidencias;
-- filtro por categoría, por urgencia y combinado, incluyendo vacío sin error;
-- detalle autorizado y `404` unificado para no compatible/inexistente;
-- notificación `NUEVA_OPORTUNIDAD` que abre el detalle y vuelve a validar;
-- acceso Cliente al tablero y al detalle: pestaña ausente, rutas no registradas y respuesta `403` si se intenta la API;
-- fotos: bloqueo hasta que exista contrato de descarga por foto.
+- tablero sin filtros: `4` oportunidades compatibles;
+- modal abierto/cerrado con botón de cierre, toque fuera y botón Atrás de Android;
+- filtro por urgencia `Urgente`: `1` oportunidad, con indicador activo en el botón;
+- filtro combinado `Aire acondicionado` + `Urgente`: `1` oportunidad; al reabrir el modal, ambas selecciones se conservaron;
+- limpiar desde el modal: volvió a `4` oportunidades y retiró el indicador;
+- filtro `Pintura`: `0` resultados con estado vacío; la acción de limpiar devolvió las `4` oportunidades;
+- detalle de una oportunidad demo: un bloque compacto con categoría, urgencia, zona, descripción, fecha, “Sin fotos” y aviso de privacidad; sin secciones duplicadas.
+- No se visualizó la limitación de fotos porque las solicitudes demo no tienen fotos; la rama condicional está implementada para cuando exista cantidad mayor que cero.
+
+No se repitieron en esta iteración el `404` unificado, la notificación real ni la denegación `403`; no son comportamientos modificados por este cambio de UI. No se crearon datos para forzarlos.
 
 ## Enlaces
 
