@@ -6,11 +6,7 @@ import type {
 } from '../types/proposal';
 
 export interface ProposalGateway {
-  create(
-    token: string,
-    input: CreateProposalInput,
-    idempotencyKey: string
-  ): Promise<Proposal>;
+  create(token: string, input: CreateProposalInput): Promise<Proposal>;
   update(token: string, proposalId: string, input: UpdateProposalInput): Promise<Proposal>;
   retire(token: string, proposalId: string): Promise<RetireProposalResponse>;
 }

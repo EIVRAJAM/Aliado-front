@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRef, useState, type ComponentProps } from 'react';
+import { useState, type ComponentProps } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -16,10 +16,10 @@ import { useProposalError } from '../hooks/useProposalError';
 import { proposalGateway } from '../services/proposal-gateway-instance';
 import {
   isProposalStateUnavailable,
+  isUncertainProposalError,
   type Proposal,
 } from '../types/proposal';
 import { formatProposalReference, type ProposalVisualState } from '../utils/proposal-format';
-import { createProposalIdempotencyKey } from '../utils/idempotency';
 import {
   hasProposalFieldErrors,
   validateProposal,
@@ -68,8 +68,6 @@ function ProviderProposalFlow({
 }) {
   const { session } = useAuthSession();
   const resolveError = useProposalError();
-  const idempotencyKeyRef = useRef(createProposalIdempotencyKey());
-  const submittedPayloadRef = useRef<string | null>(null);
 
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [editing, setEditing] = useState(false);
@@ -81,6 +79,7 @@ function ProviderProposalFlow({
   const [submitting, setSubmitting] = useState(false);
   const [retiring, setRetiring] = useState(false);
   const [statusUnknown, setStatusUnknown] = useState(false);
+  const [creationUncertain, setCreationUncertain] = useState(false);
 
   const isCreating = proposal === null;
   const isActive = Boolean(proposal && proposal.estado === 'ACTIVA' && !statusUnknown);
@@ -112,7 +111,7 @@ function ProviderProposalFlow({
   };
 
   const handleCreate = async () => {
-    if (!session || submitting) {
+    if (!session || submitting || creationUncertain) {
       return;
     }
 
@@ -126,30 +125,21 @@ function ProviderProposalFlow({
 
     const trimmedAvailability = disponibilidad.trim();
     const trimmedMessage = mensaje.trim();
-    const payloadSignature = JSON.stringify([
-      solicitudId,
-      trimmedAvailability,
-      trimmedMessage,
-    ]);
-    if (
-      submittedPayloadRef.current !== null &&
-      submittedPayloadRef.current !== payloadSignature
-    ) {
-      idempotencyKeyRef.current = createProposalIdempotencyKey();
-    }
-    submittedPayloadRef.current = payloadSignature;
 
     setSubmitting(true);
     try {
-      const created = await proposalGateway.create(
-        session.token,
-        {
-          solicitudId,
-          disponibilidad: trimmedAvailability,
-          mensaje: trimmedMessage || null,
-        },
-        idempotencyKeyRef.current
-      );
+      const created = await proposalGateway.create(session.token, {
+        solicitudId,
+        disponibilidad: trimmedAvailability,
+        mensaje: trimmedMessage || null,
+      });
+      if (created.solicitudId !== solicitudId) {
+        setCreationUncertain(true);
+        setFormError(
+          'La respuesta del servidor no corresponde a esta solicitud. No se pudo confirmar si la propuesta se registró; no vuelvas a enviar este formulario.'
+        );
+        return;
+      }
       setProposal(created);
       setDisponibilidad(created.disponibilidad);
       setMensaje(created.mensaje ?? '');
@@ -160,7 +150,15 @@ function ProviderProposalFlow({
         error,
         'No fue posible enviar la propuesta. Intenta de nuevo.'
       );
-      if (message) {
+      if (!message) {
+        return;
+      }
+      if (isUncertainProposalError(error)) {
+        setCreationUncertain(true);
+        setFormError(
+          'No se pudo confirmar si la propuesta se registró. No vuelvas a enviar este formulario; no hay forma de consultar tus propuestas desde la app.'
+        );
+      } else {
         setFormError(message);
       }
     } finally {
@@ -203,6 +201,17 @@ function ProviderProposalFlow({
         disponibilidad: disponibilidad.trim(),
         mensaje: mensaje.trim(),
       });
+      if (
+        updated.solicitudId !== proposal.solicitudId ||
+        updated.prestadorId !== proposal.prestadorId
+      ) {
+        setEditing(false);
+        setStatusUnknown(true);
+        setFormError(
+          'La respuesta del servidor no corresponde a esta propuesta. No se puede confirmar su estado actual.'
+        );
+        return;
+      }
       setProposal(updated);
       setEditing(false);
       setFieldErrors({});
@@ -297,18 +306,18 @@ function ProviderProposalFlow({
               errors={fieldErrors}
               onChangeDisponibilidad={setDisponibilidad}
               onChangeMensaje={setMensaje}
-              disabled={submitting}
+              disabled={submitting || creationUncertain}
             />
 
             {formError ? <InlineMessage message={formError} /> : null}
 
             <PrimaryButton
-              label="Enviar propuesta"
+              label={creationUncertain ? 'Envío no confirmado' : 'Enviar propuesta'}
               onPress={() => {
                 void handleCreate();
               }}
               loading={submitting}
-              disabled={submitting}
+              disabled={submitting || creationUncertain}
             />
           </Card>
 

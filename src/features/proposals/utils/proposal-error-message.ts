@@ -11,6 +11,7 @@ export function getProposalErrorMessage(error: unknown, fallback: string): strin
     case 'NETWORK':
       return 'No se pudo conectar con ALIADO. Revisa tu conexión e intenta de nuevo.';
     case 'VALIDATION':
+    case 'INVALID_RESPONSE':
     case 'CONFLICT':
     case 'NOT_FOUND':
     case 'FORBIDDEN':

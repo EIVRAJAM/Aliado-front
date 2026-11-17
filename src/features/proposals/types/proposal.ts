@@ -29,6 +29,7 @@ export type ProposalErrorCode =
   | 'CONFIGURATION'
   | 'NETWORK'
   | 'VALIDATION'
+  | 'INVALID_RESPONSE'
   | 'CONFLICT'
   | 'NOT_FOUND'
   | 'FORBIDDEN'
@@ -61,6 +62,18 @@ export function isProposalState(value: unknown): value is ProposalState {
 export function isProposalStateUnavailable(error: unknown): boolean {
   return (
     error instanceof ProposalError &&
-    (error.code === 'CONFLICT' || error.code === 'NOT_FOUND')
+    (error.code === 'CONFLICT' ||
+      error.code === 'NOT_FOUND' ||
+      error.code === 'INVALID_RESPONSE')
+  );
+}
+
+export function isUncertainProposalError(error: unknown): boolean {
+  return (
+    error instanceof ProposalError &&
+    (error.code === 'NETWORK' ||
+      error.code === 'UNKNOWN' ||
+      error.code === 'INVALID_RESPONSE' ||
+      (error.status !== undefined && error.status >= 500))
   );
 }

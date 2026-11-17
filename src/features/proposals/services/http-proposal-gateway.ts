@@ -16,7 +16,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
     throw new ProposalError(
-      'UNKNOWN',
+      'INVALID_RESPONSE',
       'La respuesta del servidor no tiene el formato esperado.'
     );
   }
@@ -29,7 +29,7 @@ function nullableString(value: unknown): string | null {
   }
   if (typeof value !== 'string') {
     throw new ProposalError(
-      'UNKNOWN',
+      'INVALID_RESPONSE',
       'La respuesta del servidor no tiene el formato esperado.'
     );
   }
@@ -39,7 +39,7 @@ function nullableString(value: unknown): string | null {
 function parseProposal(value: unknown): Proposal {
   if (!isRecord(value) || !isProposalState(value.estado)) {
     throw new ProposalError(
-      'UNKNOWN',
+      'INVALID_RESPONSE',
       'La respuesta del servidor no tiene el formato esperado.'
     );
   }
@@ -56,7 +56,7 @@ function parseProposal(value: unknown): Proposal {
 function parseRetireResponse(value: unknown): RetireProposalResponse {
   if (!isRecord(value) || !isProposalState(value.estado)) {
     throw new ProposalError(
-      'UNKNOWN',
+      'INVALID_RESPONSE',
       'La respuesta del servidor no tiene el formato esperado.'
     );
   }
@@ -175,16 +175,11 @@ export class HttpProposalGateway implements ProposalGateway {
     return this.baseUrl;
   }
 
-  async create(
-    token: string,
-    input: CreateProposalInput,
-    idempotencyKey: string
-  ): Promise<Proposal> {
+  async create(token: string, input: CreateProposalInput): Promise<Proposal> {
     try {
       const response = await requestJson<unknown>(this.requireBaseUrl(), '/api/v1/propuestas', {
         method: 'POST',
         token,
-        headers: { 'Idempotency-Key': idempotencyKey },
         body: {
           solicitudId: input.solicitudId,
           disponibilidad: input.disponibilidad,
@@ -215,7 +210,14 @@ export class HttpProposalGateway implements ProposalGateway {
           },
         }
       );
-      return parseProposal(response);
+      const proposal = parseProposal(response);
+      if (proposal.id !== proposalId) {
+        throw new ProposalError(
+          'INVALID_RESPONSE',
+          'La respuesta no corresponde a la propuesta solicitada.'
+        );
+      }
+      return proposal;
     } catch (error) {
       throw mapApiError(error, 'No fue posible actualizar la propuesta. Intenta de nuevo.');
     }
@@ -228,7 +230,14 @@ export class HttpProposalGateway implements ProposalGateway {
         `/api/v1/propuestas/${encodeURIComponent(proposalId)}/retirar`,
         { method: 'POST', token }
       );
-      return parseRetireResponse(response);
+      const retired = parseRetireResponse(response);
+      if (retired.id !== proposalId || retired.estado !== 'RETIRADA') {
+        throw new ProposalError(
+          'INVALID_RESPONSE',
+          'La respuesta de retiro no corresponde a la propuesta solicitada.'
+        );
+      }
+      return retired;
     } catch (error) {
       throw mapApiError(error, 'No fue posible retirar la propuesta. Intenta de nuevo.');
     }
