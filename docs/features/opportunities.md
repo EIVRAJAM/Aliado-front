@@ -102,7 +102,7 @@ src/features/opportunities/
 - **Notificaciones sin push.** El endpoint es una bandeja persistida. No se implementa polling, WebSocket, push ni notificaciones locales porque el mecanismo de entrega (D-08) no está definido. `estadoEntrega` es un estado del worker del backend, no una confirmación de push.
 - **El plan fuente menciona “401 sin rol Prestador”.** En el backend real, una sesión autenticada con rol distinto recibe `403`; sin sesión, `401`.
 - **El plan fuente describe casos de uso y puertos internos.** El backend actual expone un `OportunidadService` concreto y un `NotificacionController`; el cliente consume HTTP, no esos contratos internos.
-- **No se implementa propuesta ni contratación.** Pertenecen a F07/F08 y no se ofrecen botones que simulen esas operaciones.
+- **La propuesta se implementa desde F07.** El detalle ofrece **Enviar propuesta** y abre el flujo de F07. La contratación y la recepción/comparación de propuestas para Cliente pertenecen a F08 y no se simulan.
 
 ## Verificación
 
@@ -142,4 +142,5 @@ Los datos demo no incluyen descripciones nulas/vacías, saltos de línea ni foto
 
 - [Arquitectura móvil](../architecture/MOBILE_ARCHITECTURE.md)
 - [Plan de entrega](../core/DELIVERY_PLAN.md)
+- [F07 — Propuestas](proposals.md)
 - [Solicitudes de corrección backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md)
