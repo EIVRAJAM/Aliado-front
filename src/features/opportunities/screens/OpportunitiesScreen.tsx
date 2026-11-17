@@ -13,10 +13,9 @@ import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { OpportunityCard } from '../components/OpportunityCard';
-import { OpportunityFilterCard } from '../components/OpportunityFilterCard';
+import { OpportunityFilterModal } from '../components/OpportunityFilterModal';
 import { OpportunityStateView } from '../components/OpportunityStateView';
 import { useOpportunitiesBoard } from '../hooks/useOpportunitiesBoard';
-import type { OpportunityUrgency } from '../types/opportunity';
 
 type OpportunitiesScreenProps = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Opportunities'>,
@@ -65,11 +64,9 @@ function ProviderOpportunitiesScreen({
     reload,
     reloadCategories,
   } = useOpportunitiesBoard();
-  const [categoryId, setCategoryId] = useState<string | null>(null);
-  const [urgency, setUrgency] = useState<OpportunityUrgency | null>(null);
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const hasAppliedFilters = Boolean(filters.categoriaId || filters.urgencia);
-  const hasSelectedFilters = Boolean(categoryId || urgency || hasAppliedFilters);
 
   const countLabel = loading
     ? 'Cargando oportunidades…'
@@ -78,16 +75,6 @@ function ProviderOpportunitiesScreen({
       : `${opportunities.length} ${
           opportunities.length === 1 ? 'oportunidad' : 'oportunidades'
         }`;
-
-  const handleApply = () => {
-    applyFilters({ categoriaId: categoryId, urgencia: urgency });
-  };
-
-  const handleClear = () => {
-    setCategoryId(null);
-    setUrgency(null);
-    clearFilters();
-  };
 
   return (
     <ScreenLayout
@@ -104,6 +91,20 @@ function ProviderOpportunitiesScreen({
           </Text>
         </View>
         <View style={styles.toolbarActions}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={
+              hasAppliedFilters
+                ? 'Filtros activos. Abrir filtros.'
+                : 'Abrir filtros'
+            }
+            accessibilityHint="Abre las opciones de categoría y urgencia."
+            onPress={() => setFilterModalVisible(true)}
+            style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
+          >
+            <Ionicons name="funnel-outline" size={20} color={colors.primary} />
+            {hasAppliedFilters ? <View style={styles.filterDot} /> : null}
+          </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Actualizar oportunidades"
@@ -124,23 +125,6 @@ function ProviderOpportunitiesScreen({
           </Pressable>
         </View>
       </View>
-
-      <OpportunityFilterCard
-        categories={categories}
-        categoriesLoading={categoriesLoading}
-        categoriesError={categoriesError}
-        onRetryCategories={() => {
-          void reloadCategories();
-        }}
-        categoryId={categoryId}
-        urgency={urgency}
-        onCategoryChange={setCategoryId}
-        onUrgencyChange={setUrgency}
-        onApply={handleApply}
-        onClear={handleClear}
-        hasFilters={hasSelectedFilters}
-        disabled={loading}
-      />
 
       {loading || error ? (
         <OpportunityStateView
@@ -174,7 +158,7 @@ function ProviderOpportunitiesScreen({
             <PrimaryButton
               label="Limpiar filtros"
               variant="secondary"
-              onPress={handleClear}
+              onPress={clearFilters}
             />
           ) : (
             <PrimaryButton
@@ -223,6 +207,20 @@ function ProviderOpportunitiesScreen({
           no agrega coincidencias ni filtra por su cuenta.
         </Text>
       </Card>
+
+      <OpportunityFilterModal
+        visible={filterModalVisible}
+        onClose={() => setFilterModalVisible(false)}
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        categoriesError={categoriesError}
+        onRetryCategories={() => {
+          void reloadCategories();
+        }}
+        filters={filters}
+        onApply={applyFilters}
+        onClear={clearFilters}
+      />
     </ScreenLayout>
   );
 }
@@ -254,6 +252,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   iconButton: {
+    position: 'relative',
     width: 42,
     height: 42,
     borderRadius: radii.md,
@@ -265,6 +264,17 @@ const styles = StyleSheet.create({
   },
   pressed: {
     backgroundColor: colors.background,
+  },
+  filterDot: {
+    position: 'absolute',
+    top: 8,
+    right: 9,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+    borderWidth: 2,
+    borderColor: colors.surface,
   },
   resultsHeader: {
     gap: 2,
