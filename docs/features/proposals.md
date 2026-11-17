@@ -1,6 +1,6 @@
 # F07 — Creación, edición y retiro de propuestas (app móvil)
 
-**Estado:** flujo Prestador implementado en UI y gateway contra el controlador/DTO reales. La validación estática y las respuestas de autenticación son favorables; no se validaron mutaciones autenticadas ni la revisión visual del formulario/estado porque no se autorizó crear propuestas y el dev client no pudo cargar el bundle nuevo sin recargar y perder la sesión en memoria. No se usan mocks ni datos ficticios.
+**Estado:** flujo Prestador implementado en UI y gateway contra el controlador/DTO reales. La creación no envía `Idempotency-Key` mientras BE-02 siga abierto. La validación estática y las respuestas de autenticación son favorables; no se validaron mutaciones autenticadas ni la revisión visual del formulario/estado porque no se autorizó crear propuestas y el dev client no pudo cargar el bundle nuevo sin recargar y perder la sesión en memoria. No se usan mocks ni datos ficticios.
 
 ## Alcance móvil
 
@@ -45,7 +45,7 @@ El cliente sigue el controlador/DTO entregados. La sincronización de OpenAPI si
 - **Mensaje:** opcional, máximo 1000 caracteres. Al editar, un mensaje vacío se envía para limpiar el valor.
 - **Creación:** solo sobre solicitud publicada y compatible; el backend puede responder `409` por solicitud cerrada, no compatible o propuesta activa duplicada.
 - **Edición/retiro:** solo propuesta propia y `ACTIVA`. Un `409 PROPUESTA_NO_ACTIVA` o un `404` deja el estado local como no confirmado, oculta las acciones y no se presenta como activa.
-- **Idempotencia:** la creación envía `Idempotency-Key` con UUID generado por el cliente. La clave se conserva para reintentos del mismo payload; si el contenido cambia, se genera otra clave. No se pudo validar replay autenticado sin crear datos.
+- **Idempotencia desactivada:** la creación **no envía** `Idempotency-Key` mientras el backend no corrija y valide el defecto compartido de `idempotency_keys.respuesta` (`JSONB`/`varchar`) documentado en BE-02 y observado en F04. La corrección corresponde al backend; el cliente no promete reintentos seguros ni idempotencia. Si la creación termina con un resultado incierto, el formulario se conserva bloqueado y no se reenvía.
 - **Precio:** no existe en el modelo ni en el contrato; no se muestra ni se solicita.
 
 ## Implementación
@@ -57,18 +57,18 @@ src/features/proposals/
 ├── screens/          # ProposalFlowScreen
 ├── services/         # gateway y adaptador HTTP
 ├── types/            # DTO, comandos y errores
-├── utils/            # formato, idempotencia y mensajes
+├── utils/            # formato y mensajes
 └── validation/       # disponibilidad y mensaje
 ```
 
 - `OpportunityDetailScreen` muestra **Enviar propuesta** y abre `ProposalFlow` con el `solicitudId`.
-- `ProposalFlowScreen` mantiene un flujo único:
+- `ProposalFlowScreen` mantiene un flujo único y valida que las respuestas de las mutaciones correspondan al recurso solicitado:
   - formulario de creación;
   - estado de la propuesta con disponibilidad, mensaje y referencia;
   - edición inline con los mismos campos;
   - retiro con confirmación.
 - El `id` real se conserva en el estado local del flujo. No se persiste en almacenamiento, no se simula una lista y no se consulta un endpoint inexistente.
-- El estado no confirmado por `409/404` se muestra como “Estado no disponible”; se ocultan editar/retirar y se ofrece volver a la oportunidad para que F06 vuelva a consultar el estado de la solicitud.
+- El estado no confirmado por `409/404` o por una respuesta contractual inválida se muestra como “Estado no disponible”; se ocultan editar/retirar y se ofrece volver a la oportunidad para que F06 vuelva a consultar el estado de la solicitud.
 
 ## Límite de recuperación y D-09
 
@@ -82,11 +82,13 @@ La pantalla lo advierte explícitamente. La recuperación y la política de prop
 
 ## Errores y estados
 
+- Resultado incierto en creación: el formulario permanece visible, los campos y el envío se bloquean, y se informa que no se pudo confirmar si la propuesta se registró. No se reintenta automáticamente ni se afirma que no se creó.
 - `401`: se limpia la sesión y se vuelve al acceso.
 - `403`: mensaje de permiso; la sesión se conserva.
 - `400`: se muestran los mensajes de validación del servidor cuando existen.
 - `404`: solicitud/propuesta no disponible; en edición/retiro el estado queda no confirmado.
 - `409`: conflicto de estado o duplicado. En edición/retiro se ocultan las acciones y no se asume que la propuesta siga activa.
+- Respuesta inválida de mutación: en creación se exige que `solicitudId` coincida; en edición, el ID esperado y la misma solicitud/prestador; en retiro, el ID esperado y `estado: RETIRADA`. Cualquier contradicción deja el estado no confirmado.
 - Red/timeout: error recuperable; se conserva el formulario o la acción para reintento manual.
 - Éxito de creación/edición: mensaje de confirmación y estado actualizado con la respuesta real.
 - Éxito de retiro: estado `RETIRADA` y acciones ocultas.
@@ -98,10 +100,9 @@ La pantalla lo advierte explícitamente. La recuperación y la política de prop
 - `npm run typecheck` → `0`.
 - `npm run verify:config` → configuración Expo válida (`3067` bytes).
 - `npm run doctor` → `20/20`, sin fallo de red.
-- `npx expo export --platform android` → `0`, bundle Android de `1006` módulos.
+- `npx expo export --platform android` → `0`, bundle Android de `1005` módulos.
 - `git diff --check` → `0`.
 - Validación pura de campos: disponibilidad vacía/256 caracteres y mensaje de 1001 caracteres producen errores; disponibilidad válida y mensaje normal pasan.
-- Generación de `Idempotency-Key`: UUID v4 válido y distinto entre intenciones.
 
 ### API local sin sesión
 
@@ -116,7 +117,7 @@ No se crearon propuestas ni cuentas. La tabla `propuestas` permaneció con `0` f
 - creación exitosa, `201`, obtención del `id` y transición al estado;
 - edición `PUT`, retiro y confirmación;
 - `409` real de solicitud cerrada/no compatible/duplicada y refresco del estado;
-- replay de `Idempotency-Key`;
+- idempotencia/replay: no aplica mientras BE-02 siga abierto;
 - revisión visual del formulario y del estado en emulador. El dev client disponible conservó un bundle anterior; recargarlo habría descartado la sesión en memoria y no había credenciales Prestador para reautenticar. No se crearon datos para forzar estas pruebas.
 
 ## Fuera de alcance
