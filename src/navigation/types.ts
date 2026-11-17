@@ -24,6 +24,7 @@ export type RootStackParamList = {
   ProfessionalProfileCreate: undefined;
   OpportunityDetail: { solicitudId: string };
   OpportunityNotifications: undefined;
+  ProposalFlow: { solicitudId: string };
   RequestForm: { requestId?: string } | undefined;
   RequestDetail: { requestId: string };
 };

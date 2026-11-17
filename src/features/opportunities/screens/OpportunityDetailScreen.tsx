@@ -99,13 +99,24 @@ function ProviderOpportunityDetailScreen({
           />
         </Card>
       ) : (
-        <OpportunityDetailContent opportunity={opportunity} />
+        <OpportunityDetailContent
+          opportunity={opportunity}
+          onPropose={() =>
+            navigation.navigate('ProposalFlow', { solicitudId: opportunity.solicitudId })
+          }
+        />
       )}
     </ScreenLayout>
   );
 }
 
-function OpportunityDetailContent({ opportunity }: { opportunity: Opportunity }) {
+function OpportunityDetailContent({
+  opportunity,
+  onPropose,
+}: {
+  opportunity: Opportunity;
+  onPropose: () => void;
+}) {
   const tone = urgencyTone(opportunity.urgencia);
   const description = opportunity.descripcion?.trim() ?? '';
   const hasDescription = description.length > 0;
@@ -186,6 +197,8 @@ function OpportunityDetailContent({ opportunity }: { opportunity: Opportunity })
           ni dirección exacta del Cliente, estado, horarios ni precio.
         </Text>
       </View>
+
+      <PrimaryButton label="Enviar propuesta" onPress={onPropose} />
     </>
   );
 }

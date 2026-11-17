@@ -22,6 +22,7 @@ import {
   OpportunityDetailScreen,
   OpportunityNotificationsScreen,
 } from '../features/opportunities';
+import { ProposalFlowScreen } from '../features/proposals';
 import { ProfessionalProfileCreateScreen } from '../features/professional-profile';
 import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
 import { colors } from '../shared/ui/theme';
@@ -75,6 +76,7 @@ export function RootNavigator() {
                   name="OpportunityNotifications"
                   component={OpportunityNotificationsScreen}
                 />
+                <Stack.Screen name="ProposalFlow" component={ProposalFlowScreen} />
               </>
             ) : null}
             <Stack.Screen name="RequestForm" component={RequestFormScreen} />
