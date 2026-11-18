@@ -20,6 +20,7 @@ interface ServiceMessagesCardProps {
   onChange: (value: string) => void;
   onSend: () => void;
   sending: boolean;
+  uncertain: boolean;
   error: string | null;
 }
 
@@ -31,6 +32,7 @@ export function ServiceMessagesCard({
   onChange,
   onSend,
   sending,
+  uncertain,
   error,
 }: ServiceMessagesCardProps) {
   const ownId = currentRole === 'CLIENTE' ? service.clienteId : service.prestadorId;
@@ -90,16 +92,16 @@ export function ServiceMessagesCard({
             maxLength={MAX_MESSAGE_LENGTH}
             multiline
             numberOfLines={3}
-            editable={!sending}
+            editable={!sending && !uncertain}
             textAlignVertical="top"
             style={styles.input}
           />
 
           <PrimaryButton
-            label="Enviar mensaje"
+            label={uncertain ? 'Envío no confirmado' : 'Enviar mensaje'}
             onPress={onSend}
             loading={sending}
-            disabled={sending || !value.trim()}
+            disabled={sending || uncertain || !value.trim()}
           />
 
           <Text style={styles.note}>

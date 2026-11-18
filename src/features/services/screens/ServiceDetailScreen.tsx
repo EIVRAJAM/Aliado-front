@@ -19,12 +19,15 @@ import { serviceGateway } from '../services/service-gateway-instance';
 import {
   isServiceConflict,
   isServiceNotFound,
+  isUncertainServiceError,
   type ContractedService,
+  type ServiceMessage,
   type ServiceState,
   type ServiceTransitionAction,
 } from '../types/service';
 import {
   categoryName,
+  expectedStateForAction,
   formatServiceDate,
   urgencyLabel,
   zoneName,
@@ -42,6 +45,7 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
   const [message, setMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [messageError, setMessageError] = useState<string | null>(null);
+  const [messageUncertain, setMessageUncertain] = useState(false);
 
   if (!session) {
     return null;
@@ -57,14 +61,19 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
     if (!service || actionLoading) {
       return;
     }
+    const expectedState = expectedStateForAction(action);
     setActionLoading(action);
     setActionError(null);
     setSuccessMessage(null);
     try {
-      const result = await serviceGateway.transition(session.token, service.id, action);
-      if (result.estado) {
-        await detail.reload();
+      await serviceGateway.transition(session.token, service.id, action);
+      const refreshed = await detail.reload();
+      if (refreshed?.estado === expectedState) {
         setSuccessMessage(success);
+      } else {
+        setActionError(
+          'No se pudo confirmar que el servicio haya alcanzado el estado solicitado. Actualiza antes de intentar de nuevo.'
+        );
       }
     } catch (transitionError) {
       const text = resolveError(
@@ -77,6 +86,15 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
       if (isServiceConflict(transitionError) || isServiceNotFound(transitionError)) {
         await detail.reload();
         setActionError(text);
+      } else if (isUncertainServiceError(transitionError)) {
+        const refreshed = await detail.reload();
+        if (refreshed?.estado === expectedState) {
+          setSuccessMessage(success);
+        } else {
+          setActionError(
+            'No se pudo confirmar si el servicio cambió de estado. Actualiza antes de intentar de nuevo.'
+          );
+        }
       } else {
         setActionError(text);
       }
@@ -105,7 +123,7 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
   };
 
   const sendMessage = async () => {
-    if (!service || sending) {
+    if (!service || sending || messageUncertain) {
       return;
     }
     const contenido = message.trim();
@@ -117,6 +135,9 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
       setMessageError('El mensaje admite máximo 2000 caracteres.');
       return;
     }
+    const baselineIds = new Set(detail.messages.map((item) => item.id));
+    const attemptStartedAt = Date.now();
+    const ownId = role === 'CLIENTE' ? service.clienteId : service.prestadorId;
     setSending(true);
     setMessageError(null);
     try {
@@ -128,10 +149,37 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
       if (!text) {
         return;
       }
-      if (isServiceConflict(sendError) || isServiceNotFound(sendError)) {
-        await detail.reload();
+      if (isUncertainServiceError(sendError)) {
+        let refreshed: ServiceMessage[] | null = null;
+        try {
+          refreshed = await serviceGateway.getMessages(session.token, service.id);
+          detail.setMessages(refreshed);
+        } catch (refreshError) {
+          resolveError(refreshError, 'No fue posible confirmar el mensaje.');
+        }
+        const confirmed = refreshed?.some(
+          (item) =>
+            !baselineIds.has(item.id) &&
+            item.remitenteId === ownId &&
+            item.contenido.trim() === contenido &&
+            new Date(item.fechaEnvio).getTime() >= attemptStartedAt - 5000
+        );
+        if (confirmed) {
+          setMessage('');
+          setMessageError(null);
+          setSuccessMessage('Mensaje enviado.');
+        } else {
+          setMessageUncertain(true);
+          setMessageError(
+            'No se pudo confirmar si el mensaje se guardó. No lo reenvíes desde esta pantalla para evitar duplicados.'
+          );
+        }
+      } else {
+        if (isServiceConflict(sendError) || isServiceNotFound(sendError)) {
+          await detail.reload();
+        }
+        setMessageError(text);
       }
-      setMessageError(text);
     } finally {
       setSending(false);
     }
@@ -227,6 +275,7 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
               void sendMessage();
             }}
             sending={sending}
+            uncertain={messageUncertain}
             error={messageError}
           />
         </>

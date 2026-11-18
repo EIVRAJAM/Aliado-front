@@ -1,5 +1,9 @@
 import { colors } from '../../../shared/ui/theme';
-import type { ContractedService, ServiceState } from '../types/service';
+import type {
+  ContractedService,
+  ServiceState,
+  ServiceTransitionAction,
+} from '../types/service';
 
 const STATE_LABELS: Record<ServiceState, string> = {
   CONTRATADO: 'Contratado',
@@ -82,4 +86,19 @@ export function zoneName(
     return 'Sin zona';
   }
   return zones.find((zone) => zone.id === id)?.nombre ?? 'Zona';
+}
+
+export function expectedStateForAction(
+  action: ServiceTransitionAction
+): ServiceState {
+  switch (action) {
+    case 'en-ejecucion':
+      return 'EN_EJECUCION';
+    case 'terminado':
+      return 'TERMINADO';
+    case 'confirmar-finalizacion':
+      return 'FINALIZADO';
+    case 'cancelar':
+      return 'CANCELADO';
+  }
 }

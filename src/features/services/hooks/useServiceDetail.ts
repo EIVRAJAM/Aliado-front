@@ -23,10 +23,10 @@ export function useServiceDetail(serviceId: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (): Promise<ContractedService | null> => {
     if (!session) {
       setLoading(false);
-      return;
+      return null;
     }
     setLoading(true);
     setError(null);
@@ -43,11 +43,13 @@ export function useServiceDetail(serviceId: string) {
       setHistory(nextHistory);
       setCatalogs(nextCatalogs);
       setMessages(nextMessages);
+      return detail;
     } catch (loadError) {
       const message = resolveError(loadError, 'No fue posible cargar el servicio.');
       if (message) {
         setError(message);
       }
+      return null;
     } finally {
       setLoading(false);
     }

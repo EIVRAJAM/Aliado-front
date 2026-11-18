@@ -126,3 +126,12 @@ export function isServiceConflict(error: unknown): boolean {
 export function isServiceNotFound(error: unknown): boolean {
   return error instanceof ServiceError && error.code === 'NOT_FOUND';
 }
+
+export function isUncertainServiceError(error: unknown): boolean {
+  return (
+    error instanceof ServiceError &&
+    (error.code === 'NETWORK' ||
+      error.code === 'INVALID_RESPONSE' ||
+      (error.code === 'UNKNOWN' && (error.status === undefined || error.status >= 500)))
+  );
+}
