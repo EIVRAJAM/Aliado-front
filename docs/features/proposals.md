@@ -1,6 +1,6 @@
 # F07 — Creación, edición y retiro de propuestas (app móvil)
 
-**Estado:** flujo Prestador implementado en UI y gateway contra el controlador/DTO reales. La disponibilidad se selecciona con controles nativos de fecha y hora y se serializa como texto para el backend. La creación no envía `Idempotency-Key` mientras BE-02 siga abierto. La validación estática es favorable; no se validaron mutaciones autenticadas ni la revisión visual porque no se autorizó crear propuestas y el selector nativo requiere reconstruir el development build. No se usan mocks ni datos ficticios.
+**Estado:** flujo Prestador implementado en UI y gateway contra el controlador/DTO reales. La disponibilidad se selecciona con controles nativos de fecha y hora y se serializa como texto para el backend. La vista de propuesta usa el contexto real de la oportunidad recibido desde el detalle y permite copiar ambos IDs. La creación no envía `Idempotency-Key` mientras BE-02 siga abierto. La validación estática es favorable; no se validaron mutaciones autenticadas ni la revisión visual porque no se autorizó crear propuestas y los módulos nativos requieren reconstruir el development build. No se usan mocks ni datos ficticios.
 
 ## Alcance móvil
 
@@ -11,7 +11,8 @@ Cubre SPEC-07 para el rol **Prestador**:
 - creación, edición y retiro mientras la propuesta siga `ACTIVA`;
 - confirmación explícita antes de retirar;
 - estados de envío, éxito, validación, error recuperable, sesión expirada y permisos;
-- conservación del `id` devuelto por el servidor dentro del flujo actual.
+- conservación del `id` devuelto por el servidor dentro del flujo actual;
+- contexto de oportunidad recibido por navegación y referencias copiables.
 
 No incluye recepción, comparación, aceptación o rechazo de propuestas por parte del Cliente; eso corresponde a F08. No se añade precio, moneda, identidad ni contacto del Cliente.
 
@@ -62,8 +63,9 @@ src/features/proposals/
 └── validation/       # disponibilidad y mensaje
 ```
 
-- `OpportunityDetailScreen` muestra **Enviar propuesta** y abre `ProposalFlow` con el `solicitudId`.
+- `OpportunityDetailScreen` muestra **Enviar propuesta** y abre `ProposalFlow` con el `solicitudId` y el contexto disponible de la oportunidad (`categoria`, `zonaAproximada`, `urgencia`, `descripcion`).
 - `ProposalFields` usa el selector nativo de fecha/hora, mínimo hoy y validación de instante futuro; el mensaje sigue siendo un campo de texto opcional.
+- `ProposalFlowScreen` usa la categoría como título, zona/urgencia como subtítulo y descripción breve bajo el encabezado. La propuesta activa se identifica con su badge de estado; disponibilidad y mensaje quedan en el cuerpo. Las referencias abreviadas están al final, con copia del UUID completo mediante `expo-clipboard` y confirmación breve.
 - `ProposalFlowScreen` mantiene un flujo único y valida que las respuestas de las mutaciones correspondan al recurso solicitado:
   - formulario de creación;
   - estado de la propuesta con disponibilidad, mensaje y referencia;
@@ -74,7 +76,7 @@ src/features/proposals/
 
 ### Dependencia nativa
 
-Se añadió `@react-native-community/datetimepicker` `9.2.1` con `npx expo install`, compatible con Expo SDK 58. Expo añadió el plugin a `app.json`. Al ser un módulo nativo, el development build debe reconstruirse antes de revisar el flujo en el emulador; Metro/HMR no es suficiente. También se alinearon los patchs de Expo (`58.0.26`) y `expo-dev-client` (`58.0.21`) requeridos por la matriz del SDK.
+Se añadieron `@react-native-community/datetimepicker` `9.2.1` y `expo-clipboard` `58.0.4` con `npx expo install`, compatibles con Expo SDK 58. Expo añadió el plugin de fecha/hora a `app.json`. Ambos son módulos nativos: el development build debe reconstruirse antes de revisar el flujo en el emulador; Metro/HMR no es suficiente. También se alinearon los patchs de Expo (`58.0.26`) y `expo-dev-client` (`58.0.21`) requeridos por la matriz del SDK.
 
 ## Límite de recuperación y D-09
 
@@ -104,9 +106,9 @@ La pantalla lo advierte explícitamente. La recuperación y la política de prop
 ### Estática
 
 - `npm run typecheck` → `0`.
-- `npm run verify:config` → configuración Expo válida (`3198` bytes).
+- `npm run verify:config` → configuración Expo válida (`3225` bytes).
 - `npm run doctor` → `20/20`, sin fallo de red.
-- `npx expo export --platform android` → `0`, bundle Android de `1021` módulos.
+- `npx expo export --platform android` → `0`, bundle Android de `1028` módulos.
 - `git diff --check` → `0`.
 - Validación pura de fecha/hora: texto `18 nov 2026, 09:30` se interpreta correctamente; texto libre anterior resulta no interpretable; fecha/hora faltante, fecha pasada, misma fecha con hora pasada y mensaje de 1001 caracteres producen error; una fecha/hora futura con mensaje normal pasa.
 
@@ -124,8 +126,9 @@ No se crearon propuestas ni cuentas. La tabla `propuestas` permaneció con `0` f
 - edición `PUT`, retiro y confirmación;
 - `409` real de solicitud cerrada/no compatible/duplicada y refresco del estado;
 - idempotencia/replay: no aplica mientras BE-02 siga abierto;
-- revisión visual del formulario y del estado en emulador: el bundle actual no incorpora el módulo nativo y reconstruir el development build descartaría la sesión en memoria; no había credenciales Prestador para reautenticar. No se crearon datos para forzar estas pruebas.
+- revisión visual del formulario y del estado en emulador: el bundle actual no incorpora los módulos nativos y reconstruir el development build descartaría la sesión en memoria; no había credenciales Prestador para reautenticar. No se crearon datos para forzar estas pruebas.
 - cambio de fecha/hora en crear/editar y la presentación del selector nativo en Android/iOS.
+- copia real de ambas referencias y confirmación en un development build reconstruido.
 
 ## Fuera de alcance
 
