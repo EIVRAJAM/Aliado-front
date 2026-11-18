@@ -1,5 +1,8 @@
+import { combineAvailability } from '../utils/proposal-format';
+
 export interface ProposalFormValues {
-  disponibilidad: string;
+  date: Date | null;
+  time: Date | null;
   mensaje: string;
 }
 
@@ -7,14 +10,33 @@ export type ProposalFieldErrors = Partial<
   Record<'disponibilidad' | 'mensaje', string>
 >;
 
-export function validateProposal(values: ProposalFormValues): ProposalFieldErrors {
+export function validateProposal(
+  values: ProposalFormValues,
+  now: Date = new Date()
+): ProposalFieldErrors {
   const errors: ProposalFieldErrors = {};
-  const disponibilidad = values.disponibilidad.trim();
 
-  if (!disponibilidad) {
-    errors.disponibilidad = 'Indica tu disponibilidad para esta solicitud.';
-  } else if (disponibilidad.length > 255) {
-    errors.disponibilidad = 'La disponibilidad admite máximo 255 caracteres.';
+  if (!values.date) {
+    errors.disponibilidad = 'Selecciona una fecha.';
+  } else {
+    const selectedDay = new Date(
+      values.date.getFullYear(),
+      values.date.getMonth(),
+      values.date.getDate()
+    );
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (selectedDay.getTime() < today.getTime()) {
+      errors.disponibilidad = 'Selecciona una fecha de hoy en adelante.';
+    }
+  }
+
+  if (!values.time) {
+    errors.disponibilidad = errors.disponibilidad ?? 'Selecciona una hora.';
+  } else if (values.date) {
+    const selectedMoment = combineAvailability(values.date, values.time);
+    if (selectedMoment.getTime() <= now.getTime()) {
+      errors.disponibilidad = 'Selecciona una fecha y hora futuras.';
+    }
   }
 
   if (values.mensaje.length > 1000) {

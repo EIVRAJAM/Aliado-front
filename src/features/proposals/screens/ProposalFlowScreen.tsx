@@ -19,7 +19,12 @@ import {
   isUncertainProposalError,
   type Proposal,
 } from '../types/proposal';
-import { formatProposalReference, type ProposalVisualState } from '../utils/proposal-format';
+import {
+  formatProposalAvailability,
+  formatProposalReference,
+  parseProposalAvailability,
+  type ProposalVisualState,
+} from '../utils/proposal-format';
 import {
   hasProposalFieldErrors,
   validateProposal,
@@ -71,7 +76,10 @@ function ProviderProposalFlow({
 
   const [proposal, setProposal] = useState<Proposal | null>(null);
   const [editing, setEditing] = useState(false);
-  const [disponibilidad, setDisponibilidad] = useState('');
+  const [availabilityDate, setAvailabilityDate] = useState<Date | null>(null);
+  const [availabilityTime, setAvailabilityTime] = useState<Date | null>(null);
+  const [availabilityRaw, setAvailabilityRaw] = useState<string | null>(null);
+  const [availabilityUnreadable, setAvailabilityUnreadable] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [fieldErrors, setFieldErrors] = useState<ProposalFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
@@ -95,7 +103,14 @@ function ProviderProposalFlow({
       : 'Revisa el estado de la propuesta que enviaste.';
 
   const resetFields = (nextProposal?: Proposal | null) => {
-    setDisponibilidad(nextProposal?.disponibilidad ?? '');
+    const rawAvailability = nextProposal?.disponibilidad ?? null;
+    const parsedAvailability = rawAvailability
+      ? parseProposalAvailability(rawAvailability)
+      : null;
+    setAvailabilityDate(parsedAvailability);
+    setAvailabilityTime(parsedAvailability);
+    setAvailabilityRaw(rawAvailability);
+    setAvailabilityUnreadable(Boolean(rawAvailability) && !parsedAvailability);
     setMensaje(nextProposal?.mensaje ?? '');
     setFieldErrors({});
   };
@@ -115,7 +130,11 @@ function ProviderProposalFlow({
       return;
     }
 
-    const nextErrors = validateProposal({ disponibilidad, mensaje });
+    const nextErrors = validateProposal({
+      date: availabilityDate,
+      time: availabilityTime,
+      mensaje,
+    });
     setFieldErrors(nextErrors);
     setFormError(null);
     setSuccessMessage(null);
@@ -123,14 +142,21 @@ function ProviderProposalFlow({
       return;
     }
 
-    const trimmedAvailability = disponibilidad.trim();
+    if (!availabilityDate || !availabilityTime) {
+      return;
+    }
+
+    const availability = formatProposalAvailability(
+      availabilityDate,
+      availabilityTime
+    );
     const trimmedMessage = mensaje.trim();
 
     setSubmitting(true);
     try {
       const created = await proposalGateway.create(session.token, {
         solicitudId,
-        disponibilidad: trimmedAvailability,
+        disponibilidad: availability,
         mensaje: trimmedMessage || null,
       });
       if (created.solicitudId !== solicitudId) {
@@ -141,7 +167,6 @@ function ProviderProposalFlow({
         return;
       }
       setProposal(created);
-      setDisponibilidad(created.disponibilidad);
       setMensaje(created.mensaje ?? '');
       setFieldErrors({});
       setSuccessMessage('Propuesta enviada correctamente.');
@@ -187,7 +212,11 @@ function ProviderProposalFlow({
       return;
     }
 
-    const nextErrors = validateProposal({ disponibilidad, mensaje });
+    const nextErrors = validateProposal({
+      date: availabilityDate,
+      time: availabilityTime,
+      mensaje,
+    });
     setFieldErrors(nextErrors);
     setFormError(null);
     setSuccessMessage(null);
@@ -195,10 +224,19 @@ function ProviderProposalFlow({
       return;
     }
 
+    if (!availabilityDate || !availabilityTime) {
+      return;
+    }
+
+    const availability = formatProposalAvailability(
+      availabilityDate,
+      availabilityTime
+    );
+
     setSubmitting(true);
     try {
       const updated = await proposalGateway.update(session.token, proposal.id, {
-        disponibilidad: disponibilidad.trim(),
+        disponibilidad: availability,
         mensaje: mensaje.trim(),
       });
       if (
@@ -301,12 +339,16 @@ function ProviderProposalFlow({
             </View>
 
             <ProposalFields
-              disponibilidad={disponibilidad}
+              availabilityDate={availabilityDate}
+              availabilityTime={availabilityTime}
+              onAvailabilityDateChange={setAvailabilityDate}
+              onAvailabilityTimeChange={setAvailabilityTime}
               mensaje={mensaje}
               errors={fieldErrors}
-              onChangeDisponibilidad={setDisponibilidad}
               onChangeMensaje={setMensaje}
               disabled={submitting || creationUncertain}
+              existingAvailability={availabilityRaw}
+              existingAvailabilityUnreadable={availabilityUnreadable}
             />
 
             {formError ? <InlineMessage message={formError} /> : null}
@@ -368,12 +410,16 @@ function ProviderProposalFlow({
             ) : editing ? (
               <>
                 <ProposalFields
-                  disponibilidad={disponibilidad}
+                  availabilityDate={availabilityDate}
+                  availabilityTime={availabilityTime}
+                  onAvailabilityDateChange={setAvailabilityDate}
+                  onAvailabilityTimeChange={setAvailabilityTime}
                   mensaje={mensaje}
                   errors={fieldErrors}
-                  onChangeDisponibilidad={setDisponibilidad}
                   onChangeMensaje={setMensaje}
                   disabled={submitting}
+                  existingAvailability={availabilityRaw}
+                  existingAvailabilityUnreadable={availabilityUnreadable}
                 />
                 {formError ? <InlineMessage message={formError} /> : null}
                 <View style={styles.actions}>
