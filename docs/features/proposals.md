@@ -14,7 +14,7 @@ Cubre SPEC-07 para el rol **Prestador**:
 - conservación del `id` devuelto por el servidor dentro del flujo actual;
 - contexto de oportunidad recibido por navegación y referencias copiables.
 
-No incluye recepción, comparación, aceptación o rechazo de propuestas por parte del Cliente; eso corresponde a F08. No se añade precio, moneda, identidad ni contacto del Cliente.
+No incluye recepción, comparación, aceptación o rechazo de propuestas por parte del Cliente; eso se implementa en [F08](services.md). No se añade precio, moneda, identidad ni contacto del Cliente.
 
 ## Contratos reales integrados
 
@@ -132,7 +132,7 @@ No se crearon propuestas ni cuentas. La tabla `propuestas` permaneció con `0` f
 
 ## Fuera de alcance
 
-F08 (recepción y comparación de propuestas para Cliente) no se implementa. Tampoco se añaden notificaciones locales, precios, contacto del Cliente ni recuperación persistente de propuestas.
+F08 cubre la recepción, comparación y aceptación de propuestas en la app móvil. F07 no añade notificaciones locales, precios, contacto del Cliente ni recuperación persistente de propuestas.
 
 ## Enlaces
 
