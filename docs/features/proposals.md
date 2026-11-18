@@ -1,13 +1,13 @@
 # F07 — Creación, edición y retiro de propuestas (app móvil)
 
-**Estado:** flujo Prestador implementado en UI y gateway contra el controlador/DTO reales. La creación no envía `Idempotency-Key` mientras BE-02 siga abierto. La validación estática y las respuestas de autenticación son favorables; no se validaron mutaciones autenticadas ni la revisión visual del formulario/estado porque no se autorizó crear propuestas y el dev client no pudo cargar el bundle nuevo sin recargar y perder la sesión en memoria. No se usan mocks ni datos ficticios.
+**Estado:** flujo Prestador implementado en UI y gateway contra el controlador/DTO reales. La disponibilidad se selecciona con controles nativos de fecha y hora y se serializa como texto para el backend. La creación no envía `Idempotency-Key` mientras BE-02 siga abierto. La validación estática es favorable; no se validaron mutaciones autenticadas ni la revisión visual porque no se autorizó crear propuestas y el selector nativo requiere reconstruir el development build. No se usan mocks ni datos ficticios.
 
 ## Alcance móvil
 
 Cubre SPEC-07 para el rol **Prestador**:
 
 - acción **Enviar propuesta** desde el detalle de una oportunidad compatible;
-- formulario con disponibilidad obligatoria y mensaje opcional;
+- formulario con fecha y hora obligatorias, seleccionadas en hora local, y mensaje opcional;
 - creación, edición y retiro mientras la propuesta siga `ACTIVA`;
 - confirmación explícita antes de retirar;
 - estados de envío, éxito, validación, error recuperable, sesión expirada y permisos;
@@ -41,7 +41,8 @@ El cliente sigue el controlador/DTO entregados. La sincronización de OpenAPI si
 
 ## Reglas y validaciones
 
-- **Disponibilidad:** obligatoria y no vacía. El backend de creación exige texto no vacío; la edición valida además máximo 255 caracteres. La UI limita a 255 en ambos formularios por la columna `VARCHAR(255)` y valida el valor recortado.
+- **Disponibilidad:** la UI exige seleccionar fecha y hora. No permite fechas pasadas ni una fecha/hora combinada en el pasado. La selección se convierte a texto local con formato `dd mmm yyyy, HH:mm` y se envía en el campo `disponibilidad`; el request no incluye campos adicionales. El texto generado es corto y respeta el límite de 255 de edición del backend. La pantalla aclara que es disponibilidad declarada, no una reserva ni una coincidencia calculada por el servidor.
+- **Compatibilidad de edición:** si la propuesta cargada trae un texto que no se puede interpretar como fecha y hora, la UI muestra el valor anterior, advierte que no es interpretable y exige seleccionar una nueva fecha y hora; no reemplaza el valor silenciosamente.
 - **Mensaje:** opcional, máximo 1000 caracteres. Al editar, un mensaje vacío se envía para limpiar el valor.
 - **Creación:** solo sobre solicitud publicada y compatible; el backend puede responder `409` por solicitud cerrada, no compatible o propuesta activa duplicada.
 - **Edición/retiro:** solo propuesta propia y `ACTIVA`. Un `409 PROPUESTA_NO_ACTIVA` o un `404` deja el estado local como no confirmado, oculta las acciones y no se presenta como activa.
@@ -62,6 +63,7 @@ src/features/proposals/
 ```
 
 - `OpportunityDetailScreen` muestra **Enviar propuesta** y abre `ProposalFlow` con el `solicitudId`.
+- `ProposalFields` usa el selector nativo de fecha/hora, mínimo hoy y validación de instante futuro; el mensaje sigue siendo un campo de texto opcional.
 - `ProposalFlowScreen` mantiene un flujo único y valida que las respuestas de las mutaciones correspondan al recurso solicitado:
   - formulario de creación;
   - estado de la propuesta con disponibilidad, mensaje y referencia;
@@ -69,6 +71,10 @@ src/features/proposals/
   - retiro con confirmación.
 - El `id` real se conserva en el estado local del flujo. No se persiste en almacenamiento, no se simula una lista y no se consulta un endpoint inexistente.
 - El estado no confirmado por `409/404` o por una respuesta contractual inválida se muestra como “Estado no disponible”; se ocultan editar/retirar y se ofrece volver a la oportunidad para que F06 vuelva a consultar el estado de la solicitud.
+
+### Dependencia nativa
+
+Se añadió `@react-native-community/datetimepicker` `9.2.1` con `npx expo install`, compatible con Expo SDK 58. Expo añadió el plugin a `app.json`. Al ser un módulo nativo, el development build debe reconstruirse antes de revisar el flujo en el emulador; Metro/HMR no es suficiente. También se alinearon los patchs de Expo (`58.0.26`) y `expo-dev-client` (`58.0.21`) requeridos por la matriz del SDK.
 
 ## Límite de recuperación y D-09
 
@@ -98,11 +104,11 @@ La pantalla lo advierte explícitamente. La recuperación y la política de prop
 ### Estática
 
 - `npm run typecheck` → `0`.
-- `npm run verify:config` → configuración Expo válida (`3067` bytes).
+- `npm run verify:config` → configuración Expo válida (`3198` bytes).
 - `npm run doctor` → `20/20`, sin fallo de red.
-- `npx expo export --platform android` → `0`, bundle Android de `1005` módulos.
+- `npx expo export --platform android` → `0`, bundle Android de `1021` módulos.
 - `git diff --check` → `0`.
-- Validación pura de campos: disponibilidad vacía/256 caracteres y mensaje de 1001 caracteres producen errores; disponibilidad válida y mensaje normal pasan.
+- Validación pura de fecha/hora: texto `18 nov 2026, 09:30` se interpreta correctamente; texto libre anterior resulta no interpretable; fecha/hora faltante, fecha pasada, misma fecha con hora pasada y mensaje de 1001 caracteres producen error; una fecha/hora futura con mensaje normal pasa.
 
 ### API local sin sesión
 
@@ -118,7 +124,8 @@ No se crearon propuestas ni cuentas. La tabla `propuestas` permaneció con `0` f
 - edición `PUT`, retiro y confirmación;
 - `409` real de solicitud cerrada/no compatible/duplicada y refresco del estado;
 - idempotencia/replay: no aplica mientras BE-02 siga abierto;
-- revisión visual del formulario y del estado en emulador. El dev client disponible conservó un bundle anterior; recargarlo habría descartado la sesión en memoria y no había credenciales Prestador para reautenticar. No se crearon datos para forzar estas pruebas.
+- revisión visual del formulario y del estado en emulador: el bundle actual no incorpora el módulo nativo y reconstruir el development build descartaría la sesión en memoria; no había credenciales Prestador para reautenticar. No se crearon datos para forzar estas pruebas.
+- cambio de fecha/hora en crear/editar y la presentación del selector nativo en Android/iOS.
 
 ## Fuera de alcance
 

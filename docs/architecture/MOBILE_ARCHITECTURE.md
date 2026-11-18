@@ -209,4 +209,4 @@ Confirmadas por [ADR 0001](../adr/0001-stack-y-versiones-movil.md): Expo SDK 58,
 
 Navegación confirmada por [ADR 0003](../adr/0003-navegacion-react-navigation.md): React Navigation 7 con stack nativo y bottom tabs para el shell autenticado.
 
-Siguen pendientes de decisión: herramientas de estado servidor/formularios/pruebas, generación de contratos y las decisiones D-03/D-04/D-06/D-07/D-08/D-18 que afectan reglas temporales, sesión, archivos, notificaciones e idempotencia. F04 usa `expo-image-picker` para la selección nativa de fotos; es la única dependencia añadida por esa feature.
+Siguen pendientes de decisión: herramientas de estado servidor/formularios/pruebas, generación de contratos y las decisiones D-03/D-04/D-06/D-07/D-08/D-18 que afectan reglas temporales, sesión, archivos, notificaciones e idempotencia. F04 usa `expo-image-picker` para la selección nativa de fotos. F07 añade `@react-native-community/datetimepicker` `9.2.1` para fecha/hora con el plugin de Expo; ambas son dependencias nativas y requieren development build. F07 también alinea los patchs de Expo y `expo-dev-client` con la matriz del SDK.
