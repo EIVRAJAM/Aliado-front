@@ -65,7 +65,7 @@ src/features/proposals/
 
 - `OpportunityDetailScreen` muestra **Enviar propuesta** y abre `ProposalFlow` con el `solicitudId` y el contexto disponible de la oportunidad (`categoria`, `zonaAproximada`, `urgencia`, `descripcion`).
 - `ProposalFields` usa el selector nativo de fecha/hora, mínimo hoy y validación de instante futuro; el mensaje sigue siendo un campo de texto opcional.
-- `ProposalFlowScreen` usa la categoría como título, zona/urgencia como subtítulo y descripción breve bajo el encabezado. La propuesta activa se identifica con su badge de estado; disponibilidad y mensaje quedan en el cuerpo. Las referencias abreviadas están al final, con copia del UUID completo mediante `expo-clipboard` y confirmación breve.
+- `ProposalFlowScreen` conserva en la barra superior el título de la acción o de la vista (`Nueva propuesta`, `Editar propuesta`, `Mi propuesta`). La categoría del servicio aparece como encabezado grande del contenido, seguida de zona/urgencia y una descripción breve. La propuesta activa se identifica con su badge de estado; disponibilidad y mensaje quedan en el cuerpo. Las referencias abreviadas están al final, con copia del UUID completo mediante `expo-clipboard` y confirmación breve.
 - `ProposalFlowScreen` mantiene un flujo único y valida que las respuestas de las mutaciones correspondan al recurso solicitado:
   - formulario de creación;
   - estado de la propuesta con disponibilidad, mensaje y referencia;
