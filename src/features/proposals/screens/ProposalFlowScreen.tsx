@@ -118,10 +118,18 @@ function ProviderProposalFlow({
     : editing
       ? 'Actualiza tu disponibilidad o mensaje.'
       : 'Revisa el estado de la propuesta que enviaste.';
-  const title = opportunityTitle ?? (
-    isCreating ? 'Nueva propuesta' : editing ? 'Editar propuesta' : 'Mi propuesta'
-  );
-  const subtitle = contextSubtitle || fallbackSubtitle;
+  const title = isCreating
+    ? 'Nueva propuesta'
+    : editing
+      ? 'Editar propuesta'
+      : 'Mi propuesta';
+  const subtitle = opportunityTitle
+    ? isCreating
+      ? 'Envía tu disponibilidad para este servicio.'
+      : editing
+        ? 'Actualiza tu disponibilidad o mensaje.'
+        : 'Revisa el estado de tu propuesta.'
+    : fallbackSubtitle;
   const opportunityDescription = opportunity?.descripcion?.trim();
 
   const resetFields = (nextProposal?: Proposal | null) => {
@@ -345,10 +353,20 @@ function ProviderProposalFlow({
 
   return (
     <ScreenLayout title={title} subtitle={subtitle} onBack={handleBack}>
-      {opportunityDescription ? (
-        <Text style={styles.opportunityDescription} numberOfLines={2}>
-          {opportunityDescription}
-        </Text>
+      {opportunityTitle || opportunityDescription ? (
+        <View style={styles.opportunityHeader}>
+          {opportunityTitle ? (
+            <Text style={styles.opportunityTitle} accessibilityRole="header">
+              {opportunityTitle}
+            </Text>
+          ) : null}
+          {contextSubtitle ? <Text style={styles.opportunityMeta}>{contextSubtitle}</Text> : null}
+          {opportunityDescription ? (
+            <Text style={styles.opportunityDescription} numberOfLines={2}>
+              {opportunityDescription}
+            </Text>
+          ) : null}
+        </View>
       ) : null}
 
       {isCreating ? (
@@ -590,11 +608,25 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
+  opportunityHeader: {
+    gap: spacing.xs,
+  },
+  opportunityTitle: {
+    color: colors.text,
+    fontSize: 28,
+    fontWeight: '800',
+    lineHeight: 34,
+  },
+  opportunityMeta: {
+    color: colors.muted,
+    fontSize: 13,
+    fontWeight: '600',
+    lineHeight: 18,
+  },
   opportunityDescription: {
     color: colors.muted,
     fontSize: 13,
     lineHeight: 19,
-    marginTop: -spacing.sm,
   },
   referencesBlock: {
     gap: spacing.xs,
