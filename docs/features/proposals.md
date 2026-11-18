@@ -86,7 +86,7 @@ No existe un endpoint para listar propuestas propias ni para recuperar una propu
 - si la creación devuelve `409 PROPUESTA_DUPLICADA`, la app no puede recuperar la propuesta existente;
 - no se usa AsyncStorage, caché persistente ni un endpoint inventado para ocultar esta limitación.
 
-La pantalla lo advierte explícitamente. La recuperación y la política de propuestas duplicadas pertenecen a D-09 y no se resuelven en el cliente.
+La limitación se documenta aquí; la vista no muestra una advertencia persistente. La recuperación y la política de propuestas duplicadas pertenecen a D-09 y no se resuelven en el cliente.
 
 ## Errores y estados
 
