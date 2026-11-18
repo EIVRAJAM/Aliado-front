@@ -1,5 +1,7 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
+import type { ProposalOpportunityContext } from '../features/proposals/types/proposal';
+
 export type MainTabParamList = {
   Home: undefined;
   Discovery: undefined;
@@ -24,7 +26,7 @@ export type RootStackParamList = {
   ProfessionalProfileCreate: undefined;
   OpportunityDetail: { solicitudId: string };
   OpportunityNotifications: undefined;
-  ProposalFlow: { solicitudId: string };
+  ProposalFlow: { solicitudId: string; opportunity?: ProposalOpportunityContext };
   RequestForm: { requestId?: string } | undefined;
   RequestDetail: { requestId: string };
 };

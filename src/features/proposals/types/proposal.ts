@@ -1,5 +1,12 @@
 export type ProposalState = 'ACTIVA' | 'RETIRADA' | 'ACEPTADA' | 'CERRADA';
 
+export interface ProposalOpportunityContext {
+  categoria: string;
+  zonaAproximada: string;
+  urgencia: string | null;
+  descripcion: string | null;
+}
+
 export interface Proposal {
   id: string;
   solicitudId: string;

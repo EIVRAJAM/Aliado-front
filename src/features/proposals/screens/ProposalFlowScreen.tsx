@@ -12,12 +12,14 @@ import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { ProposalFields } from '../components/ProposalFields';
 import { ProposalStateBadge } from '../components/ProposalStateBadge';
+import { ReferenceCopyRow } from '../components/ReferenceCopyRow';
 import { useProposalError } from '../hooks/useProposalError';
 import { proposalGateway } from '../services/proposal-gateway-instance';
 import {
   isProposalStateUnavailable,
   isUncertainProposalError,
   type Proposal,
+  type ProposalOpportunityContext,
 } from '../types/proposal';
 import {
   formatProposalAvailability,
@@ -33,6 +35,13 @@ import {
 
 type ProposalFlowScreenProps = NativeStackScreenProps<RootStackParamList, 'ProposalFlow'>;
 type IconName = ComponentProps<typeof Ionicons>['name'];
+
+const URGENCY_LABELS: Record<string, string> = {
+  BAJA: 'Baja',
+  MEDIA: 'Media',
+  ALTA: 'Alta',
+  URGENTE: 'Urgente',
+};
 
 export function ProposalFlowScreen({ navigation, route }: ProposalFlowScreenProps) {
   const { session } = useAuthSession();
@@ -60,6 +69,7 @@ export function ProposalFlowScreen({ navigation, route }: ProposalFlowScreenProp
     <ProviderProposalFlow
       navigation={navigation}
       solicitudId={route.params.solicitudId}
+      opportunity={route.params.opportunity}
     />
   );
 }
@@ -67,9 +77,11 @@ export function ProposalFlowScreen({ navigation, route }: ProposalFlowScreenProp
 function ProviderProposalFlow({
   navigation,
   solicitudId,
+  opportunity,
 }: {
   navigation: ProposalFlowScreenProps['navigation'];
   solicitudId: string;
+  opportunity?: ProposalOpportunityContext;
 }) {
   const { session } = useAuthSession();
   const resolveError = useProposalError();
@@ -91,16 +103,26 @@ function ProviderProposalFlow({
 
   const isCreating = proposal === null;
   const isActive = Boolean(proposal && proposal.estado === 'ACTIVA' && !statusUnknown);
-  const title = isCreating
-    ? 'Nueva propuesta'
-    : editing
-      ? 'Editar propuesta'
-      : 'Mi propuesta';
-  const subtitle = isCreating
+  const opportunityTitle = opportunity?.categoria?.trim();
+  const urgency = opportunity?.urgencia
+    ? URGENCY_LABELS[opportunity.urgencia] ?? opportunity.urgencia
+    : null;
+  const contextSubtitle = [
+    opportunity?.zonaAproximada,
+    urgency ? `Urgencia ${urgency}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  const fallbackSubtitle = isCreating
     ? `Envía tu disponibilidad para la solicitud ${formatProposalReference(solicitudId)}.`
     : editing
       ? 'Actualiza tu disponibilidad o mensaje.'
       : 'Revisa el estado de la propuesta que enviaste.';
+  const title = opportunityTitle ?? (
+    isCreating ? 'Nueva propuesta' : editing ? 'Editar propuesta' : 'Mi propuesta'
+  );
+  const subtitle = contextSubtitle || fallbackSubtitle;
+  const opportunityDescription = opportunity?.descripcion?.trim();
 
   const resetFields = (nextProposal?: Proposal | null) => {
     const rawAvailability = nextProposal?.disponibilidad ?? null;
@@ -323,6 +345,12 @@ function ProviderProposalFlow({
 
   return (
     <ScreenLayout title={title} subtitle={subtitle} onBack={handleBack}>
+      {opportunityDescription ? (
+        <Text style={styles.opportunityDescription} numberOfLines={2}>
+          {opportunityDescription}
+        </Text>
+      ) : null}
+
       {isCreating ? (
         <>
           <Card style={styles.formCard}>
@@ -333,7 +361,7 @@ function ProviderProposalFlow({
               <View style={styles.cardHeaderText}>
                 <Text style={styles.cardTitle}>Detalles de tu propuesta</Text>
                 <Text style={styles.cardSubtitle}>
-                  La disponibilidad es obligatoria. El mensaje es opcional.
+                  Elige fecha y hora. El mensaje es opcional.
                 </Text>
               </View>
             </View>
@@ -366,8 +394,7 @@ function ProviderProposalFlow({
           <View style={styles.limitNote}>
             <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
             <Text style={styles.limitText}>
-              La app no puede recuperar propuestas propias después de salir de su pantalla.
-              Conserva esta vista si necesitas editarla o retirarla.
+              Podrás editarla o retirarla solo mientras permanezcas en esta pantalla.
             </Text>
           </View>
         </>
@@ -375,13 +402,7 @@ function ProviderProposalFlow({
         <>
           <Card style={styles.statusCard}>
             <View style={styles.statusHeader}>
-              <View style={styles.statusHeaderText}>
-                <Text style={styles.eyebrow}>PROPUESTA</Text>
-                <Text style={styles.reference}>{formatProposalReference(proposal.id)}</Text>
-                <Text style={styles.solicitudReference}>
-                  Solicitud {formatProposalReference(proposal.solicitudId)}
-                </Text>
-              </View>
+              <Text style={styles.proposalHeading}>Tu propuesta</Text>
               <ProposalStateBadge state={visualState} />
             </View>
 
@@ -480,13 +501,25 @@ function ProviderProposalFlow({
                 )}
               </>
             )}
+
+            <View style={styles.referencesBlock}>
+              <ReferenceCopyRow
+                label="Propuesta"
+                displayValue={formatProposalReference(proposal.id)}
+                value={proposal.id}
+              />
+              <ReferenceCopyRow
+                label="Solicitud"
+                displayValue={formatProposalReference(proposal.solicitudId)}
+                value={proposal.solicitudId}
+              />
+            </View>
           </Card>
 
           <View style={styles.limitNote}>
             <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
             <Text style={styles.limitText}>
-              No existe un endpoint para listar propuestas propias. Si sales de esta pantalla,
-              no podrás volver a recuperar o modificar esta propuesta desde la app.
+              Si sales de esta pantalla, no podrás volver a abrir esta propuesta.
             </Text>
           </View>
         </>
@@ -553,28 +586,26 @@ const styles = StyleSheet.create({
   },
   statusHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.md,
   },
-  statusHeaderText: {
-    flex: 1,
-    gap: 2,
-  },
-  eyebrow: {
-    color: colors.primary,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-  reference: {
-    color: colors.text,
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  solicitudReference: {
+  opportunityDescription: {
     color: colors.muted,
-    fontSize: 12,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: -spacing.sm,
+  },
+  referencesBlock: {
+    gap: spacing.xs,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  proposalHeading: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '800',
   },
   valueBlock: {
     gap: spacing.xs,

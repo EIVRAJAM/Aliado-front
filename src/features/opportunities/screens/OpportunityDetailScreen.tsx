@@ -102,7 +102,15 @@ function ProviderOpportunityDetailScreen({
         <OpportunityDetailContent
           opportunity={opportunity}
           onPropose={() =>
-            navigation.navigate('ProposalFlow', { solicitudId: opportunity.solicitudId })
+            navigation.navigate('ProposalFlow', {
+              solicitudId: opportunity.solicitudId,
+              opportunity: {
+                categoria: opportunity.categoria,
+                zonaAproximada: opportunity.zonaAproximada,
+                urgencia: opportunity.urgencia,
+                descripcion: opportunity.descripcion,
+              },
+            })
           }
         />
       )}
