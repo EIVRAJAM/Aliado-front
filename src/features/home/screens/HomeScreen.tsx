@@ -1,12 +1,21 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+import type { MainTabParamList, RootStackParamList } from '../../../navigation/types';
 import { Card } from '../../../shared/ui/Card';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 
-export function HomeScreen() {
+type HomeScreenProps = CompositeScreenProps<
+  BottomTabScreenProps<MainTabParamList, 'Home'>,
+  NativeStackScreenProps<RootStackParamList>
+>;
+
+export function HomeScreen({ navigation }: HomeScreenProps) {
   const { session } = useAuthSession();
 
   if (!session) {
@@ -65,6 +74,26 @@ export function HomeScreen() {
               : 'En Oportunidades puedes revisar solicitudes compatibles. Tu perfil público y agenda están en Profesional.'}
           </Text>
         </View>
+      </Card>
+
+      <Card style={styles.serviceCard}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Abrir avisos de servicio"
+          onPress={() => navigation.navigate('ServiceNotifications')}
+          style={({ pressed }) => [styles.serviceRow, pressed ? styles.servicePressed : null]}
+        >
+          <View style={styles.serviceIcon}>
+            <Ionicons name="briefcase-outline" size={20} color={colors.teal} />
+          </View>
+          <View style={styles.serviceText}>
+            <Text style={styles.serviceTitle}>Avisos de servicio</Text>
+            <Text style={styles.serviceMessage}>
+              Aceptaciones y cambios de estado de tus servicios.
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.chevron} />
+        </Pressable>
       </Card>
     </ScreenLayout>
   );
@@ -171,5 +200,40 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 13,
     lineHeight: 19,
+  },
+  serviceCard: {
+    padding: 0,
+  },
+  serviceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  servicePressed: {
+    backgroundColor: colors.background,
+    borderRadius: radii.lg,
+  },
+  serviceIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.md,
+    backgroundColor: colors.tealSurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  serviceText: {
+    flex: 1,
+    gap: 2,
+  },
+  serviceTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  serviceMessage: {
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 17,
   },
 });

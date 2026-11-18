@@ -22,7 +22,8 @@ import {
   OpportunityDetailScreen,
   OpportunityNotificationsScreen,
 } from '../features/opportunities';
-import { ProposalFlowScreen } from '../features/proposals';
+import { ProposalFlowScreen, ReceivedProposalsScreen } from '../features/proposals';
+import { ServiceDetailScreen, ServiceNotificationsScreen } from '../features/services';
 import { ProfessionalProfileCreateScreen } from '../features/professional-profile';
 import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
 import { colors } from '../shared/ui/theme';
@@ -66,6 +67,11 @@ export function RootNavigator() {
               name="ProfessionalProfileCreate"
               component={ProfessionalProfileCreateScreen}
             />
+            {session.role === 'CLIENTE' ? (
+              <Stack.Screen name="ReceivedProposals" component={ReceivedProposalsScreen} />
+            ) : null}
+            <Stack.Screen name="ServiceDetail" component={ServiceDetailScreen} />
+            <Stack.Screen name="ServiceNotifications" component={ServiceNotificationsScreen} />
             {session.role === 'PRESTADOR' ? (
               <>
                 <Stack.Screen

@@ -2,6 +2,7 @@ import { ApiError, requestJson } from '../../../shared/api/http-client';
 import {
   ProposalError,
   isProposalState,
+  type AcceptProposalResponse,
   type CreateProposalInput,
   type Proposal,
   type RetireProposalResponse,
@@ -90,6 +91,8 @@ function conflictMessage(serverCode: string | undefined): string {
       return 'La solicitud ya no admite nuevas propuestas.';
     case 'SOLICITUD_NO_COMPATIBLE':
       return 'La oportunidad ya no es compatible con tu perfil.';
+    case 'SERVICIO_YA_CONTRATADO':
+      return 'La solicitud ya tiene un servicio contratado.';
     case 'CONFLICTO_CONCURRENCIA':
     case 'REGISTRO_DUPLICADO':
       return 'La propuesta cambió por otra operación. Vuelve a intentarlo.';
@@ -118,7 +121,7 @@ function mapApiError(error: unknown, fallback: string): ProposalError {
     if (error.status === 403) {
       return new ProposalError(
         'FORBIDDEN',
-        'Esta acción está disponible para cuentas de prestador.',
+        'No tienes permiso para realizar esta operación.',
         403,
         serverCode
       );
@@ -220,6 +223,47 @@ export class HttpProposalGateway implements ProposalGateway {
       return proposal;
     } catch (error) {
       throw mapApiError(error, 'No fue posible actualizar la propuesta. Intenta de nuevo.');
+    }
+  }
+
+  async listReceived(token: string, solicitudId: string): Promise<Proposal[]> {
+    try {
+      const response = await requestJson<unknown>(
+        this.requireBaseUrl(),
+        `/api/v1/solicitudes/${encodeURIComponent(solicitudId)}/propuestas`,
+        { method: 'GET', token }
+      );
+      if (!Array.isArray(response)) {
+        throw new ProposalError(
+          'INVALID_RESPONSE',
+          'La respuesta del servidor no tiene el formato esperado.'
+        );
+      }
+      return response.map(parseProposal);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible cargar las propuestas recibidas.');
+    }
+  }
+
+  async accept(token: string, proposalId: string): Promise<AcceptProposalResponse> {
+    try {
+      const response = await requestJson<unknown>(
+        this.requireBaseUrl(),
+        `/api/v1/propuestas/${encodeURIComponent(proposalId)}/aceptar`,
+        { method: 'POST', token }
+      );
+      if (!isRecord(response)) {
+        throw new ProposalError(
+          'INVALID_RESPONSE',
+          'La respuesta del servidor no tiene el formato esperado.'
+        );
+      }
+      return {
+        servicioId: requiredString(response.servicioId),
+        estado: requiredString(response.estado),
+      };
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible aceptar la propuesta. Intenta de nuevo.');
     }
   }
 

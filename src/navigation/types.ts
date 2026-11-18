@@ -27,6 +27,9 @@ export type RootStackParamList = {
   OpportunityDetail: { solicitudId: string };
   OpportunityNotifications: undefined;
   ProposalFlow: { solicitudId: string; opportunity?: ProposalOpportunityContext };
+  ReceivedProposals: { solicitudId: string };
+  ServiceDetail: { servicioId: string };
+  ServiceNotifications: undefined;
   RequestForm: { requestId?: string } | undefined;
   RequestDetail: { requestId: string };
 };

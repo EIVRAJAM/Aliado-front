@@ -219,6 +219,16 @@ export function RequestDetailScreen({ navigation, route }: RequestDetailScreenPr
             <>
               <Text style={styles.sectionTitle}>Acciones</Text>
               <View style={styles.actions}>
+                {request.estado === 'PUBLICADA' ? (
+                  <PrimaryButton
+                    label="Ver propuestas recibidas"
+                    variant="secondary"
+                    onPress={() =>
+                      navigation.navigate('ReceivedProposals', { solicitudId: request.id })
+                    }
+                    disabled={actionLoading !== null}
+                  />
+                ) : null}
                 {request.estado === 'BORRADOR' ? (
                   <PrimaryButton
                     label="Publicar solicitud"

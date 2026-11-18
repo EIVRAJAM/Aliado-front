@@ -32,6 +32,11 @@ export interface RetireProposalResponse {
   estado: ProposalState;
 }
 
+export interface AcceptProposalResponse {
+  servicioId: string;
+  estado: string;
+}
+
 export type ProposalErrorCode =
   | 'CONFIGURATION'
   | 'NETWORK'
