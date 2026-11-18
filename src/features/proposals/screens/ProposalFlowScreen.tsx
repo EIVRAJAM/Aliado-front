@@ -408,13 +408,6 @@ function ProviderProposalFlow({
               disabled={submitting || creationUncertain}
             />
           </Card>
-
-          <View style={styles.limitNote}>
-            <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
-            <Text style={styles.limitText}>
-              Podrás editarla o retirarla solo mientras permanezcas en esta pantalla.
-            </Text>
-          </View>
         </>
       ) : (
         <>
@@ -533,13 +526,6 @@ function ProviderProposalFlow({
               />
             </View>
           </Card>
-
-          <View style={styles.limitNote}>
-            <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
-            <Text style={styles.limitText}>
-              Si sales de esta pantalla, no podrás volver a abrir esta propuesta.
-            </Text>
-          </View>
         </>
       )}
     </ScreenLayout>
@@ -675,17 +661,5 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 12,
     lineHeight: 18,
-  },
-  limitNote: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xs,
-  },
-  limitText: {
-    flex: 1,
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
   },
 });
