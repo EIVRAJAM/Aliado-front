@@ -9,44 +9,94 @@ import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
-import { ServiceNotificationCard } from '../components/ServiceNotificationCard';
-import { useServiceNotifications } from '../hooks/useServiceNotifications';
+import { NotificationCard } from '../components/NotificationCard';
+import { useNotifications } from '../hooks/useNotifications';
+import type { AppNotification } from '../types/notification';
 
-type ServiceNotificationsScreenProps = NativeStackScreenProps<
+type NotificationsScreenProps = NativeStackScreenProps<
   RootStackParamList,
-  'ServiceNotifications'
+  'Notifications'
 >;
 
-export function ServiceNotificationsScreen({
-  navigation,
-}: ServiceNotificationsScreenProps) {
+export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
   const { session } = useAuthSession();
-  const { notifications, loading, error, reload } = useServiceNotifications();
+  const { notifications, loading, error, reload } = useNotifications();
 
   if (!session) {
     return null;
   }
 
+  const openNotification = (notification: AppNotification) => {
+    switch (notification.tipo) {
+      case 'NUEVA_OPORTUNIDAD':
+        if (session.role === 'PRESTADOR' && notification.solicitudId) {
+          navigation.navigate('OpportunityDetail', {
+            solicitudId: notification.solicitudId,
+          });
+        }
+        break;
+      case 'PROPUESTA_RECIBIDA':
+        if (session.role === 'CLIENTE') {
+          if (notification.solicitudId) {
+            navigation.navigate('ReceivedProposals', {
+              solicitudId: notification.solicitudId,
+            });
+          } else {
+            navigation.navigate('MainTabs', { screen: 'Requests' });
+          }
+        }
+        break;
+      case 'ACEPTACION_PROPUESTA':
+      case 'CAMBIO_ESTADO_SERVICIO':
+        if (notification.servicioId) {
+          navigation.navigate('ServiceDetail', {
+            servicioId: notification.servicioId,
+          });
+        }
+        break;
+      case 'AVISO_SEGURIDAD_CUENTA':
+        break;
+    }
+  };
+
+  const canOpen = (notification: AppNotification): boolean => {
+    switch (notification.tipo) {
+      case 'NUEVA_OPORTUNIDAD':
+        return session.role === 'PRESTADOR' && Boolean(notification.solicitudId);
+      case 'PROPUESTA_RECIBIDA':
+        return session.role === 'CLIENTE';
+      case 'ACEPTACION_PROPUESTA':
+      case 'CAMBIO_ESTADO_SERVICIO':
+        return Boolean(notification.servicioId);
+      case 'AVISO_SEGURIDAD_CUENTA':
+        return false;
+    }
+  };
+
   const countLabel = loading
-    ? 'Cargando avisos…'
+    ? 'Cargando notificaciones…'
     : error
       ? 'No se pudieron cargar'
-      : `${notifications.length} ${notifications.length === 1 ? 'aviso' : 'avisos'}`;
+      : `${notifications.length} ${
+          notifications.length === 1 ? 'notificación' : 'notificaciones'
+        }`;
 
   return (
     <ScreenLayout
-      title="Avisos de servicio"
-      subtitle="Aceptaciones y cambios de estado de tus servicios."
+      title="Notificaciones"
+      subtitle="Oportunidades, propuestas y cambios de servicio."
       onBack={() => navigation.goBack()}
     >
       <View style={styles.toolbar}>
         <View style={styles.toolbarText}>
           <Text style={styles.count}>{countLabel}</Text>
-          <Text style={styles.hint}>Se consultan al abrir la pantalla; no hay push.</Text>
+          <Text style={styles.hint}>
+            Se consultan al abrir la pantalla; no hay push ni marcado de lectura.
+          </Text>
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Actualizar avisos de servicio"
+          accessibilityLabel="Actualizar notificaciones"
           onPress={() => {
             void reload();
           }}
@@ -68,40 +118,34 @@ export function ServiceNotificationsScreen({
             />
           ) : (
             <Card style={styles.loadingCard}>
-              <Text style={styles.loadingText}>Cargando avisos de servicio…</Text>
+              <Text style={styles.loadingText}>Cargando notificaciones…</Text>
             </Card>
           )}
         </>
       ) : notifications.length === 0 ? (
         <Card style={styles.emptyCard}>
           <View style={styles.emptyIcon}>
-            <Ionicons name="briefcase-outline" size={28} color={colors.primary} />
+            <Ionicons name="notifications-off-outline" size={28} color={colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>Sin avisos de servicio</Text>
+          <Text style={styles.emptyTitle}>Sin notificaciones</Text>
           <Text style={styles.emptyText}>
-            Cuando recibas una propuesta, acepten una tuya o cambie el estado de un servicio,
-            aparecerá aquí.
+            Cuando aparezca una oportunidad, recibas una propuesta o cambie un servicio,
+            se mostrará aquí.
           </Text>
         </Card>
       ) : (
         <View style={styles.list}>
           {notifications.map((notification) => (
-            <ServiceNotificationCard
+            <NotificationCard
               key={notification.id}
               notification={notification}
-              onPress={() => {
-                if (notification.tipo === 'PROPUESTA_RECIBIDA' && notification.solicitudId) {
-                  navigation.navigate('ReceivedProposals', {
-                    solicitudId: notification.solicitudId,
-                  });
-                } else if (notification.tipo === 'PROPUESTA_RECIBIDA') {
-                  navigation.navigate('MainTabs', { screen: 'Requests' });
-                } else if (notification.servicioId) {
-                  navigation.navigate('ServiceDetail', {
-                    servicioId: notification.servicioId,
-                  });
-                }
-              }}
+              onPress={
+                canOpen(notification)
+                  ? () => {
+                      openNotification(notification);
+                    }
+                  : undefined
+              }
             />
           ))}
         </View>

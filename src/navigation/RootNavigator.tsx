@@ -18,12 +18,10 @@ import {
   ProfilePublicPreviewScreen,
 } from '../features/profile';
 import { ProviderProfileScreen } from '../features/discovery';
-import {
-  OpportunityDetailScreen,
-  OpportunityNotificationsScreen,
-} from '../features/opportunities';
+import { OpportunityDetailScreen } from '../features/opportunities';
+import { NotificationsScreen } from '../features/notifications';
 import { ProposalFlowScreen, ReceivedProposalsScreen } from '../features/proposals';
-import { ServiceDetailScreen, ServiceNotificationsScreen } from '../features/services';
+import { ServiceDetailScreen } from '../features/services';
 import { ProfessionalProfileCreateScreen } from '../features/professional-profile';
 import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
 import { colors } from '../shared/ui/theme';
@@ -71,16 +69,12 @@ export function RootNavigator() {
               <Stack.Screen name="ReceivedProposals" component={ReceivedProposalsScreen} />
             ) : null}
             <Stack.Screen name="ServiceDetail" component={ServiceDetailScreen} />
-            <Stack.Screen name="ServiceNotifications" component={ServiceNotificationsScreen} />
+            <Stack.Screen name="Notifications" component={NotificationsScreen} />
             {session.role === 'PRESTADOR' ? (
               <>
                 <Stack.Screen
                   name="OpportunityDetail"
                   component={OpportunityDetailScreen}
-                />
-                <Stack.Screen
-                  name="OpportunityNotifications"
-                  component={OpportunityNotificationsScreen}
                 />
                 <Stack.Screen name="ProposalFlow" component={ProposalFlowScreen} />
               </>

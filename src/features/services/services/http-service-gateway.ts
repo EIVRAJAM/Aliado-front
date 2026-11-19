@@ -6,7 +6,6 @@ import {
   type ServiceCatalogs,
   type ServiceHistoryEntry,
   type ServiceMessage,
-  type ServiceNotification,
   type ServiceTransitionAction,
   type ServiceTransitionResponse,
 } from '../types/service';
@@ -139,45 +138,6 @@ function parseCatalogs(categories: unknown, zones: unknown): ServiceCatalogs {
       return { id: requiredString(item.id), nombre: requiredString(item.nombre) };
     }),
   };
-}
-
-function parseNotifications(value: unknown): ServiceNotification[] {
-  if (!Array.isArray(value)) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
-  }
-  return value.flatMap<ServiceNotification>((item) => {
-    if (!isRecord(item) || typeof item.tipo !== 'string') {
-      return [];
-    }
-    if (
-      item.tipo !== 'PROPUESTA_RECIBIDA' &&
-      item.tipo !== 'ACEPTACION_PROPUESTA' &&
-      item.tipo !== 'CAMBIO_ESTADO_SERVICIO'
-    ) {
-      return [];
-    }
-    const servicioId = nullableString(item.servicioId);
-    const solicitudId = nullableString(item.solicitudId);
-    if (item.tipo !== 'PROPUESTA_RECIBIDA' && !servicioId) {
-      return [];
-    }
-    return [
-      {
-        id: requiredString(item.id),
-        tipo: item.tipo,
-        servicioId,
-        solicitudId,
-        detalle: requiredString(item.detalle),
-        fechaGeneracion: requiredString(item.fechaGeneracion),
-      },
-    ];
-  }).sort((left, right) => {
-    const leftTime = Date.parse(left.fechaGeneracion);
-    const rightTime = Date.parse(right.fechaGeneracion);
-    const safeLeftTime = Number.isNaN(leftTime) ? 0 : leftTime;
-    const safeRightTime = Number.isNaN(rightTime) ? 0 : rightTime;
-    return safeRightTime - safeLeftTime;
-  });
 }
 
 function getServerCode(body: unknown): string | undefined {
@@ -342,16 +302,4 @@ export class HttpServiceGateway implements ServiceGateway {
     }
   }
 
-  async listServiceNotifications(token: string): Promise<ServiceNotification[]> {
-    try {
-      const response = await requestJson<unknown>(
-        this.requireBaseUrl(),
-        '/api/v1/notificaciones',
-        { method: 'GET', token }
-      );
-      return parseNotifications(response);
-    } catch (error) {
-      throw mapApiError(error, 'No fue posible cargar los avisos de servicio.');
-    }
-  }
 }

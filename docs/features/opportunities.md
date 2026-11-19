@@ -1,6 +1,6 @@
 # F06 — Compatibilidad y oportunidades (app móvil)
 
-**Estado:** tablero, detalle y bandeja de avisos implementados contra el contrato real del backend. La iteración visual reduce la carga del tablero con filtros en modal y reorganiza el detalle en una lectura compacta. La UI se verificó en emulador Android con los datos locales `[DEMO LOCAL F06]`; no se crearon ni modificaron datos. No se usan mocks ni fixtures en la integración.
+**Estado:** tablero y detalle implementados contra el contrato real del backend; los avisos del Prestador se consultan desde la bandeja unificada F09. La iteración visual reduce la carga del tablero con filtros en modal y reorganiza el detalle en una lectura compacta. La UI se verificó en emulador Android con los datos locales `[DEMO LOCAL F06]`; no se usan mocks ni fixtures en la integración.
 
 ## Alcance móvil
 
@@ -10,22 +10,22 @@ Cubre SPEC-06 para el rol **Prestador**:
 - tablero de solicitudes compatibles calculado por el servidor;
 - filtros opcionales por categoría y urgencia enviados a la API desde un botón compacto y un modal;
 - detalle de una oportunidad con encabezado compacto, descripción completa, referencia de solicitud, fecha y cantidad de fotos como metadatos secundarios;
-- bandeja de avisos `NUEVA_OPORTUNIDAD` consultada desde la API, sin simular push, polling ni notificaciones locales;
+- acceso a los avisos desde la campana de Oportunidades; abre la bandeja unificada F09, sin simular push, polling ni notificaciones locales;
 - estados de carga, error recuperable, vacío, resultados y sesión expirada;
 - control de rol en navegación y pantallas, con el backend como autoridad final.
 
-El Cliente no ve la pestaña ni tiene registradas las pantallas de oportunidades en el stack autenticado. Las pantallas vuelven a comprobar el rol y los hooks no consultan la API si el rol no es `PRESTADOR`.
+El Cliente no ve la pestaña ni tiene registrada la pantalla de detalle de oportunidad en el stack autenticado. Esa pantalla vuelve a comprobar el rol y su hook no consulta la API si el rol no es `PRESTADOR`. La bandeja de notificaciones es compartida por ambos roles.
 
 ## Contratos integrados
 
-Todas las operaciones requieren sesión bearer. El tablero, el detalle y los avisos exigen rol `PRESTADOR`.
+Todas las operaciones requieren sesión bearer. El tablero y el detalle exigen rol `PRESTADOR`. Los avisos pertenecen a la bandeja unificada F09 y no tienen endpoint propio en el cliente móvil.
 
 | Operación | Endpoint real | Request | Respuesta usada |
 |---|---|---|---|
 | Catálogo de categorías | `GET /api/v1/catalogo/categorias` | — | `{ id, nombre }[]` para el filtro. |
 | Tablero | `GET /api/v1/oportunidades` | Query opcional `categoria` y `urgencia`. | `OportunidadResponse[]`. |
 | Detalle | `GET /api/v1/oportunidades/{solicitudId}` | Path UUID. | `OportunidadResponse`. |
-| Avisos | `GET /api/v1/notificaciones/oportunidades` | — | `NotificacionResponse[]` de tipo `NUEVA_OPORTUNIDAD`. |
+| Avisos | Bandeja unificada F09 | — | Ver [F09](notifications.md); F06 no mantiene una bandeja propia. |
 
 `OportunidadResponse` observado en el backend:
 
@@ -41,19 +41,7 @@ Todas las operaciones requieren sesión bearer. El tablero, el detalle y los avi
 }
 ```
 
-`NotificacionResponse` observado para los avisos:
-
-```json
-{
-  "id": "uuid",
-  "tipo": "NUEVA_OPORTUNIDAD",
-  "servicioId": null,
-  "solicitudId": "uuid",
-  "detalle": "Nueva oportunidad compatible con tu perfil.",
-  "estadoEntrega": "PENDIENTE | ENTREGADA | FALLIDA",
-  "fechaGeneracion": "OffsetDateTime"
-}
-```
+El DTO de notificaciones y sus destinos se documentan en [F09](notifications.md). F06 no lo duplica.
 
 ### Filtros
 
@@ -78,9 +66,9 @@ Todas las operaciones requieren sesión bearer. El tablero, el detalle y los avi
 
 ```text
 src/features/opportunities/
-├── components/       # tarjeta, filtros, estado y aviso
-├── hooks/            # tablero, detalle, avisos y manejo de sesión
-├── screens/          # Oportunidades, detalle y avisos
+├── components/       # tarjeta, filtros y estado
+├── hooks/            # tablero, detalle y manejo de sesión
+├── screens/          # Oportunidades y detalle
 ├── services/         # gateway y adaptador HTTP
 ├── types/            # DTO, filtros y errores
 └── utils/            # formato y mensajes
@@ -89,7 +77,7 @@ src/features/opportunities/
 - `OpportunitiesScreen`: carga el tablero y el catálogo, muestra un botón de filtros con indicador de estado activo, y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal. El conteo aparece una sola vez junto a las acciones; el subtítulo es la única explicación general de compatibilidad y se retiró la tarjeta redundante de alcance.
 - `OpportunityFilterModal`: usa el patrón modal de la app, respeta safe areas, cierra con botón, overlay y Atrás, y mantiene áreas táctiles de al menos 44 puntos.
 - `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` al recibir foco y presenta un único bloque con categoría, urgencia, zona aproximada, descripción completa, fecha, referencia corta de `solicitudId` y cantidad de fotos. No repite campos y usa un aviso compacto para privacidad y límites del contrato.
-- `OpportunityNotificationsScreen`: consulta la bandeja al abrir y al actualizar; cada aviso abre el detalle, que se valida de nuevo en el servidor.
+- La campana de Oportunidades abre la misma pantalla **Notificaciones** de F09 que la campana de Inicio. No hay pantalla, hook, tarjeta ni operación de gateway de avisos dentro de F06; los `NUEVA_OPORTUNIDAD` se muestran y navegan desde la bandeja unificada.
 - No se muestra identidad, correo, teléfono ni dirección exacta del Cliente; el DTO real tampoco los expone.
 
 ## Diferencias con el plan y límites reales
@@ -119,10 +107,9 @@ src/features/opportunities/
 El backend arrancó en `8080` y el OpenAPI confirmó:
 
 - `GET /api/v1/oportunidades` con `categoria` y `urgencia` opcionales;
-- `GET /api/v1/oportunidades/{solicitudId}`;
-- `GET /api/v1/notificaciones/oportunidades`.
+- `GET /api/v1/oportunidades/{solicitudId}`.
 
-Sin sesión, los tres endpoints respondieron `401 NO_AUTENTICADO`. Los datos demo locales tenían `4` usuarios, `3` perfiles profesionales, `4` solicitudes publicadas, `0` notificaciones y `0` fotos. No se crearon ni modificaron registros durante esta iteración.
+Sin sesión, ambos endpoints respondieron `401 NO_AUTENTICADO`. La consulta y navegación de avisos se validan en F09. Los datos demo locales tenían `4` usuarios, `3` perfiles profesionales, `4` solicitudes publicadas, `0` notificaciones y `0` fotos. No se crearon ni modificaron registros durante esta iteración.
 
 ### UI en emulador Android
 
@@ -136,7 +123,7 @@ La sesión Prestador existente se usó contra los datos `[DEMO LOCAL F06]`:
 - filtro `Pintura`: `0` resultados con estado vacío; la acción de limpiar devolvió las `4` oportunidades;
 - detalle de una oportunidad demo: categoría, urgencia, zona aproximada, descripción completa, fecha de publicación, referencia `Ref. 66000000…0001`, “Sin fotos” y aviso compacto de privacidad y límites; sin campos repetidos.
 
-Los datos demo no incluyen descripciones nulas/vacías, saltos de línea ni fotos, por lo que no se pudieron verificar visualmente esos estados. La UI implementa el texto de reemplazo para descripción ausente y la nota de fotos no descargables; no se crearon registros para forzarlos. Tampoco se repitieron el `404` unificado, la notificación real ni la denegación `403`, que no forman parte de este ajuste.
+Los datos demo no incluyen descripciones nulas/vacías, saltos de línea ni fotos, por lo que no se pudieron verificar visualmente esos estados. La UI implementa el texto de reemplazo para descripción ausente y la nota de fotos no descargables; no se crearon registros para forzarlos. Tampoco se repitieron el `404` unificado ni la denegación `403`, que no forman parte de este ajuste. La apertura de avisos desde Oportunidades se valida en [F09](notifications.md).
 
 ## Enlaces
 

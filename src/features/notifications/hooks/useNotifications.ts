@@ -2,14 +2,14 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 
 import { useAuthSession } from '../../auth';
-import { serviceGateway } from '../services/service-gateway-instance';
-import type { ServiceNotification } from '../types/service';
-import { useServiceError } from './useServiceError';
+import { notificationGateway } from '../services/notification-gateway-instance';
+import type { AppNotification } from '../types/notification';
+import { useNotificationError } from './useNotificationError';
 
-export function useServiceNotifications() {
+export function useNotifications() {
   const { session } = useAuthSession();
-  const resolveError = useServiceError();
-  const [notifications, setNotifications] = useState<ServiceNotification[]>([]);
+  const resolveError = useNotificationError();
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,9 +21,12 @@ export function useServiceNotifications() {
     setLoading(true);
     setError(null);
     try {
-      setNotifications(await serviceGateway.listServiceNotifications(session.token));
+      setNotifications(await notificationGateway.listMine(session.token));
     } catch (loadError) {
-      const message = resolveError(loadError, 'No fue posible cargar los avisos de servicio.');
+      const message = resolveError(
+        loadError,
+        'No fue posible cargar las notificaciones.'
+      );
       if (message) {
         setError(message);
       }

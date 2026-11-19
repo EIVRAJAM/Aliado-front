@@ -1,6 +1,6 @@
 # F08 — Contratación, ciclo del servicio y comunicación (app móvil)
 
-**Estado:** flujo Cliente de consulta/aceptación de propuestas, detalle compartido del servicio, transiciones, historial y mensajes implementado contra el controlador/DTO reales. La pantalla de avisos de servicio permite abrir un servicio desde notificaciones existentes. No se validaron mutaciones autenticadas ni revisión visual porque el development build requiere reconstrucción y no se autorizó crear servicios. No se usan mocks ni datos ficticios.
+**Estado:** flujo Cliente de consulta/aceptación de propuestas, detalle compartido del servicio, transiciones, historial y mensajes implementado contra el controlador/DTO reales. La bandeja unificada de F09 permite abrir un servicio desde notificaciones existentes. No se validaron mutaciones autenticadas ni revisión visual porque el development build requiere reconstrucción y no se autorizó crear servicios. No se usan mocks ni datos ficticios.
 
 ## Alcance móvil
 
@@ -10,7 +10,7 @@
 - Cliente: confirma la finalización o cancela mientras el servidor lo permita.
 - Ambos: cancelan si el estado lo permite.
 - Mensajes REST mediados después de la contratación; no chat en tiempo real.
-- Avisos de servicio desde `GET /api/v1/notificaciones`, sin push ni polling.
+- Avisos de servicio consultados desde la bandeja unificada F09, sin push ni polling.
 
 No se implementa F09 push, F15 chat realtime, precios, datos de contacto ni un listado de servicios.
 
@@ -27,7 +27,7 @@ No se implementa F09 push, F15 chat realtime, precios, datos de contacto ni un l
 | Cancelar | `POST /api/v1/servicios/{id}/cancelar` | `{ id, estado }`. |
 | Historial | `GET /api/v1/servicios/{id}/historial` | Transiciones ordenadas. |
 | Mensajes | `GET/POST /api/v1/servicios/{id}/mensajes` | Lista o mensaje creado. |
-| Avisos de servicio | `GET /api/v1/notificaciones` | Se filtran `PROPUESTA_RECIBIDA`, `ACEPTACION_PROPUESTA` y `CAMBIO_ESTADO_SERVICIO`. Las propuestas recibidas no incluyen un identificador navegable en el DTO real; las notificaciones posteriores usan `servicioId`. |
+| Notificaciones | `GET /api/v1/notificaciones` | F09 unifica `PROPUESTA_RECIBIDA`, `ACEPTACION_PROPUESTA`, `CAMBIO_ESTADO_SERVICIO`, `NUEVA_OPORTUNIDAD` y `AVISO_SEGURIDAD_CUENTA`. Las propuestas recibidas no incluyen un identificador navegable en el DTO real; las notificaciones de aceptación/cambio usan `servicioId`. |
 
 El detalle de servicio expone IDs de la solicitud y propuesta, pero no nombres de las partes ni contacto. Para mostrar categoría y zona se consultan los catálogos existentes. El canal de mensajes no expone datos de contacto y el backend limita el contenido a 2000 caracteres.
 
@@ -48,20 +48,21 @@ El detalle de servicio expone IDs de la solicitud y propuesta, pero no nombres d
 
 ```text
 src/features/services/
-├── components/       # estado, historial, mensajes y avisos
-├── hooks/            # detalle compartido, avisos y sesión expirada
-├── screens/          # detalle del servicio y avisos
+├── components/       # estado, historial y mensajes
+├── hooks/            # detalle compartido y sesión expirada
+├── screens/          # detalle del servicio
 ├── services/         # gateway HTTP
 ├── types/            # DTOs, estados y errores
 └── utils/            # formato y mensajes
 
+src/features/notifications/
 src/features/proposals/screens/ReceivedProposalsScreen.tsx
 ```
 
 - `RequestDetailScreen` muestra **Ver propuestas recibidas** para solicitudes publicadas del Cliente.
 - `ReceivedProposalsScreen` compara disponibilidad y mensaje y permite aceptar con confirmación.
 - `ServiceDetailScreen` comparte el detalle para ambos roles y muestra acciones según rol/estado, historial y mensajes.
-- `ServiceNotificationsScreen` se abre desde la campana **Avisos de servicio** del encabezado de Inicio; muestra propuestas recibidas, aceptaciones y cambios de estado en orden cronológico descendente. Una propuesta recibida abre directamente sus propuestas solo si el backend entrega `solicitudId`; con el DTO actual abre Solicitudes. Los avisos con `servicioId` abren el detalle del servicio. El botón no muestra contador ni estado de lectura.
+- La bandeja unificada F09 se abre desde la campana **Notificaciones** del encabezado de Inicio; las aceptaciones y cambios de estado con `servicioId` abren el detalle del servicio. Una propuesta recibida abre directamente sus propuestas solo si el backend entrega `solicitudId`; con el DTO actual abre Solicitudes. No hay contador de no leídos ni estado de lectura. Ver [F09](notifications.md).
 - El `servicioId` se conserva únicamente en el contexto de navegación. No se persiste ni se simula una lista.
 - Se reutilizó la selección de fecha/hora y `expo-clipboard` de F07; el development build debe reconstruirse por los módulos nativos.
 
@@ -101,7 +102,7 @@ src/features/proposals/screens/ReceivedProposalsScreen.tsx
 
 ## Fuera de alcance
 
-F09 push, F15 chat realtime, F10 confianza, precios y recuperación persistente de servicios. D-10 debe definir la política de mensajes después de cancelar/finalizar.
+F09 push, F15 chat realtime, F10 confianza, precios y recuperación persistente de servicios. La bandeja unificada F09 sí forma parte del alcance actual; push y tokens siguen fuera. D-10 debe definir la política de mensajes después de cancelar/finalizar.
 
 ## Enlaces
 

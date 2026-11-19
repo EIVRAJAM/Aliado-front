@@ -1,7 +1,5 @@
 export type OpportunityUrgency = 'BAJA' | 'MEDIA' | 'ALTA' | 'URGENTE';
 
-export type OpportunityDeliveryState = 'PENDIENTE' | 'ENTREGADA' | 'FALLIDA';
-
 export interface Opportunity {
   solicitudId: string;
   categoria: string;
@@ -10,15 +8,6 @@ export interface Opportunity {
   descripcion: string | null;
   fechaCreacion: string;
   fotos: string[];
-}
-
-export interface OpportunityNotification {
-  id: string;
-  tipo: 'NUEVA_OPORTUNIDAD';
-  solicitudId: string | null;
-  detalle: string;
-  estadoEntrega: OpportunityDeliveryState;
-  fechaGeneracion: string;
 }
 
 export interface OpportunityCategory {
@@ -72,10 +61,6 @@ export function isOpportunityId(value: string): boolean {
 
 export function isOpportunityUrgency(value: unknown): value is OpportunityUrgency {
   return value === 'BAJA' || value === 'MEDIA' || value === 'ALTA' || value === 'URGENTE';
-}
-
-export function isOpportunityDeliveryState(value: unknown): value is OpportunityDeliveryState {
-  return value === 'PENDIENTE' || value === 'ENTREGADA' || value === 'FALLIDA';
 }
 
 export function isOpportunityNotFound(error: unknown): boolean {

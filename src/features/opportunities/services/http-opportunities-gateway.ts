@@ -1,12 +1,10 @@
 import { ApiError, requestJson } from '../../../shared/api/http-client';
 import {
   OpportunityError,
-  isOpportunityDeliveryState,
   isOpportunityUrgency,
   type Opportunity,
   type OpportunityCategory,
   type OpportunityFilters,
-  type OpportunityNotification,
 } from '../types/opportunity';
 import type { OpportunitiesGateway } from './opportunities-gateway';
 
@@ -84,36 +82,6 @@ function parseOpportunity(value: unknown): Opportunity {
     descripcion: nullableString(value.descripcion),
     fechaCreacion: requiredString(value.fechaCreacion),
     fotos: parseStringArray(value.fotos),
-  };
-}
-
-function parseNotification(value: unknown): OpportunityNotification | null {
-  if (!isRecord(value)) {
-    throw new OpportunityError(
-      'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
-    );
-  }
-
-  const tipo = requiredString(value.tipo);
-  if (tipo !== 'NUEVA_OPORTUNIDAD') {
-    return null;
-  }
-
-  if (!isOpportunityDeliveryState(value.estadoEntrega)) {
-    throw new OpportunityError(
-      'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
-    );
-  }
-
-  return {
-    id: requiredString(value.id),
-    tipo,
-    solicitudId: nullableString(value.solicitudId),
-    detalle: requiredString(value.detalle),
-    estadoEntrega: value.estadoEntrega,
-    fechaGeneracion: requiredString(value.fechaGeneracion),
   };
 }
 
@@ -258,25 +226,4 @@ export class HttpOpportunitiesGateway implements OpportunitiesGateway {
     }
   }
 
-  async listNotifications(token: string): Promise<OpportunityNotification[]> {
-    try {
-      const response = await requestJson<unknown>(
-        this.requireBaseUrl(),
-        '/api/v1/notificaciones/oportunidades',
-        { method: 'GET', token }
-      );
-      if (!Array.isArray(response)) {
-        throw new OpportunityError(
-          'UNKNOWN',
-          'La respuesta del servidor no tiene el formato esperado.'
-        );
-      }
-      return response.flatMap((item) => {
-        const notification = parseNotification(item);
-        return notification ? [notification] : [];
-      });
-    } catch (error) {
-      throw mapApiError(error, 'No fue posible cargar los avisos de oportunidades.');
-    }
-  }
 }

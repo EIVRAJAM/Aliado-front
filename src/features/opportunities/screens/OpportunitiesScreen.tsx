@@ -110,8 +110,8 @@ function ProviderOpportunitiesScreen({
           </Pressable>
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel="Avisos de oportunidades"
-            onPress={() => navigation.navigate('OpportunityNotifications')}
+            accessibilityLabel="Notificaciones"
+            onPress={() => navigation.navigate('Notifications')}
             style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
           >
             <Ionicons name="notifications-outline" size={20} color={colors.primary} />

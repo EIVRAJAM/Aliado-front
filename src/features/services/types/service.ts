@@ -72,15 +72,6 @@ export interface ServiceTransitionResponse {
   estado: ServiceState;
 }
 
-export interface ServiceNotification {
-  id: string;
-  tipo: 'PROPUESTA_RECIBIDA' | 'ACEPTACION_PROPUESTA' | 'CAMBIO_ESTADO_SERVICIO';
-  servicioId: string | null;
-  solicitudId: string | null;
-  detalle: string;
-  fechaGeneracion: string;
-}
-
 export type ServiceTransitionAction =
   | 'en-ejecucion'
   | 'terminado'

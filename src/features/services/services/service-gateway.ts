@@ -3,7 +3,6 @@ import type {
   ServiceCatalogs,
   ServiceHistoryEntry,
   ServiceMessage,
-  ServiceNotification,
   ServiceTransitionAction,
   ServiceTransitionResponse,
 } from '../types/service';
@@ -19,5 +18,4 @@ export interface ServiceGateway {
     action: ServiceTransitionAction
   ): Promise<ServiceTransitionResponse>;
   getCatalogs(token: string): Promise<ServiceCatalogs>;
-  listServiceNotifications(token: string): Promise<ServiceNotification[]>;
 }

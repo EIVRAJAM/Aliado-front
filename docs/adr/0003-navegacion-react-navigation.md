@@ -43,7 +43,7 @@ La barra usa `@react-navigation/bottom-tabs` con `react-native-safe-area-context
 
 ### Actualización 2026-11-16: Oportunidades para Prestador
 
-F06 añade la pestaña `Oportunidades` solo para `PRESTADOR`, entre Inicio y Profesional. El detalle de oportunidad y la bandeja de avisos se registran en el stack raíz únicamente para ese rol y vuelven a comprobar la sesión; el Cliente no ve la pestaña ni puede navegar directamente a esas pantallas. La bandeja de avisos es una consulta al servidor, no un mecanismo de push.
+F06 añade la pestaña `Oportunidades` solo para `PRESTADOR`, entre Inicio y Profesional. El detalle de oportunidad se registra en el stack raíz únicamente para ese rol y vuelve a comprobar la sesión; el Cliente no ve la pestaña ni puede navegar directamente a esa pantalla. La campana de Oportunidades abre la misma bandeja unificada F09 que Inicio; no existe una pantalla de avisos propia de F06. La bandeja es una consulta al servidor, no un mecanismo de push.
 
 ## Alternativas consideradas
 

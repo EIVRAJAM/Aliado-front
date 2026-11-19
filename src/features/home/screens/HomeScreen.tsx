@@ -31,8 +31,8 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       headerAction={
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Avisos de servicio"
-          onPress={() => navigation.navigate('ServiceNotifications')}
+          accessibilityLabel="Notificaciones"
+          onPress={() => navigation.navigate('Notifications')}
           style={({ pressed }) => [
             styles.headerAction,
             pressed ? styles.headerActionPressed : null,
