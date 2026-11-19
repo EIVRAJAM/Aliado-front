@@ -12,6 +12,7 @@ Este documento consolida los defectos del backend y las brechas de contrato que 
 | BE-04 | F05 | Endpoint de lectura faltante | Añadir lectura autenticada del perfil profesional propio. | Bloqueante para hidratar y editar, pendiente de comunicar |
 | BE-05 | F05 | Definición de contrato | Acordar y documentar campos, tipos y validaciones de `datosGenerales`. | Pendiente de definición conjunta con producto |
 | BE-06 | F04/F05 | Documentación API | Alinear OpenAPI con requests, respuestas y códigos HTTP observados en el backend. | Pendiente de comunicar |
+| BE-07 | F08 | Endpoint de lectura faltante | Añadir un listado autenticado y paginable de los servicios propios del Cliente o Prestador. | Pendiente de comunicar |
 
 ## Solicitudes detalladas
 
@@ -105,6 +106,41 @@ Esto es una ampliación necesaria para completar el cliente, no el defecto que c
 **Motivo:** el cliente móvil necesita un contrato único y reproducible para implementar y validar integración sin inferir DTOs desde controladores.
 
 **Criterios de aceptación propuestos:** OpenAPI pasa validación, sus ejemplos coinciden con pruebas de contrato y se versiona junto al backend.
+
+### BE-07 — Listado de servicios propios
+
+**Evidencia observada:** el backend expone `GET /api/v1/servicios/{id}`, transiciones, historial y mensajes, pero no una operación para que Cliente o Prestador consulten los servicios en los que participan. `ServicioJpaRepository` ya contiene `findByUsuario(UUID, Pageable)`, pero no existe un controlador ni una ruta HTTP que lo publique. OpenAPI tampoco incluye un listado de servicios.
+
+**Solicitar al backend:** exponer una consulta autenticada y paginable (por ejemplo, `GET /api/v1/servicios/mios`, nombre a acordar) que devuelva solo los servicios donde el usuario autenticado sea `clienteId` o `prestadorId`, con datos suficientes para abrir el detalle existente.
+
+**Motivo:** actualmente la app móvil solo conserva el `servicioId` al aceptar una propuesta o al abrir un aviso de servicio. Al salir de ese contexto no hay forma contractual de recuperar el servicio; el usuario no puede volver a consultar su estado, historial o mensajes desde la app.
+
+**Criterios de aceptación propuestos:**
+
+- La operación exige sesión y devuelve únicamente servicios del usuario autenticado; un actor ajeno no puede listar ni inferir servicios de terceros.
+- Funciona para ambos roles (`CLIENTE` y `PRESTADOR`) sin exponer contacto ni datos privados.
+- Incluye al menos `id`, `solicitudId`, `propuestaId`, `estado`, `fechaContratacion` y la información mínima para abrir `GET /servicios/{id}`.
+- Define el tratamiento de estados y un orden estable; si se permite filtrar por estado, el parámetro y sus valores deben quedar documentados.
+- Si se pagina, define parámetros, metadatos de página, orden estable y tamaño máximo; si no, justifica el límite y el comportamiento con volúmenes del piloto.
+- Los errores `401`/`403`, el aislamiento por participante y la semántica de la respuesta quedan reflejados en OpenAPI y en pruebas de contrato.
+
+**Comportamiento frontend actual:** no inventa un listado; mantiene el `servicioId` en el contexto de aceptación o lo obtiene de avisos existentes. La ausencia de esta operación está documentada en F08.
+
+## Decisiones pendientes
+
+| ID | Feature | Decisión | Estado |
+|---|---|---|---|
+| D-10 | F08 | Definir si se permite leer y enviar mensajes después de cancelar o finalizar un servicio, y cómo se refleja en API y UI. | Abierta; no es un defecto confirmado |
+
+### D-10 — Mensajería después de cancelar o finalizar
+
+**Evidencia observada:** `ServicioService.enviarMensaje` y `listarMensajes` validan que el actor sea participante y que `comunicacionHabilitada` sea verdadero. La aceptación crea el servicio con esa bandera en `true`; el código actual no la cierra en las transiciones a `CANCELADO` o `FINALIZADO`. Por tanto, el comportamiento después del cierre no está definido explícitamente por una regla de estado, solo por el valor de la bandera.
+
+**Decisión requerida:** acordar si Cliente y Prestador pueden leer y/o enviar mensajes después de `CANCELADO` o `FINALIZADO`, y si el canal debe cerrarse automáticamente o conservarse en solo lectura. La decisión debe cubrir API, UI y auditoría.
+
+**Comportamiento actual del frontend:** muestra el canal cuando `comunicacionHabilitada` es verdadero y no agrega restricciones por estado; si el servidor rechaza, muestra el error. No se presenta una política de mensajería posterior al cierre como si estuviera aprobada.
+
+**Criterios para cerrar:** política aprobada por producto y backend, contrato/OpenAPI con errores y permisos por estado, pruebas de lectura/escritura en ambos estados, y copy de UI coherente con la decisión. Esto no debe implementarse como un defecto ni como un cambio unilateral del cliente.
 
 ## Dependencias que no son defectos de backend
 
