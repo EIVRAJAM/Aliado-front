@@ -13,11 +13,18 @@ export function ServiceNotificationCard({
   notification: ServiceNotification;
   onPress: () => void;
 }) {
+  const accessibilityLabel =
+    notification.tipo === 'PROPUESTA_RECIBIDA'
+      ? notification.solicitudId
+        ? 'Propuesta recibida. Abrir propuestas recibidas.'
+        : 'Propuesta recibida. Abrir mis solicitudes.'
+      : `${notification.detalle}. Abrir servicio.`;
+
   return (
     <Card style={styles.card}>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${notification.detalle}. Abrir servicio.`}
+        accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
       >
@@ -26,7 +33,9 @@ export function ServiceNotificationCard({
         </View>
         <View style={styles.text}>
           <Text style={styles.title}>
-            {notification.tipo === 'ACEPTACION_PROPUESTA'
+            {notification.tipo === 'PROPUESTA_RECIBIDA'
+              ? 'Propuesta recibida'
+              : notification.tipo === 'ACEPTACION_PROPUESTA'
               ? 'Propuesta aceptada'
               : 'Cambio de estado'}
           </Text>

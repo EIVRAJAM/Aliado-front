@@ -5,6 +5,8 @@ export type ServiceState =
   | 'FINALIZADO'
   | 'CANCELADO';
 
+export type ServiceProposalState = 'ACEPTADA';
+
 export interface ServiceCategory {
   id: string;
   nombre: string;
@@ -34,7 +36,7 @@ export interface ServiceProposalSummary {
   prestadorId: string;
   disponibilidad: string;
   mensaje: string | null;
-  estado: string;
+  estado: ServiceProposalState;
   fechaCreacion: string;
 }
 
@@ -72,8 +74,9 @@ export interface ServiceTransitionResponse {
 
 export interface ServiceNotification {
   id: string;
-  tipo: 'ACEPTACION_PROPUESTA' | 'CAMBIO_ESTADO_SERVICIO';
-  servicioId: string;
+  tipo: 'PROPUESTA_RECIBIDA' | 'ACEPTACION_PROPUESTA' | 'CAMBIO_ESTADO_SERVICIO';
+  servicioId: string | null;
+  solicitudId: string | null;
   detalle: string;
   fechaGeneracion: string;
 }

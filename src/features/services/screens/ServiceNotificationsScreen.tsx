@@ -79,7 +79,8 @@ export function ServiceNotificationsScreen({
           </View>
           <Text style={styles.emptyTitle}>Sin avisos de servicio</Text>
           <Text style={styles.emptyText}>
-            Cuando acepten una propuesta o cambie el estado de un servicio, aparecerá aquí.
+            Cuando recibas una propuesta, acepten una tuya o cambie el estado de un servicio,
+            aparecerá aquí.
           </Text>
         </Card>
       ) : (
@@ -88,11 +89,19 @@ export function ServiceNotificationsScreen({
             <ServiceNotificationCard
               key={notification.id}
               notification={notification}
-              onPress={() =>
-                navigation.navigate('ServiceDetail', {
-                  servicioId: notification.servicioId,
-                })
-              }
+              onPress={() => {
+                if (notification.tipo === 'PROPUESTA_RECIBIDA' && notification.solicitudId) {
+                  navigation.navigate('ReceivedProposals', {
+                    solicitudId: notification.solicitudId,
+                  });
+                } else if (notification.tipo === 'PROPUESTA_RECIBIDA') {
+                  navigation.navigate('MainTabs', { screen: 'Requests' });
+                } else if (notification.servicioId) {
+                  navigation.navigate('ServiceDetail', {
+                    servicioId: notification.servicioId,
+                  });
+                }
+              }}
             />
           ))}
         </View>

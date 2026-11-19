@@ -42,7 +42,7 @@ function parseDetail(value: unknown): ContractedService {
   if (!isRecord(solicitud) || !isRecord(propuesta)) {
     throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
   }
-  if (!isServiceState(propuesta.estado)) {
+  if (propuesta.estado !== 'ACEPTADA') {
     throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
   }
   return {
@@ -145,18 +145,20 @@ function parseNotifications(value: unknown): ServiceNotification[] {
   if (!Array.isArray(value)) {
     throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
   }
-  return value.flatMap((item) => {
+  return value.flatMap<ServiceNotification>((item) => {
     if (!isRecord(item) || typeof item.tipo !== 'string') {
       return [];
     }
     if (
+      item.tipo !== 'PROPUESTA_RECIBIDA' &&
       item.tipo !== 'ACEPTACION_PROPUESTA' &&
       item.tipo !== 'CAMBIO_ESTADO_SERVICIO'
     ) {
       return [];
     }
     const servicioId = nullableString(item.servicioId);
-    if (!servicioId) {
+    const solicitudId = nullableString(item.solicitudId);
+    if (item.tipo !== 'PROPUESTA_RECIBIDA' && !servicioId) {
       return [];
     }
     return [
@@ -164,10 +166,17 @@ function parseNotifications(value: unknown): ServiceNotification[] {
         id: requiredString(item.id),
         tipo: item.tipo,
         servicioId,
+        solicitudId,
         detalle: requiredString(item.detalle),
         fechaGeneracion: requiredString(item.fechaGeneracion),
       },
     ];
+  }).sort((left, right) => {
+    const leftTime = Date.parse(left.fechaGeneracion);
+    const rightTime = Date.parse(right.fechaGeneracion);
+    const safeLeftTime = Number.isNaN(leftTime) ? 0 : leftTime;
+    const safeRightTime = Number.isNaN(rightTime) ? 0 : rightTime;
+    return safeRightTime - safeLeftTime;
   });
 }
 

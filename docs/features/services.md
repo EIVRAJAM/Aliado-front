@@ -27,7 +27,7 @@ No se implementa F09 push, F15 chat realtime, precios, datos de contacto ni un l
 | Cancelar | `POST /api/v1/servicios/{id}/cancelar` | `{ id, estado }`. |
 | Historial | `GET /api/v1/servicios/{id}/historial` | Transiciones ordenadas. |
 | Mensajes | `GET/POST /api/v1/servicios/{id}/mensajes` | Lista o mensaje creado. |
-| Avisos de servicio | `GET /api/v1/notificaciones` | Se filtran `ACEPTACION_PROPUESTA` y `CAMBIO_ESTADO_SERVICIO`. |
+| Avisos de servicio | `GET /api/v1/notificaciones` | Se filtran `PROPUESTA_RECIBIDA`, `ACEPTACION_PROPUESTA` y `CAMBIO_ESTADO_SERVICIO`. Las propuestas recibidas no incluyen un identificador navegable en el DTO real; las notificaciones posteriores usan `servicioId`. |
 
 El detalle de servicio expone IDs de la solicitud y propuesta, pero no nombres de las partes ni contacto. Para mostrar categoría y zona se consultan los catálogos existentes. El canal de mensajes no expone datos de contacto y el backend limita el contenido a 2000 caracteres.
 
@@ -37,7 +37,7 @@ El detalle de servicio expone IDs de la solicitud y propuesta, pero no nombres d
 - **Aceptación:** cierra las demás propuestas, crea el servicio y habilita comunicación en una sola operación.
 - **Idempotencia desactivada:** no se envía `Idempotency-Key` en aceptación ni transiciones mientras BE-02 siga abierto. Ante un resultado incierto de aceptación no se reintenta automáticamente.
 - **Sin lista de servicios:** no existe endpoint para listar o recuperar servicios de una cuenta. El Cliente abre el servicio con el `servicioId` devuelto por la aceptación; el Prestador puede abrirlo desde un aviso de servicio. Al salir de esos contextos, el `servicioId` se pierde y la app no inventa recuperación persistente. La operación faltante está registrada en [BE-07](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-07--listado-de-servicios-propios).
-- **Notificaciones:** solo se consultan al abrir; no hay push, polling ni WebSocket. Para el Cliente no existe una notificación inicial de aceptación; si pierde la respuesta y sale, no puede recuperar el servicio desde la app.
+- **Notificaciones:** solo se consultan al abrir; no hay push, polling ni WebSocket. El Cliente recibe `PROPUESTA_RECIBIDA` al crearse una propuesta, pero el DTO real no entrega `solicitudId` ni el identificador de la propuesta, así que la app abre la pestaña Solicitudes como salida segura; no puede abrir directamente esa propuesta desde el aviso. La aceptación genera `ACEPTACION_PROPUESTA` para el Prestador; los cambios posteriores se notifican a la contraparte. Si el Cliente pierde la respuesta de aceptación y sale, no puede recuperar el servicio desde la app.
 - **Mensajería y D-10:** la UI permite enviar mientras `comunicacionHabilitada` sea verdadero. No se agregan restricciones propias por estado porque la política después de cancelar/finalizar sigue pendiente de [D-10](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#d-10--mensajería-después-de-cancelar-o-finalizar); si el servidor rechaza, se muestra el error. No es un defecto confirmado.
 - **Mensaje con resultado incierto:** no se envía `Idempotency-Key`. Ante timeout, red, `5xx` o respuesta inválida se conserva el texto y se vuelven a consultar los mensajes. Si aparece un mensaje nuevo del usuario actual con el mismo contenido desde el inicio del intento, se confirma y se limpia el campo. Si no se puede confirmar, se bloquea el reenvío en esa pantalla y se advierte que podría duplicarse; no se deduce que falló por perder la respuesta HTTP.
 - **Historial:** se muestra el orden entregado por el backend; los actores se identifican como Cliente o Prestador, sin nombre ni contacto.
@@ -61,7 +61,7 @@ src/features/proposals/screens/ReceivedProposalsScreen.tsx
 - `RequestDetailScreen` muestra **Ver propuestas recibidas** para solicitudes publicadas del Cliente.
 - `ReceivedProposalsScreen` compara disponibilidad y mensaje y permite aceptar con confirmación.
 - `ServiceDetailScreen` comparte el detalle para ambos roles y muestra acciones según rol/estado, historial y mensajes.
-- `ServiceNotificationsScreen` se abre desde la campana **Avisos de servicio** del encabezado de Inicio; muestra aceptaciones y cambios de estado. El botón no muestra contador ni estado de lectura.
+- `ServiceNotificationsScreen` se abre desde la campana **Avisos de servicio** del encabezado de Inicio; muestra propuestas recibidas, aceptaciones y cambios de estado en orden cronológico descendente. Una propuesta recibida abre directamente sus propuestas solo si el backend entrega `solicitudId`; con el DTO actual abre Solicitudes. Los avisos con `servicioId` abren el detalle del servicio. El botón no muestra contador ni estado de lectura.
 - El `servicioId` se conserva únicamente en el contexto de navegación. No se persiste ni se simula una lista.
 - Se reutilizó la selección de fecha/hora y `expo-clipboard` de F07; el development build debe reconstruirse por los módulos nativos.
 
