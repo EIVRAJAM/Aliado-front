@@ -61,7 +61,7 @@ src/features/proposals/screens/ReceivedProposalsScreen.tsx
 - `RequestDetailScreen` muestra **Ver propuestas recibidas** para solicitudes publicadas del Cliente.
 - `ReceivedProposalsScreen` compara disponibilidad y mensaje y permite aceptar con confirmación.
 - `ServiceDetailScreen` comparte el detalle para ambos roles y muestra acciones según rol/estado, historial y mensajes.
-- `ServiceNotificationsScreen` se abre desde la tarjeta **Avisos de servicio** de Inicio; muestra aceptaciones y cambios de estado.
+- `ServiceNotificationsScreen` se abre desde la campana **Avisos de servicio** del encabezado de Inicio; muestra aceptaciones y cambios de estado. El botón no muestra contador ni estado de lectura.
 - El `servicioId` se conserva únicamente en el contexto de navegación. No se persiste ni se simula una lista.
 - Se reutilizó la selección de fecha/hora y `expo-clipboard` de F07; el development build debe reconstruirse por los módulos nativos.
 
