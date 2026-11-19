@@ -1,4 +1,4 @@
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren, ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -20,6 +20,7 @@ interface ScreenLayoutProps extends PropsWithChildren {
   subtitle?: string;
   variant?: ScreenVariant;
   onBack?: () => void;
+  headerAction?: ReactNode;
 }
 
 export function ScreenLayout({
@@ -27,6 +28,7 @@ export function ScreenLayout({
   subtitle,
   variant = 'app',
   onBack,
+  headerAction,
   children,
 }: ScreenLayoutProps) {
   if (variant === 'auth') {
@@ -77,6 +79,7 @@ export function ScreenLayout({
           <Text style={styles.appTitle}>{title}</Text>
           <Text style={styles.appBrandSmall}>ALIADO</Text>
         </View>
+        {headerAction}
       </View>
       <KeyboardAvoidingView
         style={styles.flex}

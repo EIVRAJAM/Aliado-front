@@ -26,7 +26,22 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   const isClient = session.role === 'CLIENTE';
 
   return (
-    <ScreenLayout title="Inicio">
+    <ScreenLayout
+      title="Inicio"
+      headerAction={
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Avisos de servicio"
+          onPress={() => navigation.navigate('ServiceNotifications')}
+          style={({ pressed }) => [
+            styles.headerAction,
+            pressed ? styles.headerActionPressed : null,
+          ]}
+        >
+          <Ionicons name="notifications-outline" size={22} color={colors.primary} />
+        </Pressable>
+      }
+    >
       <View style={styles.hero}>
         <Text style={styles.eyebrow}>{isClient ? 'Espacio Cliente' : 'Espacio Prestador'}</Text>
         <Text style={styles.heroTitle}>
@@ -74,26 +89,6 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
               : 'En Oportunidades puedes revisar solicitudes compatibles. Tu perfil público y agenda están en Profesional.'}
           </Text>
         </View>
-      </Card>
-
-      <Card style={styles.serviceCard}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Abrir avisos de servicio"
-          onPress={() => navigation.navigate('ServiceNotifications')}
-          style={({ pressed }) => [styles.serviceRow, pressed ? styles.servicePressed : null]}
-        >
-          <View style={styles.serviceIcon}>
-            <Ionicons name="briefcase-outline" size={20} color={colors.teal} />
-          </View>
-          <View style={styles.serviceText}>
-            <Text style={styles.serviceTitle}>Avisos de servicio</Text>
-            <Text style={styles.serviceMessage}>
-              Aceptaciones y cambios de estado de tus servicios.
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={18} color={colors.chevron} />
-        </Pressable>
       </Card>
     </ScreenLayout>
   );
@@ -201,39 +196,17 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
   },
-  serviceCard: {
-    padding: 0,
-  },
-  serviceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-  },
-  servicePressed: {
-    backgroundColor: colors.background,
-    borderRadius: radii.lg,
-  },
-  serviceIcon: {
-    width: 40,
-    height: 40,
+  headerAction: {
+    width: 44,
+    height: 44,
     borderRadius: radii.md,
-    backgroundColor: colors.tealSurface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  serviceText: {
-    flex: 1,
-    gap: 2,
-  },
-  serviceTitle: {
-    color: colors.text,
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  serviceMessage: {
-    color: colors.muted,
-    fontSize: 12,
-    lineHeight: 17,
+  headerActionPressed: {
+    backgroundColor: colors.background,
   },
 });
