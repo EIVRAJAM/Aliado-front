@@ -1,6 +1,6 @@
 # F01 — Acceso e identidad (app móvil)
 
-**Estado:** UI, validación y cliente HTTP alineados al OpenAPI entregado por backend. Integración real pendiente de API disponible, D-04 y configuración de entorno.
+**Estado:** UI, validación y cliente HTTP alineados al OpenAPI entregado por backend. Integración HTTP autenticada verificada contra backend local; API desplegada, D-04, configuración de entorno y versión de términos siguen pendientes. La verificación local no constituye aceptación formal.
 
 ## Alcance móvil
 

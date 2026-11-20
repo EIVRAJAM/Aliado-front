@@ -6,7 +6,7 @@ La raíz de `docs/` debe mantenerse liviana. Los documentos vigentes se organiza
 
 ## Estado del repositorio
 
-- **Fase 1 completada:** base Expo/React Native/TypeScript inicializada con CNG y development builds. F01 (acceso e identidad) tiene UI, validación y contrato de integración; la autenticación real sigue pendiente de API, D-04 y versión de términos.
+- **Fase 1 completada:** base Expo/React Native/TypeScript inicializada con CNG y development builds. F01 tiene UI, validación e integración autenticada verificada contra el backend local; la API desplegada, D-04 y la versión de términos siguen pendientes. La validación local no equivale a aceptación formal ni a producción.
 - El stack y las versiones están fijados en [ADR 0001](adr/0001-stack-y-versiones-movil.md).
 - El flujo de ramas está documentado en [Gitflow](development/GITFLOW.md) y [ADR 0002](adr/0002-gitflow-fast-forward.md). `develop` integra F01–F14 (F05 parcial); `main` sigue sin commits.
 - La estructura incorpora navegación, `src/features/auth/` (SPEC-01), `src/features/profile/` (SPEC-02), `src/features/discovery/` (SPEC-03), `src/features/requests/` (SPEC-04), `src/features/professional-profile/` (SPEC-05, parcial), `src/features/opportunities/` (SPEC-06), `src/features/proposals/` (SPEC-07), `src/features/services/` (SPEC-08), `src/features/notifications/` (SPEC-09), `src/features/trust/` (SPEC-10), `src/features/reports/` (SPEC-11), `src/features/formalization/` (SPEC-13) y `src/features/account-activity/` (SPEC-14). F12 no crea una feature administrativa en móvil; ajusta autenticación y documenta el panel web como fuera de alcance. El resto de features se creará al iniciar su implementación.
