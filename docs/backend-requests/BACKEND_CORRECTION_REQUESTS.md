@@ -19,6 +19,8 @@ Este documento consolida los defectos del backend y las brechas de contrato que 
 | BE-11 | F10 | Endpoint de lectura faltante | Exponer el historial autenticado de calificaciones y reseñas propias del Cliente, con paginación y orden descendente. | Pendiente de comunicar |
 | BE-12 | F11 | Endpoint de lectura faltante | Añadir un listado autenticado de reportes propios para recuperar referencias y estados después de cerrar el modal. | Pendiente de comunicar |
 | BE-13 | F11 | Idempotencia de evidencia | Añadir `Idempotency-Key` o un identificador de carga correlacionable para evitar evidencias duplicadas cuando se pierde la respuesta. | Pendiente de comunicar |
+| BE-14 | F12 | Error de sesión bloqueada | Distinguir una sesión válida de una cuenta bloqueada (`403 CUENTA_BLOQUEADA`) en lugar de devolver `401 NO_AUTENTICADO`. | Pendiente de comunicar |
+| BE-15 | F12/F01 | Rechazo de Administrador en login móvil | Rechazar el rol `ADMINISTRADOR` antes de cerrar sesiones previas cuando el login indique cliente móvil. | Pendiente de comunicar |
 
 ## Solicitudes detalladas
 
@@ -283,6 +285,44 @@ Esto es una ampliación necesaria para completar el cliente, no el defecto que c
 **Criterios de aceptación propuestos:** pruebas concurrentes con la misma clave; prueba de timeout tras commit; una sola fila/objeto por carga lógica; el cliente puede reintentar sin duplicar; comportamiento documentado en OpenAPI y política de retención/limpieza de claves.
 
 **Comportamiento frontend actual:** no hay idempotencia disponible; ante un resultado incierto se consulta el detalle, se conserva el archivo y se advierte antes de reintentar. No se afirma éxito ni se reenvía automáticamente.
+
+### BE-14 — Distinguir cuenta bloqueada en sesión existente
+
+**Evidencia observada:** `POST /api/v1/auth/login` devuelve `403 CUENTA_BLOQUEADA`, pero `SesionService.validar` filtra las cuentas bloqueadas y `SessionAuthFilter` termina respondiendo `401 NO_AUTENTICADO`. Para la app móvil ambos casos son distintos: el `403` permite explicar el bloqueo preventivo; el `401` solo puede presentarse como sesión expirada o inválida.
+
+**Solicitar al backend:** cuando el bearer corresponda a una sesión vigente de una cuenta bloqueada, responder `403` con código `CUENTA_BLOQUEADA`, o un código de error equivalente que el cliente pueda distinguir de `NO_AUTENTICADO`. No debe revelarse información de cuentas ajenas ni aceptarse el token para operaciones ordinarias.
+
+**Motivo:** una cuenta bloqueada mientras la app está abierta pierde el acceso, pero la UI no puede informar el motivo real ni evitar un mensaje engañoso de expiración. El móvil no puede inferir el bloqueo ni consultar rutas administrativas.
+
+**Criterios de aceptación propuestos:**
+
+- Un token de una sesión vigente cuya cuenta está bloqueada no autoriza operaciones ordinarias.
+- La respuesta usa `403 CUENTA_BLOQUEADA` o un código documentado e inequívoco.
+- Una sesión vencida, cerrada o inexistente sigue respondiendo `401 NO_AUTENTICADO`.
+- OpenAPI documenta ambos casos y pruebas cubren cuenta bloqueada, sesión vencida y token inexistente.
+- El cliente limpia la sesión local en ambos casos, pero muestra el mensaje específico solo cuando el contrato lo permite.
+
+**Comportamiento frontend actual:** el login de una cuenta bloqueada se maneja con el `403`; una sesión ya abierta recibe `401` y se trata como sesión expirada. No se simula un bloqueo ni se inventan rutas administrativas.
+
+### BE-15 — Rechazar Administrador móvil antes de invalidar sesiones
+
+**Evidencia observada:** `POST /api/v1/auth/login` valida las credenciales y el estado de bloqueo; luego cierra todas las sesiones activas del usuario y crea una nueva sesión, y solo entonces devuelve el rol. Si la app móvil recibe `rol: ADMINISTRADOR`, el daño a una sesión previa del panel web ya ocurrió antes de que el frontend pueda detectar el rol o cerrar el token nuevo.
+
+**Solicitud mínima:** conservar `POST /api/v1/auth/login` y aceptar el encabezado opcional `X-ALIADO-Client: MOBILE`. Cuando esté presente y el usuario autenticado tenga rol `ADMINISTRADOR`, responder `403` con código `ADMINISTRADOR_NO_DISPONIBLE_EN_MOVIL` antes de cerrar sesiones activas o crear una nueva. Para `CLIENTE` y `PRESTADOR`, mantener el comportamiento actual. La ausencia del encabezado debe conservar compatibilidad con clientes existentes.
+
+El encabezado solo selecciona el comportamiento de cliente y no se considera una frontera de autorización. El rol se determina desde la cuenta autenticada en el servidor; nunca desde un dato enviado por el cliente.
+
+**Motivo:** la app es para Cliente y Prestador; un intento accidental de login móvil como Administrador no debe cerrar la sesión del panel web. El frontend por sí solo no puede evitarlo porque el backend invalida las sesiones antes de responder.
+
+**Criterios de aceptación propuestos:**
+
+- Con `X-ALIADO-Client: MOBILE` y credenciales válidas de `ADMINISTRADOR`, el servidor responde `403 ADMINISTRADOR_NO_DISPONIBLE_EN_MOVIL`, sin token y sin modificar/cerrar sesiones preexistentes.
+- Una prueba crea o conserva una sesión administrativa activa, ejecuta el intento móvil y comprueba que esa sesión sigue válida.
+- El mismo intento con rol `CLIENTE` o `PRESTADOR` mantiene el flujo actual y crea la sesión esperada.
+- Un login de panel sin el encabezado móvil mantiene compatibilidad con clientes existentes.
+- OpenAPI documenta el encabezado opcional y el error `403`; pruebas de servicio/controlador cubren el orden de las operaciones.
+
+**Comportamiento frontend preparado:** todos los logins móviles envían `X-ALIADO-Client: MOBILE`; el gateway traduce el `403 ADMINISTRADOR_NO_DISPONIBLE_EN_MOVIL` al mensaje de uso del panel web. Se conserva un fallback para una respuesta exitosa antigua que devuelva `rol: ADMINISTRADOR`, con limpieza best-effort del token nuevo. Ese fallback no puede conservar sesiones previas; hasta que BE-15 esté desplegado, no se debe probar una cuenta Administrador real desde el móvil.
 
 ## Decisiones pendientes
 

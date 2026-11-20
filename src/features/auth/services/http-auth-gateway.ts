@@ -23,6 +23,14 @@ function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0;
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+function getServerCode(body: unknown): string | undefined {
+  return isRecord(body) && typeof body.code === 'string' ? body.code : undefined;
+}
+
 function mapApiError(error: unknown, fallbackCode: AuthError['code'], fallbackMessage: string): AuthError {
   if (error instanceof AuthError) {
     return error;
@@ -93,13 +101,28 @@ export class HttpAuthGateway implements AuthGateway {
     try {
       const response = await requestJson<LoginResponse>(baseUrl, '/api/v1/auth/login', {
         method: 'POST',
+        headers: {
+          'X-ALIADO-Client': 'MOBILE',
+        },
         body: {
           email: input.email,
           password: input.password,
         },
       });
 
-      if (!isNonEmptyString(response.sessionToken) || !isAuthRole(response.rol)) {
+      if (!isNonEmptyString(response.sessionToken)) {
+        throw new AuthError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+      }
+
+      if (response.rol === 'ADMINISTRADOR') {
+        await this.logout(response.sessionToken).catch(() => undefined);
+        throw new AuthError(
+          'ADMIN_PORTAL_REQUIRED',
+          'La administración se realiza desde el panel web. Esta app es solo para Cliente y Prestador.'
+        );
+      }
+
+      if (!isAuthRole(response.rol)) {
         throw new AuthError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
       }
 
@@ -109,6 +132,28 @@ export class HttpAuthGateway implements AuthGateway {
         email: input.email,
       };
     } catch (error) {
+      if (
+        error instanceof ApiError &&
+        error.status === 403 &&
+        getServerCode(error.body) === 'CUENTA_BLOQUEADA'
+      ) {
+        throw new AuthError(
+          'ACCOUNT_BLOCKED',
+          'La cuenta está bloqueada preventivamente. Contacta al equipo de soporte de ALIADO.',
+          403
+        );
+      }
+      if (
+        error instanceof ApiError &&
+        error.status === 403 &&
+        getServerCode(error.body) === 'ADMINISTRADOR_NO_DISPONIBLE_EN_MOVIL'
+      ) {
+        throw new AuthError(
+          'ADMIN_PORTAL_REQUIRED',
+          'La administración se realiza desde el panel web. Esta app es solo para Cliente y Prestador.',
+          403
+        );
+      }
       if (error instanceof ApiError && error.status === 401) {
         throw new AuthError('INVALID_CREDENTIALS', 'Correo o contraseña incorrectos.', 401);
       }

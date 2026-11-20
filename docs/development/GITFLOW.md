@@ -4,9 +4,9 @@ Este documento operativiza la decisión [ADR 0002](../adr/0002-gitflow-fast-forw
 
 ## Estado actual
 
-- `develop` existe como rama huérfana con el commit inicial de la base (`chore(project): establish Expo mobile foundation`), creado porque el repositorio no tenía historial. F01 y F02 ya se integraron.
+- `develop` existe como rama huérfana con el commit inicial de la base (`chore(project): establish Expo mobile foundation`), creado porque el repositorio no tenía historial. Integra F01–F11 (F05 parcial).
 - `main` permanece sin commits y no fue modificada.
-- F04 se desarrolla en `feature/f04-solicitudes-servicio`, creada desde `develop`.
+- F12 se desarrolla en `feature/f12-administracion-moderacion-riesgos`, creada desde `develop`.
 - No hay merges, tags ni push en esta fase. La primera promoción a `main` requiere autorización y conservar fast-forward.
 
 ## Ramas

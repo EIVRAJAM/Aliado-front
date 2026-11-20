@@ -77,10 +77,11 @@ Si la URL no está configurada, las pantallas muestran el bloqueo y el adaptador
 | Recuperación exitosa | `200` | `202` | `202` | El cliente acepta cualquier 2xx; la UI muestra el mensaje genérico. |
 | Logout exitoso | `200` | `204` | `204` | El cliente acepta cualquier 2xx; no espera body. |
 | Respuesta de registro | `object` genérico | `{ id, email, rol }` | `{ id, email, rol }` | El cliente no consume campos del body; el registro resuelve con la respuesta HTTP exitosa. |
-| Errores | No documentados | `400`, `401`, `409`, `410` | `400` términos/password, `401` credenciales/sesión, `409` correo duplicado, `410` token expirado | El cliente mantiene mapeo defensivo para esos estados; no se inventan nuevos endpoints. |
+| Errores | No documentados | `400`, `401`, `409`, `410` | `400` términos/password, `401` credenciales/sesión, `403` cuenta bloqueada; `ADMINISTRADOR_NO_DISPONIBLE_EN_MOVIL` solicitado en BE-15, `409` correo duplicado, `410` token expirado | El cliente mapea el `403` de Administrador solicitado, pendiente de implementación backend. |
 | `aceptaTerminos` | No incluido en `required` | Obligatorio en SPEC | `false` produce `400 TERMINOS_NO_ACEPTADOS` | La UI sigue exigiendo consentimiento antes de enviar. |
-| `rol` | `string` sin enum | `CLIENTE`/`PRESTADOR` | Devuelve `CLIENTE`/`PRESTADOR` | La UI solo ofrece esos dos roles; login valida el valor recibido. |
+| `rol` | `string` sin enum | `CLIENTE`/`PRESTADOR` | Devuelve `CLIENTE`/`PRESTADOR`; `ADMINISTRADOR` no se registra públicamente | La UI solo ofrece dos roles. El login móvil acepta `CLIENTE`/`PRESTADOR`; si recibe `ADMINISTRADOR`, no crea sesión y remite al panel web. |
 | Login response | Campos no marcados como requeridos | `sessionToken`, `rol` | Devuelve ambos | El cliente exige ambos para crear la sesión; si faltan, reporta respuesta inválida. |
+| Cliente móvil | No documentado | — | Pendiente BE-15 | La app envía `X-ALIADO-Client: MOBILE`; el backend aún debe rechazar Administrador antes de invalidar sesiones. |
 | Seguridad | Global para todas las operaciones | Sin detalle de esquema | `/api/v1/auth/**` público; logout exige bearer y responde `401` sin sesión | Bearer solo en logout; discrepancia pendiente con la declaración global de OpenAPI. |
 | Contraseña | `minLength: 1` | No define política | Mínimo 8 unidades UTF-16 (`String.length`), al menos una letra Unicode (`Character.isLetter`) y un dígito decimal Unicode (`Character.isDigit`) | La UI replica la política del backend para registro y nueva contraseña; no la aplica en login. OpenAPI debe actualizarse. |
 | Idempotencia | Header opcional en registro | D-18 pendiente | El controlador soporta `Idempotency-Key` | No se envía ni se reintenta automáticamente. |
@@ -115,12 +116,13 @@ CORS: la preflight de navegador no devolvió `Access-Control-Allow-Origin`. No s
 - **Versión de términos:** `EXPO_PUBLIC_TERMS_VERSION` debe ser definida por producto/legal. Sin ella el registro queda bloqueado y no se inventa una versión.
 - **Recuperación:** el contrato define token y nueva contraseña, pero no el canal ni el deep link. La app permite pegar el código manualmente hasta que exista una decisión de enlace.
 - **Idempotencia:** `Idempotency-Key` es opcional en OpenAPI, pero D-18 sigue abierta; no se implementa generación ni reintento automático.
-- **Login de Administrador:** fuera de alcance móvil.
+- **Login de Administrador:** fuera de alcance móvil. SPEC-12 no agrega rol, navegación ni pantallas administrativas. La app envía `X-ALIADO-Client: MOBILE` y mapea el `403 ADMINISTRADOR_NO_DISPONIBLE_EN_MOVIL` solicitado en BE-15 al aviso para usar el panel web. Como fallback con el backend actual, si llega `200` con `rol: ADMINISTRADOR`, intenta cerrar el token recién emitido y no conserva la sesión; esto no puede restaurar sesiones previas que el backend haya cerrado. No probar cuentas Administrador desde el móvil hasta que BE-15 esté implementado.
+- **Cuenta bloqueada:** un `403 CUENTA_BLOQUEADA` en login se muestra como bloqueo preventivo y no crea sesión. Una sesión ya abierta invalida por bloqueo recibe `401` y se presenta como sesión expirada porque el backend no distingue ambos casos; ver BE-14.
 - **Reglas de contraseña:** OpenAPI solo exige `minLength: 1`, pero el backend aplica mínimo 8 unidades UTF-16 (`String.length`), al menos una letra Unicode (`Character.isLetter`) y un dígito decimal Unicode (`Character.isDigit`). El frontend replica esa política en registro y restablecimiento con `\p{L}` y `\p{Nd}`; no la aplica en login, que solo exige contraseña no vacía. OpenAPI debe reconciliarse.
 
 ## Comportamiento implementado
 
-- **Login:** validación de correo y contraseña, bloqueo de envío duplicado, mensaje genérico para credenciales inválidas y mensaje de configuración si falta la API.
+- **Login:** validación de correo y contraseña, bloqueo de envío duplicado, mensaje genérico para credenciales inválidas, mensaje específico para cuenta bloqueada, rechazo de rol Administrador y mensaje de configuración si falta la API.
 - **Registro:** correo, contraseña, rol, consentimiento y versión de términos; la navegación al login ocurre solo después de una respuesta HTTP exitosa; correo duplicado no revela el rol de la cuenta existente.
 - **Recuperación:** solicitud con mensaje idéntico exista o no la cuenta; confirmación con código y nueva contraseña; errores de token inválido, usado o expirado.
 - **Inicio autenticado:** la antigua pantalla “Sesión iniciada” se sustituye por Inicio dentro de la barra inferior. Muestra saludo contextual, cuenta, rol y una guía breve sin duplicar los destinos de la barra. No muestra `Cerrar sesión`; esa acción vive al final de `Mi perfil`, junto al aviso de sesión en memoria. Un `401` al cerrar sesión se trata como sesión expirada y limpia el estado local.
@@ -135,4 +137,5 @@ CORS: la preflight de navegador no devolvió `Access-Control-Allow-Origin`. No s
 - Definir el canal y deep link de recuperación si producto lo requiere.
 - Resolver D-18 si el registro debe enviar `Idempotency-Key` y cómo se reintenta.
 - Añadir pruebas E2E de UI contra API real; la verificación actual cubrió el gateway y los flujos HTTP, no la interacción de pantallas.
+- Validar con datos autorizados el login de una cuenta bloqueada y el de un Administrador; no se ejecutaron durante la implementación de F12.
 - Verificar builds nativos con `react-native-screens` y `react-native-safe-area-context`.
