@@ -83,6 +83,13 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
               onPress={() => navigation.navigate('MyRatings')}
             />
           ) : null}
+          <ProfileActionCard
+            icon="◷"
+            title="Actividad y avisos"
+            subtitle="Historial, notificaciones e indicadores."
+            tone="green"
+            onPress={() => navigation.navigate('AccountActivity')}
+          />
           {session?.role === 'PRESTADOR' ? (
             <ProfileActionCard
               icon="▤"

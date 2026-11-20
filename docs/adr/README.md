@@ -23,7 +23,7 @@ Las decisiones compartidas de backend y producto se mantienen en `../aliado-prb/
 | D-09 | Edición/reintento de propuestas y precio | Pendiente de producto/API. No mostrar precio si el contrato no lo define. |
 | D-10 | Comunicación en estados de servicio cerrados | Pendiente. Afecta qué acciones de mensajería/seguimiento presenta la app. |
 | D-13 | Fuente y representación del progreso de formalización | Pendiente. F13 consulta solo el progreso sustentado por el contrato; no actualiza, calcula ni inventa un avance. |
-| D-15 | Fórmulas y formato de indicadores/exportación | Pendiente. No inferir fórmulas desde la UI. |
+| D-15 | Fórmulas y formato de indicadores/exportación | Pendiente. F14 muestra indicadores del backend y exporta el CSV actual; no calcula ni fija fórmula, periodo, límites o snapshot. |
 | D-16 | Chat, mapa, onboarding, referidos e idiomas | Could; decisiones separadas, no bloquean el MVP. |
 | D-17 | Pagos | Future; requiere decisión de negocio y técnica, no bloquea el MVP. |
 | D-18 | Idempotencia | Definir coordinación cliente-servidor; reusar clave en reintentos de una intención, generar una nueva para otra intención. |

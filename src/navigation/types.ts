@@ -25,6 +25,11 @@ export type RootStackParamList = {
   ProfileDelete: undefined;
   ProfessionalProfileCreate: undefined;
   Formalization: undefined;
+  AccountActivity: undefined;
+  NotificationPreferences: undefined;
+  WorkHistory: undefined;
+  RecentActivity: undefined;
+  ProviderIndicators: undefined;
   OpportunityDetail: { solicitudId: string };
   ProposalFlow: { solicitudId: string; opportunity?: ProposalOpportunityContext };
   ReceivedProposals: { solicitudId: string };

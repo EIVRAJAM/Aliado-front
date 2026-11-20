@@ -23,6 +23,13 @@ import { NotificationsScreen } from '../features/notifications';
 import { MyRatingsScreen } from '../features/trust';
 import { ProposalFlowScreen, ReceivedProposalsScreen } from '../features/proposals';
 import { ServiceDetailScreen } from '../features/services';
+import {
+  AccountActivityScreen,
+  NotificationPreferencesScreen,
+  ProviderIndicatorsScreen,
+  RecentActivityScreen,
+  WorkHistoryScreen,
+} from '../features/account-activity';
 import { FormalizationScreen } from '../features/formalization';
 import { ProfessionalProfileCreateScreen } from '../features/professional-profile';
 import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
@@ -75,6 +82,13 @@ export function RootNavigator() {
             ) : null}
             <Stack.Screen name="ServiceDetail" component={ServiceDetailScreen} />
             <Stack.Screen name="Notifications" component={NotificationsScreen} />
+            <Stack.Screen name="AccountActivity" component={AccountActivityScreen} />
+            <Stack.Screen
+              name="NotificationPreferences"
+              component={NotificationPreferencesScreen}
+            />
+            <Stack.Screen name="WorkHistory" component={WorkHistoryScreen} />
+            <Stack.Screen name="RecentActivity" component={RecentActivityScreen} />
             {session.role === 'PRESTADOR' ? (
               <>
                 <Stack.Screen
@@ -83,6 +97,10 @@ export function RootNavigator() {
                 />
                 <Stack.Screen name="ProposalFlow" component={ProposalFlowScreen} />
                 <Stack.Screen name="Formalization" component={FormalizationScreen} />
+                <Stack.Screen
+                  name="ProviderIndicators"
+                  component={ProviderIndicatorsScreen}
+                />
               </>
             ) : null}
             <Stack.Screen name="RequestForm" component={RequestFormScreen} />

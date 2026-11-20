@@ -73,3 +73,52 @@ export async function requestJson<TResponse>(
     clearTimeout(timeout);
   }
 }
+
+export async function requestText(
+  baseUrl: string,
+  path: string,
+  options: RequestJsonOptions
+): Promise<string> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs ?? 15000);
+
+  const headers: Record<string, string> = {
+    Accept: 'text/csv, text/plain, */*',
+    ...options.headers,
+  };
+
+  if (options.body !== undefined) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if (options.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
+
+  try {
+    const response = await fetch(joinUrl(baseUrl, path), {
+      method: options.method,
+      headers,
+      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      signal: controller.signal,
+    });
+
+    const text = await response.text();
+
+    if (!response.ok) {
+      let data: unknown = text;
+      if (text) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = text;
+        }
+      }
+      throw new ApiError(response.status, data);
+    }
+
+    return text;
+  } finally {
+    clearTimeout(timeout);
+  }
+}

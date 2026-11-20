@@ -22,6 +22,9 @@ Este documento consolida los defectos del backend y las brechas de contrato que 
 | BE-14 | F12 | Error de sesión bloqueada | Distinguir una sesión válida de una cuenta bloqueada (`403 CUENTA_BLOQUEADA`) en lugar de devolver `401 NO_AUTENTICADO`. | Pendiente de comunicar |
 | BE-15 | F12/F01 | Rechazo de Administrador en login móvil | Rechazar el rol `ADMINISTRADOR` antes de cerrar sesiones previas cuando el login indique cliente móvil. | Pendiente de comunicar |
 | BE-16 | F13 | Documentación API | Alinear OpenAPI de formalización con roles, arrays, `404 SIN_PROGRESO`, estado de enlaces y obligatoriedad real de `valor`. | Pendiente de comunicar |
+| BE-17 | F14 | Historial paginado/filtros | Añadir metadatos de paginación y filtros de historial, o documentar que el cliente solo puede usar “cargar más” sin total. | Pendiente de comunicar |
+| BE-18 | F14 | Actividad reciente | Exponer referencias navegables, paginación y un desempate estable para eventos de actividad. | Pendiente de comunicar |
+| BE-19 | F14 | Exportación y contrato de indicadores | Documentar el ciclo de exportación, el `201` real, la entrega CSV y la ausencia de estado/ventana/fórmula de indicadores. | Pendiente de comunicar |
 
 ## Solicitudes detalladas
 
@@ -343,6 +346,51 @@ El encabezado solo selecciona el comportamiento de cliente y no se considera una
 
 **Comportamiento frontend actual:** consume los arrays, trata `SIN_PROGRESO` como ausencia de avance y no usa `PUT /progreso`. No se modifica OpenAPI desde este repositorio.
 
+### BE-17 — Metadatos y filtros de historial
+
+**Evidencia observada:** `GET /api/v1/historial?pagina=&tamano=` devuelve un array de `{ id, estado, fechaContratacion }` sin total, página actual, páginas totales, cursor ni filtros. El backend limita `tamano` a 100 y ordena por `fechaContratacion` descendente. La app solo puede ofrecer “cargar más” e inferir si hay otra página cuando recibe 20 elementos.
+
+**Solicitar al backend:** definir una envoltura paginada con metadatos (página, tamaño, total o cursor) y filtros acordados por estado/fecha, o documentar formalmente que el contrato no admite filtros y que el cliente no debe simularlos localmente. Mantener la respuesta limitada a servicios donde el usuario autenticado sea participante.
+
+**Motivo:** F14-FE-02 pide historial con paginación/filtros; el contrato actual solo ofrece paginación por página y no permite construir filtros equivalentes de forma segura. El frontend evita filtrar solo la página cargada para no presentar resultados incompletos.
+
+**Criterios de aceptación propuestos:**
+
+- Respuesta con `items` y metadatos de paginación, o contrato explícito de “cargar más” sin total.
+- Filtros opcionales documentados con aislamiento por usuario.
+- Orden estable y página vacía como `200`.
+- Pruebas con Cliente, Prestador y usuario sin servicios.
+
+### BE-18 — Actividad reciente navegable y paginada
+
+**Evidencia observada:** `GET /api/v1/actividad-reciente` devuelve hasta 20 elementos `{ tipo, resumen, fecha }`. No incluye IDs de servicio, notificación, propuesta o solicitud, ni paginación. La app no puede abrir un detalle desde la actividad y no hay un desempate documentado para eventos con la misma fecha.
+
+**Solicitar al backend:** añadir referencias autorizadas por evento y paginación o cursor; documentar el orden por `(fecha, id estable)`. No incluir IDs de recursos ajenos ni datos que el usuario no pueda consultar.
+
+**Motivo:** F14-FE-04 pide enlaces autorizados y el contrato actual solo permite mostrar texto y fecha. No se inventan rutas ni identificadores.
+
+**Criterios de aceptación propuestos:**
+
+- Cada evento incluye un tipo y una referencia navegable cuando corresponda.
+- Orden determinista con desempate estable.
+- Paginación o límite explícito y repetible.
+- Pruebas de visibilidad entre dos usuarios.
+
+### BE-19 — Ciclo y contrato de exportación/indicadores
+
+**Evidencia observada:** `POST /api/v1/historial/exportaciones` responde `201` en el controlador, mientras OpenAPI declara `200`; devuelve `{ id, archivoKey, estado }`. El CSV se obtiene con `GET /historial/exportaciones/{id}` y no hay URL pública, polling ni endpoint de estado, aunque el DTO admite `GENERANDO`, `LISTA` y `FALLIDA`. El endpoint no recibe `Idempotency-Key`. Los indicadores devuelven valores calculados por el backend sin `formulaVersion` ni periodo.
+
+**Solicitar al backend:** alinear OpenAPI con el `201`, documentar el CSV, la autorización y el ciclo de estados; añadir estado/polling si la generación puede ser asíncrona y una clave de correlación para reintentos. Para indicadores, documentar o exponer `formulaVersion` y periodo, sujeto a D-15. No se solicita cambiar fórmulas desde el cliente.
+
+**Motivo:** la app implementa el CSV síncrono actual y muestra los indicadores tal como llegan, pero no puede prometer equivalencia de snapshot, reintento sin duplicados ni interpretar una fórmula no aprobada.
+
+**Criterios de aceptación propuestos:**
+
+- OpenAPI refleja `201`, `text/csv`, autorización, errores y estados reales.
+- Reintento de exportación con la misma clave no duplica archivos o se documenta el comportamiento.
+- Si la generación es asíncrona, existe forma de consultar el estado.
+- D-15 aprueba fórmula, periodo, formato, límites y snapshot antes de declarar aceptación completa.
+
 ## Decisiones pendientes
 
 | ID | Feature | Decisión | Estado |
@@ -350,6 +398,7 @@ El encabezado solo selecciona el comportamiento de cliente y no se considera una
 | D-07 | F04/F05/F10/F11 | Definir política de MIME, tamaño máximo y cantidad para evidencias/fotos/documentos de verificación. | Abierta |
 | D-12 | F11/F12 | Aprobar la política de consolidación de reportes equivalentes, revisión y criterios de alto riesgo. | Abierta |
 | D-10 | F08 | Definir si se permite leer y enviar mensajes después de cancelar o finalizar un servicio, y cómo se refleja en API y UI. | Abierta; no es un defecto confirmado |
+| D-15 | F14 | Aprobar fórmula, periodo y formato/snapshot de indicadores y exportación. | Abierta |
 
 ### D-07 — Política de archivos de verificación y evidencias
 
@@ -372,6 +421,12 @@ El encabezado solo selecciona el comportamiento de cliente y no se considera una
 **Comportamiento actual del frontend:** muestra el canal cuando `comunicacionHabilitada` es verdadero y no agrega restricciones por estado; si el servidor rechaza, muestra el error. No se presenta una política de mensajería posterior al cierre como si estuviera aprobada.
 
 **Criterios para cerrar:** política aprobada por producto y backend, contrato/OpenAPI con errores y permisos por estado, pruebas de lectura/escritura en ambos estados, y copy de UI coherente con la decisión. Esto no debe implementarse como un defecto ni como un cambio unilateral del cliente.
+
+### D-15 — Fórmulas de indicadores y formato de exportación
+
+**Evidencia observada:** el backend calcula los indicadores a partir de los servicios y la reputación, pero no expone versión de fórmula ni periodo. La exportación actual es CSV síncrono y no garantiza un snapshot equivalente a una consulta paginada. El SPEC deja la fórmula y el formato como decisión pendiente.
+
+**Decisión requerida:** aprobar fórmula, ventana temporal, inclusión de servicios cancelados/moderados, formato y límites de exportación, snapshot y responsable de mantenerlos. La UI seguirá mostrando lo que devuelve el backend y no recalculará ni inventará un periodo.
 
 ## Dependencias que no son defectos de backend
 
