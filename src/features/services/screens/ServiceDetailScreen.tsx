@@ -10,6 +10,7 @@ import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
+import { ServiceRatingCard } from '../../trust/components/ServiceRatingCard';
 import { ServiceHistoryCard } from '../components/ServiceHistoryCard';
 import { ServiceMessagesCard } from '../components/ServiceMessagesCard';
 import { ServiceStateBadge } from '../components/ServiceStateBadge';
@@ -262,6 +263,16 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
               )
             }
           />
+
+          {role === 'CLIENTE' && service.estado === 'FINALIZADO' ? (
+            <ServiceRatingCard
+              token={session.token}
+              serviceId={service.id}
+              onRefresh={() => {
+                void detail.reload();
+              }}
+            />
+          ) : null}
 
           <ServiceProposalCard service={service} />
           <ServiceHistoryCard service={service} history={detail.history} />

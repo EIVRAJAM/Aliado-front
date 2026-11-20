@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
@@ -9,6 +10,7 @@ import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
+import { ReportReviewModal } from '../../trust/components/ReportReviewModal';
 import { ProviderPublicProfileView } from '../components/ProviderPublicProfileView';
 import { useProviderProfile } from '../hooks/useProviderProfile';
 
@@ -36,13 +38,24 @@ export function ProviderProfileScreen({ navigation, route }: ProviderProfileScre
     );
   }
 
-  return <ClientProviderProfileScreen navigation={navigation} route={route} />;
+  return (
+    <ClientProviderProfileScreen
+      navigation={navigation}
+      route={route}
+      token={session.token}
+    />
+  );
 }
 
-function ClientProviderProfileScreen({ navigation, route }: ProviderProfileScreenProps) {
+function ClientProviderProfileScreen({
+  navigation,
+  route,
+  token,
+}: ProviderProfileScreenProps & { token: string }) {
   const { provider, loading, notFound, error, reload } = useProviderProfile(
     route.params.providerId
   );
+  const [reviewToReport, setReviewToReport] = useState<{ id: string; texto: string } | null>(null);
 
   return (
     <ScreenLayout
@@ -77,7 +90,7 @@ function ClientProviderProfileScreen({ navigation, route }: ProviderProfileScree
         </Card>
       ) : (
         <>
-          <ProviderPublicProfileView provider={provider} />
+          <ProviderPublicProfileView provider={provider} onReportReview={setReviewToReport} />
           <PrimaryButton
             label="Volver a la búsqueda"
             variant="secondary"
@@ -85,6 +98,13 @@ function ClientProviderProfileScreen({ navigation, route }: ProviderProfileScree
           />
         </>
       )}
+
+      <ReportReviewModal
+        visible={reviewToReport !== null}
+        token={token}
+        review={reviewToReport}
+        onClose={() => setReviewToReport(null)}
+      />
     </ScreenLayout>
   );
 }

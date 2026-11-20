@@ -7,6 +7,7 @@ import type { MainTabParamList, RootStackParamList } from '../../../navigation/t
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { useAuthSession } from '../../auth';
 import { ProfileActionCard } from '../components/ProfileActionCard';
 import { ProfileSignOutCard } from '../components/ProfileSignOutCard';
 import { ProfileStateView } from '../components/ProfileStateView';
@@ -19,6 +20,7 @@ type ProfileOverviewScreenProps = CompositeScreenProps<
 >;
 
 export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps) {
+  const { session } = useAuthSession();
   const { profile, loading, error, reload } = useMyProfile();
 
   return (
@@ -72,6 +74,15 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
             subtitle={`Visibilidad: ${visibilityLabel(profile.preferenciaVisibilidad)}`}
             onPress={() => navigation.navigate('ProfilePrivacy')}
           />
+          {session?.role === 'CLIENTE' ? (
+            <ProfileActionCard
+              icon="★"
+              title="Mis calificaciones y reseñas"
+              subtitle="Historial privado de los servicios que calificaste."
+              tone="green"
+              onPress={() => navigation.navigate('MyRatings')}
+            />
+          ) : null}
           <ProfileActionCard
             icon="◌"
             title="Vista previa pública"

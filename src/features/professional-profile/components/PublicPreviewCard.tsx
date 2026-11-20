@@ -7,7 +7,8 @@ import {
   PUBLIC_PROFILE_FIELDS,
   formatPublicValue,
 } from '../../../shared/profile/public-profile-data';
-import type { ProfessionalPreview } from '../types/professional-profile';
+import { ReportReviewLink } from '../../trust/components/ReportReviewLink';
+import type { ProfessionalPreview, PublicReview } from '../types/professional-profile';
 import {
   formatAvailability,
   formatReviewDate,
@@ -15,7 +16,13 @@ import {
   verificationLabel,
 } from '../utils/professional-profile-format';
 
-export function PublicPreviewCard({ preview }: { preview: ProfessionalPreview }) {
+export function PublicPreviewCard({
+  preview,
+  onReportReview,
+}: {
+  preview: ProfessionalPreview;
+  onReportReview?: (review: PublicReview) => void;
+}) {
   const publicFields = PUBLIC_PROFILE_FIELDS.flatMap((field) => {
     const formatted = formatPublicValue(preview.datosGenerales[field.key]);
     return formatted ? [{ ...field, formatted }] : [];
@@ -147,6 +154,9 @@ export function PublicPreviewCard({ preview }: { preview: ProfessionalPreview })
                   <Text style={styles.reviewDate}>{formatReviewDate(review.fechaCreacion)}</Text>
                 </View>
                 <Text style={styles.reviewText}>{review.texto}</Text>
+                {onReportReview ? (
+                  <ReportReviewLink onPress={() => onReportReview(review)} />
+                ) : null}
               </View>
             ))}
           </View>
@@ -160,7 +170,7 @@ export function PublicPreviewCard({ preview }: { preview: ProfessionalPreview })
         <Text style={styles.noteText}>
           La vista pública no incluye el listado de experiencia, el portafolio ni los compromisos
           de agenda. Los campos de datos generales se muestran con las claves de la lista pública
-          confirmada por el backend.
+          confirmada por el backend. La verificación básica no es una certificación legal.
         </Text>
       </View>
     </Card>

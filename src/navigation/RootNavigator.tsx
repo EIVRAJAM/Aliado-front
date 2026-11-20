@@ -20,6 +20,7 @@ import {
 import { ProviderProfileScreen } from '../features/discovery';
 import { OpportunityDetailScreen } from '../features/opportunities';
 import { NotificationsScreen } from '../features/notifications';
+import { MyRatingsScreen } from '../features/trust';
 import { ProposalFlowScreen, ReceivedProposalsScreen } from '../features/proposals';
 import { ServiceDetailScreen } from '../features/services';
 import { ProfessionalProfileCreateScreen } from '../features/professional-profile';
@@ -66,7 +67,10 @@ export function RootNavigator() {
               component={ProfessionalProfileCreateScreen}
             />
             {session.role === 'CLIENTE' ? (
-              <Stack.Screen name="ReceivedProposals" component={ReceivedProposalsScreen} />
+              <>
+                <Stack.Screen name="ReceivedProposals" component={ReceivedProposalsScreen} />
+                <Stack.Screen name="MyRatings" component={MyRatingsScreen} />
+              </>
             ) : null}
             <Stack.Screen name="ServiceDetail" component={ServiceDetailScreen} />
             <Stack.Screen name="Notifications" component={NotificationsScreen} />

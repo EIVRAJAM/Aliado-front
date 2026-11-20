@@ -1,4 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -11,6 +12,8 @@ import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
+import { ReportReviewModal } from '../../trust/components/ReportReviewModal';
+import { VerificationCard } from '../../trust/components/VerificationCard';
 import { AgendaSection } from '../components/AgendaSection';
 import { PublicPreviewCard } from '../components/PublicPreviewCard';
 import { useProfessionalProfileOverview } from '../hooks/useProfessionalProfileOverview';
@@ -33,6 +36,7 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
     agendaMissing,
     reload,
   } = useProfessionalProfileOverview();
+  const [reviewToReport, setReviewToReport] = useState<{ id: string; texto: string } | null>(null);
 
   if (!session) {
     return null;
@@ -92,8 +96,10 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
               />
             </Card>
           ) : (
-            <PublicPreviewCard preview={preview} />
+            <PublicPreviewCard preview={preview} onReportReview={setReviewToReport} />
           )}
+
+          <VerificationCard />
 
           <AgendaSection
             agenda={agenda}
@@ -134,6 +140,13 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
           />
         </>
       )}
+
+      <ReportReviewModal
+        visible={reviewToReport !== null}
+        token={session.token}
+        review={reviewToReport}
+        onClose={() => setReviewToReport(null)}
+      />
     </ScreenLayout>
   );
 }

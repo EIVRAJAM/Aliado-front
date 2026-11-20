@@ -7,7 +7,8 @@ import {
   PUBLIC_PROFILE_FIELDS,
   formatPublicValue,
 } from '../../../shared/profile/public-profile-data';
-import type { PublicProvider } from '../types/discovery';
+import { ReportReviewLink } from '../../trust/components/ReportReviewLink';
+import type { ProviderReview, PublicProvider } from '../types/discovery';
 import {
   formatAvailability,
   formatReviewDate,
@@ -16,7 +17,13 @@ import {
   verificationLabel,
 } from '../utils/discovery-format';
 
-export function ProviderPublicProfileView({ provider }: { provider: PublicProvider }) {
+export function ProviderPublicProfileView({
+  provider,
+  onReportReview,
+}: {
+  provider: PublicProvider;
+  onReportReview?: (review: ProviderReview) => void;
+}) {
   const publicFields = PUBLIC_PROFILE_FIELDS.flatMap((field) => {
     const formatted = formatPublicValue(provider.datosGenerales[field.key]);
     return formatted ? [{ ...field, formatted }] : [];
@@ -155,6 +162,9 @@ export function ProviderPublicProfileView({ provider }: { provider: PublicProvid
                   <Text style={styles.reviewDate}>{formatReviewDate(review.fechaCreacion)}</Text>
                 </View>
                 <Text style={styles.reviewText}>{review.texto}</Text>
+                {onReportReview ? (
+                  <ReportReviewLink onPress={() => onReportReview(review)} />
+                ) : null}
               </View>
             ))}
           </View>
@@ -167,7 +177,8 @@ export function ProviderPublicProfileView({ provider }: { provider: PublicProvid
         <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
         <Text style={styles.noteText}>
           El contrato público no incluye nombre, contacto, dirección exacta, experiencia ni
-          portafolio. El título se deriva de las categorías recibidas.
+          portafolio. El título se deriva de las categorías recibidas. La verificación básica indica
+          revisión de documentos por ALIADO; no es una certificación legal.
         </Text>
       </View>
     </>
