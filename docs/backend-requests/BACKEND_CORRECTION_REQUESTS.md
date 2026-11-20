@@ -21,6 +21,7 @@ Este documento consolida los defectos del backend y las brechas de contrato que 
 | BE-13 | F11 | Idempotencia de evidencia | Añadir `Idempotency-Key` o un identificador de carga correlacionable para evitar evidencias duplicadas cuando se pierde la respuesta. | Pendiente de comunicar |
 | BE-14 | F12 | Error de sesión bloqueada | Distinguir una sesión válida de una cuenta bloqueada (`403 CUENTA_BLOQUEADA`) en lugar de devolver `401 NO_AUTENTICADO`. | Pendiente de comunicar |
 | BE-15 | F12/F01 | Rechazo de Administrador en login móvil | Rechazar el rol `ADMINISTRADOR` antes de cerrar sesiones previas cuando el login indique cliente móvil. | Pendiente de comunicar |
+| BE-16 | F13 | Documentación API | Alinear OpenAPI de formalización con roles, arrays, `404 SIN_PROGRESO`, estado de enlaces y obligatoriedad real de `valor`. | Pendiente de comunicar |
 
 ## Solicitudes detalladas
 
@@ -323,6 +324,24 @@ El encabezado solo selecciona el comportamiento de cliente y no se considera una
 - OpenAPI documenta el encabezado opcional y el error `403`; pruebas de servicio/controlador cubren el orden de las operaciones.
 
 **Comportamiento frontend preparado:** todos los logins móviles envían `X-ALIADO-Client: MOBILE`; el gateway traduce el `403 ADMINISTRADOR_NO_DISPONIBLE_EN_MOVIL` al mensaje de uso del panel web. Se conserva un fallback para una respuesta exitosa antigua que devuelva `rol: ADMINISTRADOR`, con limpieza best-effort del token nuevo. Ese fallback no puede conservar sesiones previas; hasta que BE-15 esté desplegado, no se debe probar una cuenta Administrador real desde el móvil.
+
+### BE-16 — Alinear OpenAPI de formalización
+
+**Evidencia observada:** el controlador real exige `PRESTADOR` en `GET /formalizacion/ruta` y `GET /formalizacion/progreso`, pero OpenAPI declara solo seguridad global sin roles por operación. Ambos endpoints devuelven arrays, aunque la tarea los describe en singular. `GET /formalizacion/progreso` puede responder `404 SIN_PROGRESO`, caso no documentado. `GET /formalizacion/enlaces/{id}` exige sesión pero no rol y devuelve también enlaces `NO_DISPONIBLE`. En OpenAPI, `ActualizarProgresoRequest` solo marca `rutaId` como obligatorio; `valor` es un entero primitivo que puede omitirse y tomar 0.
+
+**Solicitar al backend:** documentar en OpenAPI los roles por operación, los DTO de lista, `404 SIN_PROGRESO`, la semántica de `DISPONIBLE`/`NO_DISPONIBLE`, el rol aplicable a enlaces y si `valor` es realmente obligatorio en la actualización. Mantener el comportamiento del código o corregirlo de forma explícita; no cambiar el contrato solo desde el cliente.
+
+**Motivo:** el cliente móvil implementó el contrato a partir del controlador y de la base local. La falta de detalle en OpenAPI impide validar automáticamente roles, errores y obligatoriedad, y puede producir clientes que interpreten `404 SIN_PROGRESO` como fallo genérico o que envíen actualizaciones incompletas.
+
+**Criterios de aceptación propuestos:**
+
+- OpenAPI refleja arrays de ruta y progreso, esquemas completos y `avisoLegal`.
+- Cada operación declara autenticación y rol; enlaces indica su alcance real.
+- `404 SIN_PROGRESO` y los códigos de error esperados están documentados.
+- `ActualizarProgresoRequest` marca `valor` como obligatorio o documenta el valor por defecto y su validación.
+- Pruebas de contrato comparan OpenAPI con las respuestas reales.
+
+**Comportamiento frontend actual:** consume los arrays, trata `SIN_PROGRESO` como ausencia de avance y no usa `PUT /progreso`. No se modifica OpenAPI desde este repositorio.
 
 ## Decisiones pendientes
 

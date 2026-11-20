@@ -23,6 +23,7 @@ import { NotificationsScreen } from '../features/notifications';
 import { MyRatingsScreen } from '../features/trust';
 import { ProposalFlowScreen, ReceivedProposalsScreen } from '../features/proposals';
 import { ServiceDetailScreen } from '../features/services';
+import { FormalizationScreen } from '../features/formalization';
 import { ProfessionalProfileCreateScreen } from '../features/professional-profile';
 import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
 import { colors } from '../shared/ui/theme';
@@ -81,6 +82,7 @@ export function RootNavigator() {
                   component={OpportunityDetailScreen}
                 />
                 <Stack.Screen name="ProposalFlow" component={ProposalFlowScreen} />
+                <Stack.Screen name="Formalization" component={FormalizationScreen} />
               </>
             ) : null}
             <Stack.Screen name="RequestForm" component={RequestFormScreen} />

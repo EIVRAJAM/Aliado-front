@@ -83,6 +83,15 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
               onPress={() => navigation.navigate('MyRatings')}
             />
           ) : null}
+          {session?.role === 'PRESTADOR' ? (
+            <ProfileActionCard
+              icon="▤"
+              title="Ruta de formalización"
+              subtitle="Pasos y enlaces orientativos. No certifica estatus legal."
+              tone="teal"
+              onPress={() => navigation.navigate('Formalization')}
+            />
+          ) : null}
           <ProfileActionCard
             icon="◌"
             title="Vista previa pública"

@@ -24,6 +24,7 @@ export type RootStackParamList = {
   ProfilePublicPreview: { userId: string };
   ProfileDelete: undefined;
   ProfessionalProfileCreate: undefined;
+  Formalization: undefined;
   OpportunityDetail: { solicitudId: string };
   ProposalFlow: { solicitudId: string; opportunity?: ProposalOpportunityContext };
   ReceivedProposals: { solicitudId: string };

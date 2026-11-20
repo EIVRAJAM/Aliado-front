@@ -22,7 +22,7 @@ Las decisiones compartidas de backend y producto se mantienen en `../aliado-prb/
 | D-08 | Push/correo, tokens de dispositivo y reintentos | Pendiente. No asumir push productivo ni inventar almacenamiento de tokens. |
 | D-09 | Edición/reintento de propuestas y precio | Pendiente de producto/API. No mostrar precio si el contrato no lo define. |
 | D-10 | Comunicación en estados de servicio cerrados | Pendiente. Afecta qué acciones de mensajería/seguimiento presenta la app. |
-| D-13 | Fuente y representación del progreso de formalización | Pendiente. Mostrar solo el progreso sustentado por el contrato. |
+| D-13 | Fuente y representación del progreso de formalización | Pendiente. F13 consulta solo el progreso sustentado por el contrato; no actualiza, calcula ni inventa un avance. |
 | D-15 | Fórmulas y formato de indicadores/exportación | Pendiente. No inferir fórmulas desde la UI. |
 | D-16 | Chat, mapa, onboarding, referidos e idiomas | Could; decisiones separadas, no bloquean el MVP. |
 | D-17 | Pagos | Future; requiere decisión de negocio y técnica, no bloquea el MVP. |
