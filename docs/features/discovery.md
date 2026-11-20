@@ -1,6 +1,6 @@
 # F03 — Descubrimiento y perfil público (app móvil)
 
-**Estado:** frontend implementado contra el contrato real. La búsqueda y el detalle público funcionan con datos reales; la verificación de resultados con prestadores queda limitada porque la creación de perfiles F05 está bloqueada por BE-01 y el entorno local no tiene perfiles profesionales. No se usan mocks ni datos demo.
+**Estado:** frontend implementado contra el contrato real. La búsqueda y el detalle público funcionan con datos reales; F10 agrega la acción de reportar reseñas públicas; la verificación de resultados con prestadores queda limitada porque la creación de perfiles F05 está bloqueada por BE-01 y el entorno local no tiene perfiles profesionales. No se usan mocks ni datos demo.
 
 ## Alcance
 
@@ -33,7 +33,7 @@ El DTO público contiene `id`, `categorias`, `zonas`, `reputacionAgregada`, `can
 - `DiscoveryScreen`: filtros con `select` modal, validación de categoría y zona, búsqueda, sugerencias, estados de carga/error/sin resultados y ajuste de criterios.
 - `ProviderProfileScreen`: carga directa por ID, mismo DTO, estado genérico `404` sin revelar la causa.
 - `ProviderResultCard`: título derivado de las categorías, porque el DTO público no incluye nombre; reputación, verificación, zonas y disponibilidad reales.
-- `ProviderPublicProfileView`: categorías, zonas, disponibilidad, reputación, verificación, datos públicos confirmados y reseñas con texto/estrellas/fecha.
+- `ProviderPublicProfileView`: categorías, zonas, disponibilidad, reputación, verificación, datos públicos confirmados y reseñas con texto/estrellas/fecha. Cada reseña permite abrir el reporte F10 con motivo.
 - No se muestran teléfono, correo, dirección exacta, contacto ni otros datos privados.
 
 ## Límites y discrepancias
@@ -41,6 +41,7 @@ El DTO público contiene `id`, `categorias`, `zonas`, `reputacionAgregada`, `can
 - **Sin nombre público en el DTO:** la UI deriva “Prestador de {categoría}” de las categorías reales; no inventa un nombre. El contrato público no expone nombre, contacto ni dirección exacta.
 - **Sin portafolio, experiencia, servicios ofertados ni trabajos completados:** el DTO de descubrimiento no los devuelve. No se muestran ni se simulan.
 - **Sin paginación:** el backend no expone paginación para esta búsqueda; no se implementa paginación local ni se inventan parámetros.
+- **Reporte de reseña:** se envía solo `motivo` al endpoint real; no se ofrece comprobante porque no está en el contrato móvil confirmado. La acción está disponible desde el perfil público y la vista previa del Prestador.
 - **SC-005 abierta:** la política de catálogo/coincidencia sigue pendiente. La app usa IDs de catálogo y delega la coincidencia exacta al backend; no implementa cercanía, coincidencia parcial ni reglas adicionales.
 - **Resultados reales no verificables localmente:** F05 no puede crear perfiles por BE-01, por lo que no hay prestadores reales que descubrir. La búsqueda con filtros válidos devuelve lista vacía y no se presentan resultados ficticios.
 - La búsqueda con categoría/zona desconocida devuelve `200` con `sugerencias`; la app las muestra sin inventar una selección automática.
@@ -79,3 +80,4 @@ El DTO público contiene `id`, `categorias`, `zonas`, `reputacionAgregada`, `can
 
 - [Solicitud BE-01: persistencia JSONB del perfil profesional](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-01--persistencia-jsonb-del-perfil-profesional) — bloquea la generación de resultados reales.
 - [Solicitud BE-06: sincronización OpenAPI](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-06--sincronización-openapi-con-el-backend-real) — referencia de contrato.
+- [F10 — Calificaciones, reseñas y verificación](trust.md)

@@ -1,6 +1,6 @@
 # F08 — Contratación, ciclo del servicio y comunicación (app móvil)
 
-**Estado:** flujo Cliente de consulta/aceptación de propuestas, detalle compartido del servicio, transiciones, historial y mensajes implementado contra el controlador/DTO reales. La bandeja unificada de F09 permite abrir un servicio desde notificaciones existentes. No se validaron mutaciones autenticadas ni revisión visual porque el development build requiere reconstrucción y no se autorizó crear servicios. No se usan mocks ni datos ficticios.
+**Estado:** flujo Cliente de consulta/aceptación de propuestas, detalle compartido del servicio, transiciones, historial y mensajes implementado contra el controlador/DTO reales. La bandeja unificada de F09 permite abrir un servicio desde notificaciones existentes y F10 agrega calificación/reseña cuando el Cliente finaliza el servicio. No se validaron mutaciones autenticadas ni revisión visual porque el development build requiere reconstrucción y no se autorizó crear servicios. No se usan mocks ni datos ficticios.
 
 ## Alcance móvil
 
@@ -11,6 +11,7 @@
 - Ambos: cancelan si el estado lo permite.
 - Mensajes REST mediados después de la contratación; no chat en tiempo real.
 - Avisos de servicio consultados desde la bandeja unificada F09, sin push ni polling.
+- Calificación y reseña obligatorias en el flujo móvil del Cliente sobre un servicio `FINALIZADO`; se envían en dos operaciones separadas y F10 conserva el reintento solo de reseña. Ver [F10](trust.md).
 
 No se implementa F09 push, F15 chat realtime, precios, datos de contacto ni un listado de servicios.
 
@@ -27,6 +28,8 @@ No se implementa F09 push, F15 chat realtime, precios, datos de contacto ni un l
 | Cancelar | `POST /api/v1/servicios/{id}/cancelar` | `{ id, estado }`. |
 | Historial | `GET /api/v1/servicios/{id}/historial` | Transiciones ordenadas. |
 | Mensajes | `GET/POST /api/v1/servicios/{id}/mensajes` | Lista o mensaje creado. |
+| Calificación | `POST /api/v1/servicios/{id}/calificacion` | `201 { id, reputacionActualizada }`; una por servicio y solo `FINALIZADO`. |
+| Reseña | `POST /api/v1/calificaciones/{id}/resena` | `201 { id }`; opcional y una por calificación. |
 | Notificaciones | `GET /api/v1/notificaciones` | F09 unifica `PROPUESTA_RECIBIDA`, `ACEPTACION_PROPUESTA`, `CAMBIO_ESTADO_SERVICIO`, `NUEVA_OPORTUNIDAD` y `AVISO_SEGURIDAD_CUENTA`. Las propuestas recibidas no incluyen un identificador navegable en el DTO real; las notificaciones de aceptación/cambio usan `servicioId`. |
 
 El detalle de servicio expone IDs de la solicitud y propuesta, pero no nombres de las partes ni contacto. Para mostrar categoría y zona se consultan los catálogos existentes. El canal de mensajes no expone datos de contacto y el backend limita el contenido a 2000 caracteres.
@@ -61,7 +64,7 @@ src/features/proposals/screens/ReceivedProposalsScreen.tsx
 
 - `RequestDetailScreen` muestra **Ver propuestas recibidas** para solicitudes publicadas del Cliente.
 - `ReceivedProposalsScreen` compara disponibilidad y mensaje y permite aceptar con confirmación.
-- `ServiceDetailScreen` comparte el detalle para ambos roles y muestra acciones según rol/estado, historial y mensajes.
+- `ServiceDetailScreen` comparte el detalle para ambos roles y muestra acciones según rol/estado, historial y mensajes. Para Cliente con servicio `FINALIZADO` incluye calificación y reseña obligatorias de F10; el detalle no informa si ya existe una calificación previa.
 - La bandeja unificada F09 se abre desde la campana **Notificaciones** del encabezado de Inicio; las aceptaciones y cambios de estado con `servicioId` abren el detalle del servicio. Una propuesta recibida abre directamente sus propuestas solo si el backend entrega `solicitudId`; con el DTO actual abre Solicitudes. No hay contador de no leídos ni estado de lectura. Ver [F09](notifications.md).
 - El `servicioId` se conserva únicamente en el contexto de navegación. No se persiste ni se simula una lista.
 - Se reutilizó la selección de fecha/hora y `expo-clipboard` de F07; el development build debe reconstruirse por los módulos nativos.
@@ -102,11 +105,12 @@ src/features/proposals/screens/ReceivedProposalsScreen.tsx
 
 ## Fuera de alcance
 
-F09 push, F15 chat realtime, F10 confianza, precios y recuperación persistente de servicios. La bandeja unificada F09 sí forma parte del alcance actual; push y tokens siguen fuera. D-10 debe definir la política de mensajes después de cancelar/finalizar.
+F09 push, F15 chat realtime, precios y recuperación persistente de servicios. La bandeja unificada F09 y la calificación/reseña F10 forman parte del alcance actual; push y tokens siguen fuera. D-10 debe definir la política de mensajes después de cancelar/finalizar. La atomicidad de calificación+reseña, la lectura de la calificación propia y el comprobante de reporte siguen pendientes (BE-10/BE-08/BE-09).
 
 ## Enlaces
 
 - [F07 — Propuestas](proposals.md)
+- [F10 — Calificaciones, reseñas y verificación](trust.md)
 - [Arquitectura móvil](../architecture/MOBILE_ARCHITECTURE.md)
 - [Plan de entrega](../core/DELIVERY_PLAN.md)
 - [Solicitudes y decisiones backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md)

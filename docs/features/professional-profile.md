@@ -1,6 +1,6 @@
 # F05 — Perfil profesional (app móvil)
 
-**Estado:** implementación frontend parcial. El formulario de alta y la lectura de vista previa/agenda están implementados, pero el alta real está bloqueada por un error backend confirmado: PostgreSQL rechaza el bind de `datos_generales` JSONB como `varchar` (SQLState 42804). La lectura pública devuelve datos públicos confirmados y reseñas; la edición completa, experiencia, portafolio y disponibilidad quedan bloqueadas por contrato. No se usan mocks ni datos simulados. Seguimiento: [solicitudes de corrección y contrato backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-01--persistencia-jsonb-del-perfil-profesional).
+**Estado:** implementación frontend parcial. El formulario de alta y la lectura de vista previa/agenda están implementados, pero el alta real está bloqueada por un error backend confirmado: PostgreSQL rechaza el bind de `datos_generales` JSONB como `varchar` (SQLState 42804). La lectura pública devuelve datos públicos confirmados y reseñas; F10 agrega el estado de verificación documental y el reporte de reseñas visibles. La edición completa, experiencia, portafolio y disponibilidad quedan bloqueadas por contrato. No se usan mocks ni datos simulados. Seguimiento: [solicitudes de corrección y contrato backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-01--persistencia-jsonb-del-perfil-profesional).
 
 ## Alcance y corrección del diagnóstico inicial
 
@@ -58,6 +58,8 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
   - Manejo de carga, error, `400`, `401`, `403`, `409`, resultado incierto y reconciliación por vista previa.
 - Pantalla `ProfessionalProfileScreen`:
   - Vista previa pública real con datos públicos confirmados, categorías, zonas, disponibilidad, reputación, nivel de verificación y reseñas visibles (texto, estrellas y fecha).
+  - Tarjeta de verificación F10: consulta `GET /verificaciones/mia`, muestra ausencia, pendiente, aprobada o rechazada y permite seleccionar documentos con `expo-document-picker` y enviarlos como multipart `documentos`. No fija MIME, tamaño ni cantidad locales.
+  - Acción **Reportar** en reseñas visibles; envía únicamente el motivo al endpoint real.
   - Agenda real desde `GET /api/v1/perfiles/mio/agenda`, con estado vacío, error, carga y ausencia de perfil.
   - Estado “Sin perfil profesional” cuando el backend responde `404`.
   - Bloque de alcance actual con las capacidades no disponibles.
@@ -82,7 +84,7 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
 - Solo se renderizan las claves de `datosGenerales` incluidas en la lista blanca real del backend: `descripcion`, `resumen`, `experiencia`, `anosExperiencia`, `aniosExperiencia`, `especialidades`, `servicios`, `habilidades`, `formacion`, `educacion`, `certificaciones`, `idiomas` y `sitioWeb`.
 - Las etiquetas visibles son las claves exactas de la lista blanca; no se traducen ni se inventan etiquetas nuevas.
 - Se muestran valores string, números finitos y arrays de strings unidos por comas. Cualquier otro formato se omite y se advierte que parte de los datos públicos no se muestra por formato no definido.
-- Las reseñas se muestran con su texto, calificación en estrellas y fecha. Si no hay reseñas visibles, aparece un estado vacío.
+- Las reseñas se muestran con su texto, calificación en estrellas y fecha. Si no hay reseñas visibles, aparece un estado vacío. F10 agrega la acción de reporte sin comprobante.
 - La vista previa no incluye el listado de experiencia, portafolio ni compromisos; no se presenta como una vista pública completa más allá de lo que devuelve el contrato.
 - No se agregan mocks, datos demo, persistencia local ni formularios que simulen operaciones bloqueadas.
 - No se muestran el listado de experiencia, el portafolio ni los compromisos. Los datos generales solo se presentan en la vista previa pública y únicamente para las claves confirmadas.
@@ -113,7 +115,15 @@ La ruta `ProfessionalProfile` se registra en la navegación autenticada y la pan
 - F01 identidad/roles y F04 catálogo/storage: disponibles.
 - D-02: granularidad de catálogo, oferta y portafolio.
 - D-03: regla temporal y zona horaria para disponibilidad/agenda.
-- D-06/D-07: storage productivo y límites/MIME de evidencias.
+- D-06/D-07: storage productivo y límites/MIME de evidencias; la app no impone reglas locales de verificación.
+- F10 requiere reconstruir el development build para incluir `expo-document-picker`.
 - Falta `GET /api/v1/perfiles/mio` para hidratar el perfil completo.
 - Falta descarga de evidencia del portafolio.
 - Falta definición de campos y validaciones de `datosGenerales`.
+
+## Enlaces
+
+- [F10 — Calificaciones, reseñas y verificación](trust.md)
+- [Arquitectura móvil](../architecture/MOBILE_ARCHITECTURE.md)
+- [Plan de entrega](../core/DELIVERY_PLAN.md)
+- [Solicitudes y decisiones backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md)

@@ -108,3 +108,7 @@ F04 añadió `expo-image-picker` con `npx expo install expo-image-picker` (`~58.
 - El parche cubre los subprocesos que producen JSON. Herramientas nativas que no usan `--json` podrían seguir dependiendo del `stdio` del entorno; si fallan, Expo Doctor reportará el error real.
 - Si Expo Doctor cambia la forma de lanzar sus subprocesos, el parche debe revisarse o retirarse.
 - `verify:config` sigue siendo una validación parcial útil para aislar problemas de configuración de los de Expo Doctor.
+
+## Dependencia nativa 2026-11-19: F10 documentos de verificación
+
+F10 añadió `expo-document-picker` `~58.0.5` con `npx expo install expo-document-picker`. Es un módulo nativo: el development build existente debe reconstruirse para que el selector de documentos esté disponible. La selección se invoca de forma diferida para no impedir que el resto de la app cargue en un build anterior. La app no fija MIME, tamaños ni cantidad; el backend sigue siendo la autoridad de validación.

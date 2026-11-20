@@ -13,6 +13,10 @@ Este documento consolida los defectos del backend y las brechas de contrato que 
 | BE-05 | F05 | Definición de contrato | Acordar y documentar campos, tipos y validaciones de `datosGenerales`. | Pendiente de definición conjunta con producto |
 | BE-06 | F04/F05 | Documentación API | Alinear OpenAPI con requests, respuestas y códigos HTTP observados en el backend. | Pendiente de comunicar |
 | BE-07 | F08 | Endpoint de lectura faltante | Añadir un listado autenticado y paginable de los servicios propios del Cliente o Prestador. | Pendiente de comunicar |
+| BE-08 | F10 | Endpoint de lectura faltante | Exponer la calificación propia de un servicio o incluirla en el detalle para poder detectar duplicados y recuperar el `calificacionId` de una reseña pendiente. | Pendiente de comunicar |
+| BE-09 | F10 | Contrato de reporte incompleto | Definir un contrato de comprobante para reportes de reseña si producto lo requiere; el flujo móvil confirmado solo acepta `motivo`. | Pendiente de definición conjunta |
+| BE-10 | F10 | Atomicidad de escritura | Permitir registrar calificación y reseña en una sola operación transaccional, o exponer recuperación suficiente para completar una reseña pendiente. | Pendiente de comunicar |
+| BE-11 | F10 | Endpoint de lectura faltante | Exponer el historial autenticado de calificaciones y reseñas propias del Cliente, con paginación y orden descendente. | Pendiente de comunicar |
 
 ## Solicitudes detalladas
 
@@ -126,11 +130,118 @@ Esto es una ampliación necesaria para completar el cliente, no el defecto que c
 
 **Comportamiento frontend actual:** no inventa un listado; mantiene el `servicioId` en el contexto de aceptación o lo obtiene de avisos existentes. La ausencia de esta operación está documentada en F08.
 
+### BE-08 — Lectura de la calificación propia por servicio
+
+**Evidencia observada:** `GET /api/v1/servicios/{id}` devuelve estado, solicitud y propuesta aceptada, pero no informa si el servicio ya tiene calificación ni expone el `calificacionId`. Tampoco existe una operación móvil para consultar la calificación propia del servicio. El único aviso disponible es el `409 YA_CALIFICADO` al intentar calificar de nuevo.
+
+**Solicitar al backend:** incluir en el detalle del servicio, para el Cliente propietario, un resumen opcional de su calificación (`id`, `valor`, si tiene reseña) o exponer una lectura equivalente, por ejemplo `GET /api/v1/servicios/{id}/calificacion`.
+
+**Motivo:** después de salir de la pantalla, el Cliente no puede saber si ya calificó ni recuperar el `calificacionId` para publicar una reseña pendiente. La UI actual no puede ofrecer un camino seguro para continuar una reseña después de un cierre de pantalla.
+
+**Criterios de aceptación propuestos:**
+
+- El propietario del servicio puede consultar si existe calificación y su identificador sin acceder a calificaciones ajenas.
+- La respuesta no expone datos de otros Clientes ni servicios.
+- El detalle mantiene compatibilidad con el contrato existente o la nueva operación queda documentada en OpenAPI.
+- Pruebas cubren servicio sin calificación, calificado, ajeno y no finalizado.
+
+**Comportamiento frontend actual:** la app muestra el formulario al entrar a un servicio `FINALIZADO` y maneja el `409` con un mensaje claro; no afirma detectar duplicados ni permite recuperar una reseña después de salir.
+
+### BE-09 — Comprobante en reporte de reseña
+
+**Evidencia observada:** el flujo móvil confirmado para `POST /api/v1/resenas/{id}/reportes` acepta únicamente `{ motivo }` y la UI no dispone de un contrato para adjuntar comprobantes a un reporte de reseña.
+
+**Solicitar a producto y backend:** si se requiere evidencia, definir el contrato multipart, el campo aceptado, la asociación con el reporte, los permisos de lectura y la política de archivos. No reutilizar un endpoint genérico sin confirmar el flujo móvil.
+
+**Motivo:** la app no debe inventar un campo de archivo ni prometer que el reporte incluirá evidencia. La limitación queda visible en la UI.
+
+**Criterios de aceptación propuestos:** contrato aprobado, OpenAPI actualizado, validación y privacidad definidas, y prueba de que solo el reportante o moderación autorizada accede al comprobante.
+
+**Comportamiento frontend actual:** envía solo el motivo y documenta que no se adjunta comprobante.
+
+### BE-10 — Atomicidad de calificación y reseña
+
+**Evidencia observada:** el backend registra la calificación con `POST /api/v1/servicios/{id}/calificacion` y la reseña con `POST /api/v1/calificaciones/{id}/resena` en operaciones separadas. El flujo móvil exige ambos campos antes de comenzar, pero si la primera operación responde correctamente y la segunda falla o la app se cierra, la calificación queda guardada sin reseña y el cliente no puede reconstruir el `calificacionId`.
+
+**Solicitar al backend:** definir una operación atómica que reciba `valor` y `texto`, o garantizar un mecanismo de recuperación que permita obtener la calificación propia y completar la reseña pendiente. La solicitud BE-08 cubre la lectura mínima; BE-10 cubre la consistencia de la escritura.
+
+**Motivo:** el requisito de reseña obligatoria es aplicable solo al cliente móvil. No puede presentarse como garantía de que calificación y reseña quedaron persistidas juntas, ni impedir que clientes API externos creen únicamente la calificación.
+
+**Criterios de aceptación propuestos:**
+
+- Una operación atómica confirma calificación y reseña juntas o no persiste ninguna.
+- Alternativamente, la lectura de la calificación propia permite recuperar el `calificacionId` y el estado de la reseña.
+- La semántica de duplicados y conflictos queda documentada y probada bajo concurrencia.
+- La UI móvil puede reintentar solo la parte pendiente sin duplicar la calificación.
+
+**Comportamiento frontend actual:** exige ambos campos, conserva el `calificacionId` y el texto en memoria si falla la reseña, y permite reintentar únicamente la reseña. Al salir de la pantalla se pierde ese estado, por lo que no se promete recuperación.
+
+### BE-11 — Historial de calificaciones y reseñas del Cliente
+
+**Evidencia observada:** F10 puede crear calificaciones y reseñas, pero no existe una operación autenticada para que el Cliente consulte las suyas. `GET /api/v1/calificaciones/mias` no está implementado. En el backend actual una ruta inexistente se resuelve como `500 ERROR_INTERNO`/`NoResourceFoundException`; no se acepta como contrato ni se corrige desde el móvil.
+
+**Solicitar al backend:** definir y exponer una operación autenticada, propuesta como `GET /api/v1/calificaciones/mias?pagina=0&tamano=20`, que devuelva solo las calificaciones del Cliente autenticado. No debe aceptar un `clienteId` arbitrario ni permitir consultar datos de otros Clientes.
+
+**DTO de respuesta propuesto — pendiente de confirmación:**
+
+```json
+{
+  "items": [
+    {
+      "calificacionId": "uuid",
+      "servicioId": "uuid",
+      "valor": 5,
+      "fechaCalificacion": "OffsetDateTime",
+      "resena": {
+        "id": "uuid",
+        "texto": "texto",
+        "fechaCreacion": "OffsetDateTime"
+      },
+      "servicio": {
+        "descripcion": "texto o null",
+        "categoria": "nombre o null",
+        "zonaAproximada": "nombre o null"
+      },
+      "prestador": {
+        "id": "uuid o null",
+        "nombrePublico": "texto o null"
+      }
+    }
+  ],
+  "pagina": 0,
+  "tamano": 20,
+  "totalElementos": 1,
+  "totalPaginas": 1
+}
+```
+
+`resena`, `servicio` y `prestador` pueden ser `null` si el backend no dispone del dato. El frontend no deriva nombres de Prestador ni rellena campos ausentes. Si `prestador` incluye identidad pública, se mostrará tal como llegue.
+
+**Requisitos solicitados:**
+
+- Autenticación de Cliente y aislamiento estricto por identidad; sin parámetro de propietario.
+- `calificacionId`, `servicioId`, `valor`, `fechaCalificacion`, reseña opcional (`id`, `texto`, `fechaCreacion`) y datos mínimos del servicio.
+- `pagina` y `tamano` con validación; orden descendente por `fechaCalificacion`.
+- Lista vacía como `200` con `items: []`, no `404`.
+- `401` para sesión ausente/expirada, `403` para rol no autorizado y errores documentados.
+- Pruebas de aislamiento entre dos Clientes y de orden/paginación.
+
+**Contrato del frontend:** el parser de `HttpTrustGateway.getMyRatings` queda aislado para absorber cambios de nombre o forma del DTO. El 404, o el 500 de ruta inexistente del backend actual, se presenta como “historial no disponible”; no se interpreta como lista vacía. Cuando BE-11 exista, retirar la compatibilidad con el 500 de `NoResourceFoundException`.
+
+**Estado actual:** la pantalla está implementada y conectada a la ruta propuesta, pero no puede mostrar historial real mientras falte BE-11. No se usan mocks, almacenamiento local ni reseñas públicas como sustituto.
+
 ## Decisiones pendientes
 
 | ID | Feature | Decisión | Estado |
 |---|---|---|---|
+| D-07 | F04/F05/F10 | Definir política de MIME, tamaño máximo y cantidad para evidencias/fotos/documentos de verificación. | Abierta |
 | D-10 | F08 | Definir si se permite leer y enviar mensajes después de cancelar o finalizar un servicio, y cómo se refleja en API y UI. | Abierta; no es un defecto confirmado |
+
+### D-07 — Política de archivos de verificación y evidencias
+
+**Evidencia observada:** el backend aplica validaciones técnicas de archivo, pero la política de producto sobre MIME, tamaño y cantidad no está cerrada. F10 no fija esas reglas en el cliente para no contradecir una decisión pendiente.
+
+**Decisión requerida:** aprobar tipos, tamaño, cantidad y mensajes de error para fotos, documentos de verificación y evidencias. El cliente seguirá mostrando el error del servidor y no impondrá límites locales hasta que la política sea confirmada.
 
 ### D-10 — Mensajería después de cancelar o finalizar
 
