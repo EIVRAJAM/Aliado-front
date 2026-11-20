@@ -1,6 +1,6 @@
 # F14 — Preferencias, historial, indicadores y actividad (app móvil)
 
-**Estado:** frontend implementado contra los contratos reales de lectura y configuración. La lectura autenticada se revisó en el emulador con una sesión Prestador existente. La actualización de preferencias y la exportación implican mutaciones reales y no se ejecutaron. La exportación requiere reconstruir el development client por la incorporación de `expo-file-system`/`expo-sharing`.
+**Estado:** frontend implementado contra los contratos reales. Lectura, exportación CSV, menú nativo y estado de éxito fueron validados en el emulador con una sesión Prestador. La descarga requiere iniciar el backend con `ALIADO_STORAGE_DIR` absoluto mientras BE-20 no esté corregido; no se modificó el código backend.
 
 ## Alcance móvil
 
@@ -11,7 +11,7 @@
 - Indicadores del Prestador mostrados desde el cálculo del backend, sin recalcularlos en la app.
 - Actividad reciente ordenada por el backend.
 
-No se agregaron datos de prueba ni se modificaron backend, migraciones o base de datos.
+No se modificó el esquema del backend ni su configuración. La prueba autorizada agregó una exportación real de la cuenta Prestador; no se crearon cuentas, servicios, preferencias ni contenido de prueba.
 
 ## Contratos reales utilizados
 
@@ -42,6 +42,7 @@ No se agregaron datos de prueba ni se modificaron backend, migraciones o base de
 - Cada elemento abre `ServiceDetail` con el `id` devuelto.
 - La exportación usa el endpoint autenticado, escribe un CSV temporal en caché y abre `expo-sharing` para que el usuario elija guardar o compartir.
 - La app no presenta el archivo como guardado hasta que el sistema abre el menú; no hay confirmación de que el usuario lo haya guardado.
+- La prueba visual de 2026-11-20 creó una exportación y abrió el menú nativo de Android. Se cerró sin compartir ni guardar una copia permanente. La descarga funcionó con `ALIADO_STORAGE_DIR` absoluto; con la configuración relativa por defecto el backend devuelve `ARCHIVO_NO_ENCONTRADO` (BE-20).
 - No se ofrece filtrado porque el contrato no lo soporta. La exportación incluye todo el historial actual, no solo la página visible.
 - No hay idempotencia ni polling de exportación; cada reintento solicita una exportación nueva.
 
@@ -67,8 +68,9 @@ No se agregaron datos de prueba ni se modificaron backend, migraciones o base de
 - La actividad no expone IDs de servicio/notificación ni paginación, y no hay desempate documentado para eventos con la misma fecha.
 - Los indicadores no exponen `formulaVersion`, periodo ni criterio de inclusión; D-15 sigue abierta.
 - OpenAPI no describe los roles/errores específicos de estos endpoints.
+- La raíz de almacenamiento relativa no se normaliza antes de `Path.startsWith`; con `./storage` la descarga de un archivo existente devuelve `404 ARCHIVO_NO_ENCONTRADO`. Confirmado como BE-20.
 
-Las brechas que requieren contrato backend se registran en [BE-17, BE-18 y BE-19](../backend-requests/BACKEND_CORRECTION_REQUESTS.md).
+Las brechas que requieren contrato backend se registran en [BE-17 a BE-20](../backend-requests/BACKEND_CORRECTION_REQUESTS.md).
 
 ## Permisos y privacidad
 
@@ -83,9 +85,10 @@ Las brechas que requieren contrato backend se registran en [BE-17, BE-18 y BE-19
 - **D-15 abierta:** fórmulas, periodo de indicadores, formato/límites de exportación y snapshot.
 - **Sin filtros de historial:** no se implementan filtros locales que parezcan equivalentes a filtros de servidor.
 - **Sin enlaces de actividad:** faltan referencias en el DTO.
-- **Sin prueba de mutaciones:** no se cambió ninguna preferencia ni se creó una exportación real.
-- **Lectura visual validada, escritura pendiente:** las pantallas de lectura se revisaron en el emulador con una sesión Prestador. No se activaron switches ni se generó una exportación. `expo-file-system` y `expo-sharing` se añadieron como dependencias directas y requieren reconstruir el development client para probar la exportación real.
-- **Vista Cliente no revisada:** el mismo hub está registrado para Cliente, pero la sesión disponible era Prestador; no se creó una cuenta para probarlo.
+- **Exportación validada con entorno absoluto:** el 2026-11-20 se creó una exportación desde la app y el menú nativo se abrió; no se compartió ni se guardó una copia permanente. La fila quedó `LISTA`.
+- **BE-20 abierto:** la configuración por defecto `./storage` no permite leer archivos existentes por la comparación de rutas. No se modificó el backend; la prueba usó una ruta absoluta.
+- **Preferencias sin mutación:** no se activaron switches ni se modificó ninguna preferencia.
+- **Vista Cliente:** el hub se abrió con Cliente y no mostró Indicadores; no se probaron mutaciones de Cliente.
 
 ## Validación
 
@@ -123,7 +126,7 @@ Resultado: `9/9`. Evidencia en `/tmp/aliado-f14-validation/gateway-tests.log`.
 
 ### Lectura autenticada en emulador
 
-Se utilizó una sesión Prestador ya iniciada; no se creó ninguna cuenta. Se verificó:
+Se utilizó una sesión Prestador ya iniciada; no se creó una cuenta nueva. Se verificó:
 
 - Acceso desde Mi perfil a **Actividad y avisos**.
 - Historial con un servicio y acceso a su detalle.
@@ -132,7 +135,16 @@ Se utilizó una sesión Prestador ya iniciada; no se creó ninguna cuenta. Se ve
 - Actividad reciente con dos eventos ordenados.
 - Capturas `f14-00..06.png` en `/tmp/aliado-f14-validation/`.
 
-No se cambió ninguna preferencia ni se generó una exportación. La base conservó `preferencias_notificacion=0`, `descargas_historial=0`, `servicios_contratados=3` y no se alteraron datos.
+### Exportación CSV en emulador
+
+- Se pulsó **Exportar todo mi historial** una sola vez.
+- El backend creó una exportación `LISTA` y la descarga se completó.
+- Android abrió el menú nativo de compartir con un archivo CSV; se cerró con Atrás sin compartir ni guardar una copia permanente.
+- La app mostró el estado de éxito. No se repitió el POST ni se borraron exportaciones.
+- Conteo de exportaciones: 1 antes, 2 después; ambas `LISTA`. No se expusieron IDs, claves ni contenido.
+- La prueba se hizo con `ALIADO_STORAGE_DIR` absoluto. Con `./storage`, el backend devuelve `ARCHIVO_NO_ENCONTRADO` por BE-20.
+
+No se modificó el backend; la única fila añadida fue la exportación solicitada. No se cambió ninguna preferencia.
 
 ## Fuera de alcance
 

@@ -25,6 +25,7 @@ Este documento consolida los defectos del backend y las brechas de contrato que 
 | BE-17 | F14 | Historial paginado/filtros | Añadir metadatos de paginación y filtros de historial, o documentar que el cliente solo puede usar “cargar más” sin total. | Pendiente de comunicar |
 | BE-18 | F14 | Actividad reciente | Exponer referencias navegables, paginación y un desempate estable para eventos de actividad. | Pendiente de comunicar |
 | BE-19 | F14 | Exportación y contrato de indicadores | Documentar el ciclo de exportación, el `201` real, la entrega CSV y la ausencia de estado/ventana/fórmula de indicadores. | Pendiente de comunicar |
+| BE-20 | F14 | Defecto de almacenamiento | Normalizar la raíz de `ALIADO_STORAGE_DIR` antes de compararla con la ruta del archivo; la raíz relativa `./storage` provoca un falso `ARCHIVO_NO_ENCONTRADO`. | Defecto confirmado; pendiente de comunicar |
 
 ## Solicitudes detalladas
 
@@ -390,6 +391,23 @@ El encabezado solo selecciona el comportamiento de cliente y no se considera una
 - Reintento de exportación con la misma clave no duplica archivos o se documenta el comportamiento.
 - Si la generación es asíncrona, existe forma de consultar el estado.
 - D-15 aprueba fórmula, periodo, formato, límites y snapshot antes de declarar aceptación completa.
+
+### BE-20 — Raíz relativa de almacenamiento invalida la descarga
+
+**Evidencia observada:** con la configuración por defecto `aliado.storage.dir=./storage`, `LocalArchivoStorageAdapter` normaliza la ruta del archivo pero no la raíz. La comparación queda, de forma equivalente, entre `storage/<archivo>` y `./storage`; `Path.startsWith` devuelve `false`, por lo que la lectura se rechaza con `404 ARCHIVO_NO_ENCONTRADO` aunque el CSV exista en disco.
+
+**Solución temporal comprobada:** iniciar el backend desde `/data/PROYECTOS/ALIADO-backend` con:
+`ALIADO_STORAGE_DIR=/data/PROYECTOS/ALIADO-backend/storage`
+Con esa ruta absoluta, la descarga de la exportación existente respondió `200`, `Content-Type: text/csv`, y el flujo móvil abrió el menú nativo y mostró éxito. No se modificó el código backend.
+
+**Solicitar al backend:** normalizar la raíz y la ruta del archivo antes de comparar (`raiz = Path.of(directorio).toAbsolutePath().normalize()` y `objetivo = raiz.resolve(clave).normalize()`), o usar una comprobación equivalente que no dependa de una raíz relativa. Mantener la protección contra traversal.
+
+**Criterios de aceptación propuestos:**
+
+- Con una raíz relativa (`./storage`) y una raíz absoluta, una clave válida existente se lee correctamente.
+- Una clave que intente salir de la raíz sigue rechazándose.
+- La descarga de una exportación existente responde `200 text/csv` con ambas configuraciones.
+- Pruebas cubren raíz relativa, raíz absoluta, archivo ausente y traversal.
 
 ## Decisiones pendientes
 
