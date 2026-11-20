@@ -1,10 +1,12 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -12,10 +14,12 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ReportEvidenceSection } from '../../reports';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useTrustError } from '../hooks/useTrustError';
+import { isUncertainTrustError } from '../types/trust';
 import { trustGateway } from '../services/trust-gateway-instance';
 
 interface ReportReviewModalProps {
@@ -36,24 +40,47 @@ export function ReportReviewModal({
   const [motivo, setMotivo] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [reportId, setReportId] = useState<string | null>(null);
+  const [uncertain, setUncertain] = useState(false);
+  const [evidenceUncertain, setEvidenceUncertain] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setMotivo('');
       setError(null);
-      setSuccess(false);
+      setReportId(null);
+      setUncertain(false);
+      setEvidenceUncertain(false);
     }
   }, [visible, review?.id]);
 
   const close = () => {
-    if (!loading) {
-      onClose();
+    if (loading) {
+      return;
     }
+    if (evidenceUncertain) {
+      Alert.alert(
+        'Carga de evidencia incierta',
+        'La carga anterior pudo haberse guardado. Si cierras, solo se descarta la copia local; no se elimina ninguna evidencia del servidor y no podrás reintentar esta carga desde esta pantalla.',
+        [
+          { text: 'Conservar archivo', style: 'cancel' },
+          {
+            text: 'Cerrar de todos modos',
+            style: 'destructive',
+            onPress: () => {
+              setEvidenceUncertain(false);
+              onClose();
+            },
+          },
+        ]
+      );
+      return;
+    }
+    onClose();
   };
 
   const submit = async () => {
-    if (!review || loading || success) {
+    if (!review || loading || reportId) {
       return;
     }
     const reason = motivo.trim();
@@ -63,12 +90,21 @@ export function ReportReviewModal({
     }
     setLoading(true);
     setError(null);
+    setUncertain(false);
     try {
-      await trustGateway.reportarResena(token, review.id, reason);
-      setSuccess(true);
+      const created = await trustGateway.reportarResena(token, review.id, reason);
+      setReportId(created.reporteId);
     } catch (submitError) {
       const message = resolveError(submitError, 'No fue posible registrar el reporte.');
-      if (message) {
+      if (!message) {
+        return;
+      }
+      if (isUncertainTrustError(submitError)) {
+        setUncertain(true);
+        setError(
+          'No se pudo confirmar si el reporte se creó. No se enviará automáticamente. Reintentar con el mismo motivo puede devolver el reporte consolidado por el servidor.'
+        );
+      } else {
         setError(message);
       }
     } finally {
@@ -103,7 +139,7 @@ export function ReportReviewModal({
               <View style={styles.headerText}>
                 <Text style={styles.title}>Reportar reseña</Text>
                 <Text style={styles.subtitle}>
-                  El reporte será revisado por moderación. No se adjuntan comprobantes en este contrato.
+                  El reporte se crea primero. Después puedes adjuntar evidencia opcional.
                 </Text>
               </View>
               <Pressable
@@ -116,49 +152,66 @@ export function ReportReviewModal({
               </Pressable>
             </View>
 
-            {review ? (
-              <View style={styles.reviewBox}>
-                <Text style={styles.reviewLabel}>Reseña</Text>
-                <Text style={styles.reviewText} numberOfLines={3}>
-                  {review.texto}
-                </Text>
-              </View>
-            ) : null}
+            <ScrollView
+              contentContainerStyle={styles.content}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {review ? (
+                <View style={styles.reviewBox}>
+                  <Text style={styles.reviewLabel}>Reseña</Text>
+                  <Text style={styles.reviewText} numberOfLines={3}>
+                    {review.texto}
+                  </Text>
+                </View>
+              ) : null}
 
-            {success ? (
-              <>
-                <InlineMessage
-                  variant="success"
-                  message="Reporte registrado. La reseña sigue visible mientras moderación la revisa."
-                />
-                <PrimaryButton label="Cerrar" onPress={close} />
-              </>
-            ) : (
-              <>
-                <TextInput
-                  value={motivo}
-                  onChangeText={setMotivo}
-                  placeholder="Motivo del reporte"
-                  placeholderTextColor={colors.disabled}
-                  multiline
-                  textAlignVertical="top"
-                  style={styles.input}
-                  editable={!loading}
-                />
-                <Text style={styles.hint}>
-                  El contrato actual solo recibe el motivo. No se ofrece adjuntar comprobantes porque
-                  no está disponible en el flujo móvil confirmado.
-                </Text>
-                {error ? <InlineMessage message={error} /> : null}
-                <PrimaryButton
-                  label="Enviar reporte"
-                  loading={loading}
-                  onPress={() => {
-                    void submit();
-                  }}
-                />
-              </>
-            )}
+              {reportId ? (
+                <>
+                  <InlineMessage
+                    variant="success"
+                    message="Reporte registrado. La reseña sigue visible mientras moderación la revisa."
+                  />
+                  <ReportEvidenceSection
+                    token={token}
+                    reportId={reportId}
+                    onUncertainChange={setEvidenceUncertain}
+                  />
+                  <PrimaryButton label="Cerrar" variant="secondary" onPress={close} />
+                </>
+              ) : (
+                <>
+                  <TextInput
+                    value={motivo}
+                    onChangeText={setMotivo}
+                    placeholder="Motivo del reporte"
+                    placeholderTextColor={colors.disabled}
+                    multiline
+                    textAlignVertical="top"
+                    style={styles.input}
+                    editable={!loading}
+                  />
+                  <Text style={styles.hint}>
+                    El motivo es obligatorio. Después de recibir un reporteId confirmado podrás
+                    adjuntar evidencia sin volver a crear el reporte.
+                  </Text>
+                  {error ? <InlineMessage message={error} /> : null}
+                  {uncertain ? (
+                    <Text style={styles.hint}>
+                      No se adjuntará evidencia hasta recibir un identificador confirmado del servidor.
+                    </Text>
+                  ) : null}
+                  <PrimaryButton
+                    label={uncertain ? 'Reintentar reporte' : 'Enviar reporte'}
+                    loading={loading}
+                    disabled={!motivo.trim()}
+                    onPress={() => {
+                      void submit();
+                    }}
+                  />
+                </>
+              )}
+            </ScrollView>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -179,7 +232,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radii.xl,
     borderTopRightRadius: radii.xl,
     padding: spacing.lg,
-    gap: spacing.md,
+    maxHeight: '92%',
   },
   header: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.md },
   headerText: { flex: 1, gap: 2 },
@@ -193,6 +246,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   pressed: { backgroundColor: colors.background },
+  content: { gap: spacing.md, paddingTop: spacing.md },
   reviewBox: {
     backgroundColor: colors.background,
     borderRadius: radii.md,

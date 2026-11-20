@@ -10,6 +10,7 @@ import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
+import { ReportTargetModal } from '../../reports';
 import { ServiceRatingCard } from '../../trust/components/ServiceRatingCard';
 import { ServiceHistoryCard } from '../components/ServiceHistoryCard';
 import { ServiceMessagesCard } from '../components/ServiceMessagesCard';
@@ -47,6 +48,9 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
   const [sending, setSending] = useState(false);
   const [messageError, setMessageError] = useState<string | null>(null);
   const [messageUncertain, setMessageUncertain] = useState(false);
+  const [reportTarget, setReportTarget] = useState<
+    { type: 'USUARIO' | 'SERVICIO'; id: string } | null
+  >(null);
 
   if (!session) {
     return null;
@@ -54,6 +58,8 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
 
   const service = detail.service;
   const role = session.role;
+  const canReportService =
+    service?.estado === 'CONTRATADO' || service?.estado === 'EN_EJECUCION';
 
   const runTransition = async (
     action: ServiceTransitionAction,
@@ -289,8 +295,46 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
             uncertain={messageUncertain}
             error={messageError}
           />
+
+          <Card style={styles.reportCard}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.iconBadge}>
+                <Ionicons name="flag-outline" size={18} color={colors.danger} />
+              </View>
+              <Text style={styles.sectionTitle}>Reportar</Text>
+            </View>
+            <Text style={styles.reportHint}>
+              {canReportService
+                ? 'Puedes reportar este servicio o a la otra parte. El servidor valida que participes en el servicio.'
+                : 'El reporte del servicio solo está disponible mientras está contratado o en ejecución. Puedes reportar a la otra parte por separado.'}
+            </Text>
+            {canReportService ? (
+              <PrimaryButton
+                label="Reportar servicio"
+                variant="secondary"
+                onPress={() => setReportTarget({ type: 'SERVICIO', id: service.id })}
+              />
+            ) : null}
+            <PrimaryButton
+              label={role === 'CLIENTE' ? 'Reportar al Prestador' : 'Reportar al Cliente'}
+              variant="ghost"
+              onPress={() =>
+                setReportTarget({
+                  type: 'USUARIO',
+                  id: role === 'CLIENTE' ? service.prestadorId : service.clienteId,
+                })
+              }
+            />
+          </Card>
         </>
       )}
+
+      <ReportTargetModal
+        visible={reportTarget !== null}
+        token={session.token}
+        target={reportTarget}
+        onClose={() => setReportTarget(null)}
+      />
     </ScreenLayout>
   );
 }
@@ -500,4 +544,6 @@ const styles = StyleSheet.create({
   },
   fieldValue: { color: colors.text, fontSize: 15, lineHeight: 21 },
   actions: { gap: spacing.sm },
+  reportCard: { gap: spacing.sm },
+  reportHint: { color: colors.muted, fontSize: 12, lineHeight: 18 },
 });

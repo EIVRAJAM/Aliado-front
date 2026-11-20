@@ -14,9 +14,11 @@ Este documento consolida los defectos del backend y las brechas de contrato que 
 | BE-06 | F04/F05 | Documentación API | Alinear OpenAPI con requests, respuestas y códigos HTTP observados en el backend. | Pendiente de comunicar |
 | BE-07 | F08 | Endpoint de lectura faltante | Añadir un listado autenticado y paginable de los servicios propios del Cliente o Prestador. | Pendiente de comunicar |
 | BE-08 | F10 | Endpoint de lectura faltante | Exponer la calificación propia de un servicio o incluirla en el detalle para poder detectar duplicados y recuperar el `calificacionId` de una reseña pendiente. | Pendiente de comunicar |
-| BE-09 | F10 | Contrato de reporte incompleto | Definir un contrato de comprobante para reportes de reseña si producto lo requiere; el flujo móvil confirmado solo acepta `motivo`. | Pendiente de definición conjunta |
+| BE-09 | F10/F11 | Contrato verificado | Confirmar el uso de `POST /reportes/{id}/evidencias` para reportes de reseña y documentar la política de archivos. | Contrato existente; pendiente prueba autenticada y D-07 |
 | BE-10 | F10 | Atomicidad de escritura | Permitir registrar calificación y reseña en una sola operación transaccional, o exponer recuperación suficiente para completar una reseña pendiente. | Pendiente de comunicar |
 | BE-11 | F10 | Endpoint de lectura faltante | Exponer el historial autenticado de calificaciones y reseñas propias del Cliente, con paginación y orden descendente. | Pendiente de comunicar |
+| BE-12 | F11 | Endpoint de lectura faltante | Añadir un listado autenticado de reportes propios para recuperar referencias y estados después de cerrar el modal. | Pendiente de comunicar |
+| BE-13 | F11 | Idempotencia de evidencia | Añadir `Idempotency-Key` o un identificador de carga correlacionable para evitar evidencias duplicadas cuando se pierde la respuesta. | Pendiente de comunicar |
 
 ## Solicitudes detalladas
 
@@ -147,17 +149,17 @@ Esto es una ampliación necesaria para completar el cliente, no el defecto que c
 
 **Comportamiento frontend actual:** la app muestra el formulario al entrar a un servicio `FINALIZADO` y maneja el `409` con un mensaje claro; no afirma detectar duplicados ni permite recuperar una reseña después de salir.
 
-### BE-09 — Comprobante en reporte de reseña
+### BE-09 — Evidencia en reporte de reseña
 
-**Evidencia observada:** el flujo móvil confirmado para `POST /api/v1/resenas/{id}/reportes` acepta únicamente `{ motivo }` y la UI no dispone de un contrato para adjuntar comprobantes a un reporte de reseña.
+**Evidencia observada:** el backend real expone `POST /api/v1/reportes/{id}/evidencias` para cualquier reporte propio abierto, incluido un reporte de reseña creado en F10. Devuelve `201 { id, archivoKey, tipoContenido }`. F11 ya usa esa ruta y la UI no ofrece adjuntos antes de confirmar el `reporteId`.
 
-**Solicitar a producto y backend:** si se requiere evidencia, definir el contrato multipart, el campo aceptado, la asociación con el reporte, los permisos de lectura y la política de archivos. No reutilizar un endpoint genérico sin confirmar el flujo móvil.
+**Solicitar al backend:** confirmar que el endpoint genérico es el contrato definitivo para evidencia de reseñas, documentar la autorización y mantenerlo estable. La selección de MIME, tamaño y cantidad sigue pendiente en D-07.
 
-**Motivo:** la app no debe inventar un campo de archivo ni prometer que el reporte incluirá evidencia. La limitación queda visible en la UI.
+**Motivo:** F10 no debe duplicar un endpoint de evidencia específico de reseña; el contrato genérico de reportes es suficiente si se confirma su estabilidad.
 
-**Criterios de aceptación propuestos:** contrato aprobado, OpenAPI actualizado, validación y privacidad definidas, y prueba de que solo el reportante o moderación autorizada accede al comprobante.
+**Criterios de aceptación propuestos:** OpenAPI refleja el DTO real; la política D-07 queda aprobada; pruebas cubren reporte propio, reporte cerrado, archivo inválido y acceso ajeno.
 
-**Comportamiento frontend actual:** envía solo el motivo y documenta que no se adjunta comprobante.
+**Comportamiento frontend actual:** después de crear el reporte, `ReportEvidenceSection` permite seleccionar un archivo y reintentar la carga sin volver a crear el reporte. No se ha validado una carga autenticada durante esta implementación.
 
 ### BE-10 — Atomicidad de calificación y reseña
 
@@ -230,18 +232,77 @@ Esto es una ampliación necesaria para completar el cliente, no el defecto que c
 
 **Estado actual:** la pantalla está implementada y conectada a la ruta propuesta, pero no puede mostrar historial real mientras falte BE-11. No se usan mocks, almacenamiento local ni reseñas públicas como sustituto.
 
+### BE-12 — Listado de reportes propios
+
+**Evidencia observada:** existe `GET /api/v1/reportes/mios/{id}` para consultar un reporte propio por ID, pero no una operación que liste los reportes del usuario. La app puede conservar el `reporteId` mientras el modal está abierto; al cerrarlo pierde la referencia y no puede recuperar el estado después.
+
+**Solicitar al backend:** exponer una lectura autenticada y paginada de reportes propios, propuesta como `GET /api/v1/reportes/mios?pagina=0&tamano=20`, sin aceptar un `reportanteId` arbitrario.
+
+**Impacto frontend:** sin este listado no se puede ofrecer un historial de reportes, recuperar evidencias/estado tras cerrar el modal ni reintentar una evidencia de un reporte anterior.
+
+**DTO propuesto — pendiente de confirmación:**
+
+```json
+{
+  "items": [
+    {
+      "id": "uuid",
+      "tipo": "USUARIO | SERVICIO | RESENA",
+      "objetivoId": "uuid",
+      "motivo": "texto",
+      "estado": "PENDIENTE | EN_REVISION | RESUELTO | DESCARTADO",
+      "fechaCreacion": "OffsetDateTime",
+      "evidencias": [
+        { "id": "uuid", "archivoKey": "clave", "tipoContenido": "MIME" }
+      ]
+    }
+  ],
+  "pagina": 0,
+  "tamano": 20,
+  "totalElementos": 1,
+  "totalPaginas": 1
+}
+```
+
+**Criterios de aceptación propuestos:** autenticación y aislamiento por reportante; paginación y orden descendente por `fechaCreacion`; lista vacía como `200 items: []`; `401/403` documentados; pruebas entre dos usuarios. El frontend no implementa este listado hasta que exista.
+
+### BE-13 — Idempotencia/correlación de cargas de evidencia
+
+**Evidencia observada:** `POST /api/v1/reportes/{id}/evidencias` acepta únicamente el multipart `archivo`. No recibe `Idempotency-Key` ni un identificador de carga, y `GET /reportes/mios/{id}` devuelve evidencias por `id`, pero no una clave que relacione una carga concreta con el archivo. Si el servidor guarda la evidencia y la respuesta se pierde por timeout/red/5xx, el cliente no puede demostrar si ese archivo quedó guardado.
+
+**Impacto frontend:** F11 consulta el detalle solo para actualizar el estado visible. No puede atribuir una evidencia nueva ni confirmar que corresponda al archivo fallido: el DTO no incluye una clave de correlación. Por eso conserva el archivo, mantiene el resultado como incierto y exige confirmación antes de un reintento; este podría duplicar la evidencia. La app no puede garantizar una carga exactamente una vez.
+
+**Propuesta de contrato:**
+
+- Aceptar `Idempotency-Key` (UUID generado por el cliente y conservado durante reintentos) o un campo multipart `clientUploadId`.
+- Aplicar unicidad por reportante/reporte/clave durante una ventana documentada.
+- Repetir la misma clave con el mismo reporte devuelve la misma evidencia (`200/201`) sin crear otra fila ni otro archivo.
+- Reutilizar la misma clave con contenido distinto devuelve `409`.
+- Incluir `clientUploadId` en la evidencia devuelta por la consulta propia para reconciliar sin ambigüedad.
+
+**Criterios de aceptación propuestos:** pruebas concurrentes con la misma clave; prueba de timeout tras commit; una sola fila/objeto por carga lógica; el cliente puede reintentar sin duplicar; comportamiento documentado en OpenAPI y política de retención/limpieza de claves.
+
+**Comportamiento frontend actual:** no hay idempotencia disponible; ante un resultado incierto se consulta el detalle, se conserva el archivo y se advierte antes de reintentar. No se afirma éxito ni se reenvía automáticamente.
+
 ## Decisiones pendientes
 
 | ID | Feature | Decisión | Estado |
 |---|---|---|---|
-| D-07 | F04/F05/F10 | Definir política de MIME, tamaño máximo y cantidad para evidencias/fotos/documentos de verificación. | Abierta |
+| D-07 | F04/F05/F10/F11 | Definir política de MIME, tamaño máximo y cantidad para evidencias/fotos/documentos de verificación. | Abierta |
+| D-12 | F11/F12 | Aprobar la política de consolidación de reportes equivalentes, revisión y criterios de alto riesgo. | Abierta |
 | D-10 | F08 | Definir si se permite leer y enviar mensajes después de cancelar o finalizar un servicio, y cómo se refleja en API y UI. | Abierta; no es un defecto confirmado |
 
 ### D-07 — Política de archivos de verificación y evidencias
 
-**Evidencia observada:** el backend aplica validaciones técnicas de archivo, pero la política de producto sobre MIME, tamaño y cantidad no está cerrada. F10 no fija esas reglas en el cliente para no contradecir una decisión pendiente.
+**Evidencia observada:** el backend aplica validaciones técnicas de archivo, pero la política de producto sobre MIME, tamaño y cantidad no está cerrada. F10 y F11 no fijan esas reglas en el cliente para no contradecir una decisión pendiente.
 
 **Decisión requerida:** aprobar tipos, tamaño, cantidad y mensajes de error para fotos, documentos de verificación y evidencias. El cliente seguirá mostrando el error del servidor y no impondrá límites locales hasta que la política sea confirmada.
+
+### D-12 — Consolidación y moderación de reportes
+
+**Evidencia observada:** el backend consolida un reporte equivalente abierto por reportante, tipo, objetivo y motivo, y devuelve su ID. La política de producto sobre equivalencia, prioridad, evidencia acumulada y revisión por el mismo administrador no está aprobada formalmente.
+
+**Decisión requerida:** aprobar los criterios de equivalencia/consolidación, si una evidencia nueva reabre o no un reporte, y la relación con los criterios de alto riesgo de F12. La UI no decide la consolidación: muestra el `reporteId` que devuelve el servidor.
 
 ### D-10 — Mensajería después de cancelar o finalizar
 

@@ -13,7 +13,7 @@ No se modifica el backend ni se inventan endpoints, campos, MIME, tamaños o can
 - La reputación, cantidad, nivel y reseñas se muestran en búsqueda/perfil público y en la vista previa del Prestador con los datos ya disponibles.
 - Cliente accede desde Mi perfil a **Mis calificaciones y reseñas**, un historial privado de solo lectura. La operación backend está solicitada en BE-11 y todavía no existe.
 
-No se implementan: atomicidad de calificación y reseña en backend, lectura de la calificación propia desde el detalle del servicio, adjuntar comprobantes al reporte de reseña, descarga de documentos privados de verificación, edición de calificación/reseña ni presentar el nivel como certificación legal.
+No se implementan: atomicidad de calificación y reseña en backend, lectura de la calificación propia desde el detalle del servicio, descarga de documentos privados de verificación, edición de calificación/reseña ni presentar el nivel como certificación legal. La evidencia de un reporte de reseña se adjunta mediante el flujo F11 después de confirmar el `reporteId`.
 
 ## Contrato real utilizado
 
@@ -66,8 +66,8 @@ No se duplican llamadas a confianza/reseñas en las vistas que ya reciben esos d
 
 - Las reseñas públicas y la vista previa del Prestador muestran una acción **Reportar**.
 - El modal exige un motivo y usa el endpoint real.
-- No se ofrece adjuntar comprobante porque el flujo móvil confirmado para reportar reseña solo acepta `motivo`.
-- El éxito informa que el reporte fue registrado; la reseña sigue visible hasta la moderación.
+- El éxito conserva el `reporteId` devuelto y habilita la sección de evidencia de F11. No se puede adjuntar antes de confirmar el reporte.
+- La reseña sigue visible hasta la moderación.
 
 ## Historial privado del Cliente (BE-11)
 
@@ -93,7 +93,7 @@ No se duplican llamadas a confianza/reseñas en las vistas que ya reciben esos d
 - **Calificación propia no legible:** `GET /api/v1/servicios/{id}` no devuelve la calificación ni un `calificacionId`. Después de salir de la pantalla no se puede abrir una reseña pendiente ni saber si el servicio ya fue calificado. Se solicita en [BE-08](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-08--lectura-de-la-calificación-propia-por-servicio).
 - **Historial privado pendiente:** no existe `GET /api/v1/calificaciones/mias`. La pantalla muestra el estado no disponible y no puede confirmar si hay reseñas. Se solicita en [BE-11](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-11--historial-de-calificaciones-y-reseñas-del-cliente).
 - **Sin atomicidad de calificación + reseña:** el backend usa dos operaciones separadas. La app exige ambos campos antes de empezar, pero no puede garantizar que ambos queden persistidos si la segunda falla. Se solicita una operación atómica o recuperación explícita en [BE-10](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-10--atomicidad-de-calificación-y-reseña).
-- **Sin comprobante en reporte:** el contrato móvil confirmado solo acepta motivo. No se implementa adjunto; queda como ampliación futura en [BE-09](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-09--comprobante-en-reporte-de-reseña).
+- **Evidencia de reporte:** F11 usa `POST /reportes/{id}/evidencias` después de confirmar el `reporteId`; no se ofrece adjunto antes. La política de archivos sigue en [D-07](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#d-07--política-de-archivos-de-verificación-y-evidencias) y la definición de consolidación en D-12.
 - **Política de archivos pendiente:** la app no fija MIME, tamaño ni cantidad para documentos de verificación. El backend valida y puede responder `400`, `413` o `415`. D-07 sigue abierta.
 - **Documentos privados:** no hay operación móvil para listarlos o descargarlos; la UI no los expone.
 - **Build nativo:** se añadió `expo-document-picker` (`~58.0.5`). El development build existente debe reconstruirse para usar el selector de documentos.
@@ -154,7 +154,7 @@ Integraciones:
 - Servicio `TERMINADO`: no mostró formulario.
 - Servicio ya calificado: 409 persistente, sin formulario; la DB mantuvo 1 calificación y 1 reseña.
 - Verificación: estado sin solicitud, selección de PNG sintético, upload exitoso y estado `PENDIENTE`; DB con 1 solicitud y 1 documento.
-- Reporte de reseña desde la vista previa del Prestador; UI de éxito y reporte `PENDIENTE` en DB, sin comprobante.
+- Reporte de reseña desde la vista previa del Prestador; UI de éxito y reporte `PENDIENTE` en DB. La evidencia se integró después con F11, pero no se probó una carga autenticada en esta iteración.
 - API de conflictos: `YA_CALIFICADO` y `RESENA_YA_EXISTE` respondieron 409; un reporte equivalente devolvió 201 sin fila adicional.
 - Historial privado: con sesión Cliente, la ruta propuesta devolvió el `500 ERROR_INTERNO` de ruta inexistente del backend actual. La UI mostró **Historial aún no disponible**, no una lista vacía. No se validó una respuesta exitosa.
 
@@ -168,12 +168,13 @@ Integraciones:
 
 ## Fuera de alcance
 
-Administración/moderación de reportes, descarga de documentos, comprobantes de reporte, edición de reseñas, preferencias de notificación, formalización y cualquier cambio de backend/OpenAPI.
+Administración/moderación de reportes, descarga de evidencias, edición de reseñas, preferencias de notificación, formalización y cualquier cambio de backend/OpenAPI.
 
 ## Enlaces
 
 - [F03 — Descubrimiento](discovery.md)
 - [F05 — Perfil profesional](professional-profile.md)
 - [F08 — Contratación y servicios](services.md)
+- [F11 — Reportes y evidencias](reports.md)
 - [Solicitudes y decisiones backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md)
 - [Plan de entrega](../core/DELIVERY_PLAN.md)

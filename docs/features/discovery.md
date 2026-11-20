@@ -33,7 +33,7 @@ El DTO público contiene `id`, `categorias`, `zonas`, `reputacionAgregada`, `can
 - `DiscoveryScreen`: filtros con `select` modal, validación de categoría y zona, búsqueda, sugerencias, estados de carga/error/sin resultados y ajuste de criterios.
 - `ProviderProfileScreen`: carga directa por ID, mismo DTO, estado genérico `404` sin revelar la causa.
 - `ProviderResultCard`: título derivado de las categorías, porque el DTO público no incluye nombre; reputación, verificación, zonas y disponibilidad reales.
-- `ProviderPublicProfileView`: categorías, zonas, disponibilidad, reputación, verificación, datos públicos confirmados y reseñas con texto/estrellas/fecha. Cada reseña permite abrir el reporte F10 con motivo.
+- `ProviderPublicProfileView`: categorías, zonas, disponibilidad, reputación, verificación, datos públicos confirmados y reseñas con texto/estrellas/fecha. Cada reseña permite abrir el reporte F10 con motivo. El perfil incluye además **Reportar esta cuenta** (F11) usando el ID público real.
 - No se muestran teléfono, correo, dirección exacta, contacto ni otros datos privados.
 
 ## Límites y discrepancias
@@ -81,3 +81,4 @@ El DTO público contiene `id`, `categorias`, `zonas`, `reputacionAgregada`, `can
 - [Solicitud BE-01: persistencia JSONB del perfil profesional](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-01--persistencia-jsonb-del-perfil-profesional) — bloquea la generación de resultados reales.
 - [Solicitud BE-06: sincronización OpenAPI](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-06--sincronización-openapi-con-el-backend-real) — referencia de contrato.
 - [F10 — Calificaciones, reseñas y verificación](trust.md)
+- [F11 — Reportes y evidencias](reports.md)

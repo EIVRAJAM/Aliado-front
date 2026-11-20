@@ -12,6 +12,7 @@
 - Mensajes REST mediados después de la contratación; no chat en tiempo real.
 - Avisos de servicio consultados desde la bandeja unificada F09, sin push ni polling.
 - Calificación y reseña obligatorias en el flujo móvil del Cliente sobre un servicio `FINALIZADO`; se envían en dos operaciones separadas y F10 conserva el reintento solo de reseña. Ver [F10](trust.md).
+- Reporte del servicio y de la contraparte desde el detalle, con evidencia posterior al `reporteId`; ver [F11](reports.md).
 
 No se implementa F09 push, F15 chat realtime, precios, datos de contacto ni un listado de servicios.
 
@@ -64,7 +65,7 @@ src/features/proposals/screens/ReceivedProposalsScreen.tsx
 
 - `RequestDetailScreen` muestra **Ver propuestas recibidas** para solicitudes publicadas del Cliente.
 - `ReceivedProposalsScreen` compara disponibilidad y mensaje y permite aceptar con confirmación.
-- `ServiceDetailScreen` comparte el detalle para ambos roles y muestra acciones según rol/estado, historial y mensajes. Para Cliente con servicio `FINALIZADO` incluye calificación y reseña obligatorias de F10; el detalle no informa si ya existe una calificación previa.
+- `ServiceDetailScreen` comparte el detalle para ambos roles y muestra acciones según rol/estado, historial y mensajes. Incluye acciones de reporte F11 para servicio y contraparte. Para Cliente con servicio `FINALIZADO` incluye calificación y reseña obligatorias de F10; el detalle no informa si ya existe una calificación previa.
 - La bandeja unificada F09 se abre desde la campana **Notificaciones** del encabezado de Inicio; las aceptaciones y cambios de estado con `servicioId` abren el detalle del servicio. Una propuesta recibida abre directamente sus propuestas solo si el backend entrega `solicitudId`; con el DTO actual abre Solicitudes. No hay contador de no leídos ni estado de lectura. Ver [F09](notifications.md).
 - El `servicioId` se conserva únicamente en el contexto de navegación. No se persiste ni se simula una lista.
 - Se reutilizó la selección de fecha/hora y `expo-clipboard` de F07; el development build debe reconstruirse por los módulos nativos.
@@ -111,6 +112,7 @@ F09 push, F15 chat realtime, precios y recuperación persistente de servicios. L
 
 - [F07 — Propuestas](proposals.md)
 - [F10 — Calificaciones, reseñas y verificación](trust.md)
+- [F11 — Reportes y evidencias](reports.md)
 - [Arquitectura móvil](../architecture/MOBILE_ARCHITECTURE.md)
 - [Plan de entrega](../core/DELIVERY_PLAN.md)
 - [Solicitudes y decisiones backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md)

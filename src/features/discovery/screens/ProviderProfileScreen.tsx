@@ -10,6 +10,7 @@ import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
+import { ReportTargetModal } from '../../reports';
 import { ReportReviewModal } from '../../trust/components/ReportReviewModal';
 import { ProviderPublicProfileView } from '../components/ProviderPublicProfileView';
 import { useProviderProfile } from '../hooks/useProviderProfile';
@@ -56,6 +57,7 @@ function ClientProviderProfileScreen({
     route.params.providerId
   );
   const [reviewToReport, setReviewToReport] = useState<{ id: string; texto: string } | null>(null);
+  const [reportTarget, setReportTarget] = useState<{ type: 'USUARIO'; id: string } | null>(null);
 
   return (
     <ScreenLayout
@@ -92,12 +94,24 @@ function ClientProviderProfileScreen({
         <>
           <ProviderPublicProfileView provider={provider} onReportReview={setReviewToReport} />
           <PrimaryButton
+            label="Reportar esta cuenta"
+            variant="secondary"
+            onPress={() => setReportTarget({ type: 'USUARIO', id: provider.id })}
+          />
+          <PrimaryButton
             label="Volver a la búsqueda"
             variant="secondary"
             onPress={() => navigation.goBack()}
           />
         </>
       )}
+
+      <ReportTargetModal
+        visible={reportTarget !== null}
+        token={token}
+        target={reportTarget}
+        onClose={() => setReportTarget(null)}
+      />
 
       <ReportReviewModal
         visible={reviewToReport !== null}
