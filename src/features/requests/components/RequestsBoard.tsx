@@ -25,6 +25,7 @@ export function RequestsBoard({
   const { requests, catalogs, loading, error, reload } = useMyRequests();
   const visibleRequests = limit === undefined ? requests : requests.slice(0, limit);
   const hasMore = limit !== undefined && requests.length > limit;
+  const showToolbarNewAction = loading || error !== null || requests.length > 0;
 
   const countLabel = loading
     ? 'Cargando solicitudes…'
@@ -52,15 +53,17 @@ export function RequestsBoard({
           >
             <Ionicons name="refresh-outline" size={20} color={colors.primary} />
           </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Nueva solicitud"
-            onPress={onCreate}
-            style={({ pressed }) => [styles.newButton, pressed ? styles.newPressed : null]}
-          >
-            <Ionicons name="add" size={18} color={colors.surface} />
-            <Text style={styles.newButtonText}>Nueva</Text>
-          </Pressable>
+          {showToolbarNewAction ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Nueva solicitud"
+              onPress={onCreate}
+              style={({ pressed }) => [styles.newButton, pressed ? styles.newPressed : null]}
+            >
+              <Ionicons name="add" size={18} color={colors.surface} />
+              <Text style={styles.newButtonText}>Nueva</Text>
+            </Pressable>
+          ) : null}
         </View>
       </View>
 

@@ -7,6 +7,7 @@
 - **Prestador:** Inicio muestra las oportunidades reales como contenido principal, con encabezado, filtros en modal, resultados y acceso al detalle. Se reutiliza el tablero de F06 y su gateway `GET /api/v1/oportunidades`.
 - **Cliente:** Inicio muestra sus solicitudes reales y una acción visible para crear una. Se reutilizan la lista, los estados y el gateway `GET /api/v1/solicitudes/mias` de F04.
 - Se muestran como máximo tres resultados en Inicio. Si hay más, aparece **Ver todas** y se abre la pestaña completa correspondiente.
+- Si el Cliente no tiene solicitudes, el estado vacío ofrece una sola acción principal: **Publicar una solicitud**. La barra oculta **Nueva** en ese estado para no duplicar la acción; con solicitudes existentes, **Nueva** se conserva.
 - La barra inferior no cambia: Cliente conserva Inicio, Buscar, Solicitudes y Mi perfil; Prestador conserva Inicio, Oportunidades, Profesional y Mi perfil.
 - No se añaden endpoints, datos de demostración, métricas, avisos ni tarjetas de cuenta. Se retiraron de Inicio la tarjeta de cuenta y la guía redundante.
 - La campana de notificaciones permanece en la cabecera de Inicio y no se duplica dentro del tablero de oportunidades.

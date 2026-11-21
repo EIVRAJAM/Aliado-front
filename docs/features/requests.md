@@ -79,7 +79,7 @@ src/features/requests/
 └── index.ts
 ```
 
-La barra inferior incluye `Solicitudes` solo para `CLIENTE`. `RequestForm` y `RequestDetail` se abren fuera de la barra para conservar jerarquía e historial. `RequestsBoard` se comparte entre Inicio y la pestaña Solicitudes; Inicio muestra hasta tres solicitudes, la acción **Nueva** y **Ver todas** cuando hay más, mientras la pestaña conserva la lista completa. La lista vuelve a comprobar el rol y el backend exige `CLIENTE` en todas las rutas; la app no sustituye esa autorización.
+La barra inferior incluye `Solicitudes` solo para `CLIENTE`. `RequestForm` y `RequestDetail` se abren fuera de la barra para conservar jerarquía e historial. `RequestsBoard` se comparte entre Inicio y la pestaña Solicitudes; Inicio muestra hasta tres solicitudes, la acción **Nueva** y **Ver todas** cuando hay más, mientras la pestaña conserva la lista completa. En el estado vacío se muestra únicamente **Publicar una solicitud** y se oculta **Nueva** de la barra para no duplicar la acción; durante carga o error la barra mantiene el acceso a crear. La lista vuelve a comprobar el rol y el backend exige `CLIENTE` en todas las rutas; la app no sustituye esa autorización.
 
 ## Flujos y estados
 
