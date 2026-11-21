@@ -56,23 +56,18 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
 
       {isClient ? (
         <RequestsBoard
-          limit={3}
           showPrivacyHint={false}
           onOpenRequest={(requestId) =>
             navigation.navigate('RequestDetail', { requestId })
           }
           onCreate={() => navigation.navigate('RequestForm')}
-          onOpenAll={() => navigation.navigate('Requests')}
         />
       ) : (
         <OpportunitiesBoard
-          limit={3}
-          showNotificationsAction={false}
           onOpenOpportunity={(solicitudId) =>
             navigation.navigate('OpportunityDetail', { solicitudId })
           }
           onOpenProfessionalProfile={() => navigation.navigate('ProfessionalProfile')}
-          onOpenAll={(filters) => navigation.navigate('Opportunities', { filters })}
         />
       )}
     </ScreenLayout>

@@ -11,16 +11,14 @@ import {
 } from '../types/opportunity';
 import { useOpportunitiesError } from './useOpportunitiesError';
 
-export function useOpportunitiesBoard(initialFilters?: OpportunityFilters) {
+export function useOpportunitiesBoard() {
   const { session } = useAuthSession();
   const resolveError = useOpportunitiesError();
   const [categories, setCategories] = useState<OpportunityCategory[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [filters, setFilters] = useState<OpportunityFilters>(() =>
-    initialFilters ? { ...initialFilters } : emptyOpportunityFilters()
-  );
+  const [filters, setFilters] = useState<OpportunityFilters>(emptyOpportunityFilters);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const requestId = useRef(0);
@@ -77,24 +75,6 @@ export function useOpportunitiesBoard(initialFilters?: OpportunityFilters) {
       }
     }
   }, [filters, resolveError, session]);
-
-  const initialCategoria = initialFilters?.categoriaId ?? null;
-  const initialUrgencia = initialFilters?.urgencia ?? null;
-
-  useEffect(() => {
-    if (!initialFilters) {
-      return;
-    }
-    setFilters((current) => {
-      if (
-        current.categoriaId === initialCategoria &&
-        current.urgencia === initialUrgencia
-      ) {
-        return current;
-      }
-      return { categoriaId: initialCategoria, urgencia: initialUrgencia };
-    });
-  }, [initialCategoria, initialFilters, initialUrgencia]);
 
   useEffect(() => {
     void loadCategories();

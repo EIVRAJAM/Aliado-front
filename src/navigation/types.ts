@@ -1,13 +1,10 @@
 import type { NavigatorScreenParams } from '@react-navigation/native';
 
 import type { ProposalOpportunityContext } from '../features/proposals/types/proposal';
-import type { OpportunityFilters } from '../features/opportunities/types/opportunity';
 
 export type MainTabParamList = {
   Home: undefined;
   Discovery: undefined;
-  Requests: undefined;
-  Opportunities: { filters?: OpportunityFilters } | undefined;
   ProfessionalProfile: undefined;
   Profile: undefined;
 };

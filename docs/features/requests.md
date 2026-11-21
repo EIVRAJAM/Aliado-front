@@ -8,8 +8,7 @@ Cubre SPEC-04 para el rol **Cliente**:
 
 - Crear una solicitud completa y publicarla.
 - Guardar un borrador parcial, retomarlo y publicarlo después.
-- Listar las solicitudes propias con estado, categoría, zona, urgencia y fecha.
-- Mostrar un resumen de las solicitudes propias en **Inicio** para Cliente, con la misma lista, estados y acción de creación.
+- Listar las solicitudes propias con estado, categoría, zona, urgencia y fecha en **Inicio** para Cliente, con la misma lista, estados y acción de creación.
 - Consultar el detalle propio.
 - Editar una solicitud abierta (`BORRADOR` o `PUBLICADA`).
 - Cancelar una solicitud abierta con confirmación explícita.
@@ -79,7 +78,7 @@ src/features/requests/
 └── index.ts
 ```
 
-La barra inferior incluye `Solicitudes` solo para `CLIENTE`. `RequestForm` y `RequestDetail` se abren fuera de la barra para conservar jerarquía e historial. `RequestsBoard` se comparte entre Inicio y la pestaña Solicitudes; Inicio muestra hasta tres solicitudes, la acción **Nueva** y **Ver todas** cuando hay más, mientras la pestaña conserva la lista completa. En el estado vacío se muestra únicamente **Publicar una solicitud** y se oculta **Nueva** de la barra para no duplicar la acción; durante carga o error la barra mantiene el acceso a crear. La lista vuelve a comprobar el rol y el backend exige `CLIENTE` en todas las rutas; la app no sustituye esa autorización.
+La barra inferior no incluye `Solicitudes` como pestaña: la lista vive en **Inicio** para `CLIENTE`. `RequestForm` y `RequestDetail` se abren fuera de la barra para conservar jerarquía e historial. `RequestsBoard` compone Inicio con la lista completa y la acción **Nueva**. En el estado vacío se muestra únicamente **Publicar una solicitud** y se oculta **Nueva** de la barra para no duplicar la acción; durante carga o error la barra mantiene el acceso a crear. La lista vuelve a comprobar el rol y el backend exige `CLIENTE` en todas las rutas; la app no sustituye esa autorización.
 
 ## Flujos y estados
 

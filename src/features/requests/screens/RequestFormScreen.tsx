@@ -491,7 +491,7 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
               <PrimaryButton
                 label="Actualizar Mis solicitudes"
                 variant={uncertainOutcome.reconciledRequestId ? 'secondary' : 'primary'}
-                onPress={() => navigation.navigate('MainTabs', { screen: 'Requests' })}
+                onPress={() => navigation.navigate('MainTabs', { screen: 'Home' })}
               />
             </Card>
           ) : null}

@@ -15,7 +15,6 @@ export const linking: LinkingOptions<RootStackParamList> = {
         screens: {
           Home: '',
           Discovery: 'buscar',
-          Requests: 'solicitudes',
           ProfessionalProfile: 'perfil-profesional',
           Profile: 'perfil',
         },

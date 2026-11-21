@@ -23,7 +23,7 @@ Tipos reconocidos:
 | Tipo | IDs disponibles | Destino |
 |---|---|---|
 | `NUEVA_OPORTUNIDAD` | `solicitudId` | `OpportunityDetail` para Prestador. Sin ID no hay acción. |
-| `PROPUESTA_RECIBIDA` | `solicitudId` opcional | Cliente: `ReceivedProposals` si hay `solicitudId`; si no, pestaña Solicitudes. |
+| `PROPUESTA_RECIBIDA` | `solicitudId` opcional | Cliente: `ReceivedProposals` si hay `solicitudId`; si no, Inicio. |
 | `ACEPTACION_PROPUESTA` | `servicioId` | `ServiceDetail`. Sin ID no hay acción. |
 | `CAMBIO_ESTADO_SERVICIO` | `servicioId` | `ServiceDetail`. Sin ID no hay acción. |
 | `AVISO_SEGURIDAD_CUENTA` | Ninguno | Informativo, sin navegación. |
@@ -32,7 +32,7 @@ Tipos reconocidos:
 
 ## Comportamiento
 
-- Las campanas de Inicio y Oportunidades usan la etiqueta accesible **Notificaciones** y abren `Notifications`.
+- La campana de Inicio usa la etiqueta accesible **Notificaciones** y abre `Notifications`.
 - Las tarjetas con destino son botones; las informativas o sin ID no exponen acción y no muestran chevron.
 - `PROPUESTA_RECIBIDA` sin `solicitudId` usa Solicitudes como salida segura. No se inventa el identificador de la propuesta.
 - La lista no se pagina ni se filtra localmente por tipo: se muestran todos los tipos reconocidos que el servidor entrega.
@@ -84,8 +84,8 @@ src/features/notifications/
 
 ### Manual en emulador Android
 
-- Las campanas de Inicio y Oportunidades abren la misma pantalla **Notificaciones** con la misma lista.
-- Cliente: `PROPUESTA_RECIBIDA` sin `solicitudId` abrió la pestaña Solicitudes.
+- La campana de Inicio abre la pantalla **Notificaciones** con la lista.
+- Cliente: `PROPUESTA_RECIBIDA` sin `solicitudId` abrió Inicio.
 - Prestador: `NUEVA_OPORTUNIDAD` abrió el detalle; `ACEPTACION_PROPUESTA` y `CAMBIO_ESTADO_SERVICIO` abrieron el servicio.
 - Se verificaron orden descendente, actualización manual, estado vacío, error de red y reintento exitoso.
 - La navegación desde una oportunidad ya contratada puede mostrar el detalle no disponible porque F06 revalida el estado en el servidor.

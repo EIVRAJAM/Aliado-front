@@ -6,16 +6,15 @@
 
 Cubre SPEC-06 para el rol **Prestador**:
 
-- pestaña **Oportunidades** en la barra inferior, con Inicio, Oportunidades, Profesional y Mi perfil;
-- resumen de oportunidades en **Inicio** para Prestador, con los mismos filtros, tarjetas, estados y acceso al detalle;
+- oportunidades en **Inicio** para Prestador, con filtros, tarjetas, estados y acceso al detalle;
 - tablero de solicitudes compatibles calculado por el servidor;
 - filtros opcionales por categoría y urgencia enviados a la API desde un botón compacto y un modal;
 - detalle de una oportunidad con encabezado compacto, descripción completa, referencia de solicitud, fecha y cantidad de fotos como metadatos secundarios;
-- acceso a los avisos desde la campana de Oportunidades; abre la bandeja unificada F09, sin simular push, polling ni notificaciones locales;
+- acceso a los avisos desde la campana de Inicio; abre la bandeja unificada F09, sin simular push, polling ni notificaciones locales;
 - estados de carga, error recuperable, vacío, resultados y sesión expirada;
 - control de rol en navegación y pantallas, con el backend como autoridad final.
 
-El Cliente no ve la pestaña ni tiene registrada la pantalla de detalle de oportunidad en el stack autenticado. Esa pantalla vuelve a comprobar el rol y su hook no consulta la API si el rol no es `PRESTADOR`. La bandeja de notificaciones es compartida por ambos roles.
+El Cliente no tiene una ruta de oportunidades ni la pantalla de detalle registrada en el stack autenticado. Esa pantalla vuelve a comprobar el rol y su hook no consulta la API si el rol no es `PRESTADOR`. La bandeja de notificaciones es compartida por ambos roles.
 
 ## Contratos integrados
 
@@ -75,11 +74,10 @@ src/features/opportunities/
 └── utils/            # formato y mensajes
 ```
 
-- `OpportunitiesBoard`: contiene el tablero compartido por `Inicio` y `OpportunitiesScreen`; carga el catálogo, muestra un botón de filtros con indicador de estado activo y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal. El conteo aparece una sola vez junto a las acciones; el subtítulo es la única explicación general de compatibilidad y se retiró la tarjeta redundante de alcance. En Inicio limita la presentación a tres oportunidades, oculta la campana duplicada y ofrece **Ver todas** cuando hay más resultados. Los filtros aplicados se transfieren a la pestaña al usar **Ver todas**.
-- `OpportunitiesScreen`: conserva la experiencia completa con el tablero sin límite y la campana de avisos.
+- `OpportunitiesBoard`: contiene el tablero de Inicio; carga el catálogo, muestra un botón de filtros con indicador de estado activo y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal. El conteo aparece una sola vez junto a las acciones; el subtítulo es la única explicación general de compatibilidad y se retiró la tarjeta redundante de alcance. La campana de avisos vive en la cabecera de Inicio, no dentro del tablero.
 - `OpportunityFilterModal`: usa el patrón modal de la app, respeta safe areas, cierra con botón, overlay y Atrás, y mantiene áreas táctiles de al menos 44 puntos.
 - `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` al recibir foco y presenta un único bloque con categoría, urgencia, zona aproximada, descripción completa, fecha, referencia corta de `solicitudId` y cantidad de fotos. No repite campos y usa un aviso compacto para privacidad y límites del contrato.
-- La campana de Oportunidades abre la misma pantalla **Notificaciones** de F09 que la campana de Inicio. No hay pantalla, hook, tarjeta ni operación de gateway de avisos dentro de F06; los `NUEVA_OPORTUNIDAD` se muestran y navegan desde la bandeja unificada.
+- La campana de Inicio abre la pantalla **Notificaciones** de F09. No hay pantalla, hook, tarjeta ni operación de gateway de avisos dentro de F06; los `NUEVA_OPORTUNIDAD` se muestran y navegan desde la bandeja unificada.
 - No se muestra identidad, correo, teléfono ni dirección exacta del Cliente; el DTO real tampoco los expone.
 
 ## Diferencias con el plan y límites reales
@@ -125,7 +123,7 @@ La sesión Prestador existente se usó contra los datos `[DEMO LOCAL F06]`:
 - filtro `Pintura`: `0` resultados con estado vacío; la acción de limpiar devolvió las `4` oportunidades;
 - detalle de una oportunidad demo: categoría, urgencia, zona aproximada, descripción completa, fecha de publicación, referencia `Ref. 66000000…0001`, “Sin fotos” y aviso compacto de privacidad y límites; sin campos repetidos.
 
-Los datos demo no incluyen descripciones nulas/vacías, saltos de línea ni fotos, por lo que no se pudieron verificar visualmente esos estados. La UI implementa el texto de reemplazo para descripción ausente y la nota de fotos no descargables; no se crearon registros para forzarlos. Tampoco se repitieron el `404` unificado ni la denegación `403`, que no forman parte de este ajuste. La apertura de avisos desde Oportunidades se valida en [F09](notifications.md).
+Los datos demo no incluyen descripciones nulas/vacías, saltos de línea ni fotos, por lo que no se pudieron verificar visualmente esos estados. La UI implementa el texto de reemplazo para descripción ausente y la nota de fotos no descargables; no se crearon registros para forzarlos. Tampoco se repitieron el `404` unificado ni la denegación `403`, que no forman parte de este ajuste. La apertura de avisos desde Inicio se valida en [F09](notifications.md).
 
 ## Enlaces
 

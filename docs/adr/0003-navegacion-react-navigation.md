@@ -4,7 +4,7 @@
 - **Fecha:** 2026-11-06
 - **Alcance:** navegación raíz, flujo de acceso y shell autenticado de la app móvil
 - **Feature que la inicia:** F01 — Acceso e identidad
-- **Actualizado:** 2026-11-16 — oportunidades del Prestador en la barra inferior MVP
+- **Actualizado:** 2026-11-20 — Inicio como superficie única por rol
 
 ## Contexto
 
@@ -30,8 +30,8 @@ El bootstrap se movió fuera de `src/app/` para que Expo CLI no lo detecte como 
 
 La sesión autenticada se organiza con una barra inferior persistente para las superficies principales:
 
-- **Cliente:** Inicio, Buscar, Solicitudes y Mi perfil.
-- **Prestador:** Inicio, Oportunidades, Profesional y Mi perfil.
+- **Cliente:** Inicio, Buscar y Mi perfil.
+- **Prestador:** Inicio, Profesional y Mi perfil.
 
 La raíz sigue siendo un stack nativo. `MainTabs` es una pantalla del stack y las subpantallas —formularios, detalles, edición, privacidad, creación de perfil y perfil público— se abren fuera de la barra para preservar jerarquía e historial. `Inicio` sustituye a la antigua pantalla mínima “Sesión iniciada” y no duplica los destinos ya presentes en la barra.
 
@@ -41,9 +41,13 @@ La barra usa `@react-navigation/bottom-tabs` con `react-native-safe-area-context
 
 `Cerrar sesión` se movió de Inicio a `Mi perfil` para agrupar información y acciones de cuenta. Permanece disponible aunque el perfil esté cargando o falle la API, y se presenta con un tratamiento neutro distinto de `Eliminar cuenta`.
 
+### Actualización 2026-11-20: Inicio como superficie única
+
+Inicio absorbe las solicitudes del Cliente y las oportunidades del Prestador. Se retiraron las pestañas `Solicitudes` y `Oportunidades` de la barra inferior para evitar dos accesos a la misma experiencia: Cliente conserva Inicio, Buscar y Mi perfil; Prestador conserva Inicio, Profesional y Mi perfil. Las rutas de detalle, creación y propuesta siguen en el stack raíz. La campana de avisos permanece en Inicio.
+
 ### Actualización 2026-11-16: Oportunidades para Prestador
 
-F06 añade la pestaña `Oportunidades` solo para `PRESTADOR`, entre Inicio y Profesional. El detalle de oportunidad se registra en el stack raíz únicamente para ese rol y vuelve a comprobar la sesión; el Cliente no ve la pestaña ni puede navegar directamente a esa pantalla. La campana de Oportunidades abre la misma bandeja unificada F09 que Inicio; no existe una pantalla de avisos propia de F06. La bandeja es una consulta al servidor, no un mecanismo de push.
+F06 añadió la pestaña `Oportunidades` solo para `PRESTADOR`, entre Inicio y Profesional; fue retirada el 2026-11-20 al integrar el tablero en Inicio. El detalle de oportunidad se registra en el stack raíz únicamente para ese rol y vuelve a comprobar la sesión; el Cliente no ve la pestaña ni puede navegar directamente a esa pantalla. La campana de Inicio abre la bandeja unificada F09; no existe una pantalla de avisos propia de F06. La bandeja es una consulta al servidor, no un mecanismo de push.
 
 ## Alternativas consideradas
 

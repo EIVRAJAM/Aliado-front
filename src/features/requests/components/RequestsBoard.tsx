@@ -8,23 +8,17 @@ import { RequestCard } from './RequestCard';
 import { RequestStateView } from './RequestStateView';
 
 interface RequestsBoardProps {
-  limit?: number;
   showPrivacyHint?: boolean;
   onOpenRequest: (requestId: string) => void;
   onCreate: () => void;
-  onOpenAll?: () => void;
 }
 
 export function RequestsBoard({
-  limit,
   showPrivacyHint = true,
   onOpenRequest,
   onCreate,
-  onOpenAll,
 }: RequestsBoardProps) {
   const { requests, catalogs, loading, error, reload } = useMyRequests();
-  const visibleRequests = limit === undefined ? requests : requests.slice(0, limit);
-  const hasMore = limit !== undefined && requests.length > limit;
   const showToolbarNewAction = loading || error !== null || requests.length > 0;
 
   const countLabel = loading
@@ -82,7 +76,7 @@ export function RequestsBoard({
         </View>
       ) : (
         <View style={styles.list}>
-          {visibleRequests.map((request) => (
+          {requests.map((request) => (
             <RequestCard
               key={request.id}
               request={request}
@@ -90,13 +84,6 @@ export function RequestsBoard({
               onPress={() => onOpenRequest(request.id)}
             />
           ))}
-          {hasMore && onOpenAll ? (
-            <PrimaryButton
-              label={`Ver todas (${requests.length})`}
-              variant="secondary"
-              onPress={onOpenAll}
-            />
-          ) : null}
         </View>
       )}
     </>

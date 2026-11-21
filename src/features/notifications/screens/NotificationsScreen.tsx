@@ -42,7 +42,7 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
               solicitudId: notification.solicitudId,
             });
           } else {
-            navigation.navigate('MainTabs', { screen: 'Requests' });
+            navigation.navigate('MainTabs', { screen: 'Home' });
           }
         }
         break;

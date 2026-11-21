@@ -6,29 +6,18 @@ import { Card } from '../../../shared/ui/Card';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useOpportunitiesBoard } from '../hooks/useOpportunitiesBoard';
-import type { OpportunityFilters } from '../types/opportunity';
 import { OpportunityCard } from './OpportunityCard';
 import { OpportunityFilterModal } from './OpportunityFilterModal';
 import { OpportunityStateView } from './OpportunityStateView';
 
 interface OpportunitiesBoardProps {
-  limit?: number;
-  showNotificationsAction?: boolean;
-  initialFilters?: OpportunityFilters;
   onOpenOpportunity: (solicitudId: string) => void;
-  onOpenNotifications?: () => void;
   onOpenProfessionalProfile: () => void;
-  onOpenAll?: (filters: OpportunityFilters) => void;
 }
 
 export function OpportunitiesBoard({
-  limit,
-  showNotificationsAction = true,
-  initialFilters,
   onOpenOpportunity,
-  onOpenNotifications,
   onOpenProfessionalProfile,
-  onOpenAll,
 }: OpportunitiesBoardProps) {
   const {
     categories,
@@ -42,13 +31,10 @@ export function OpportunitiesBoard({
     clearFilters,
     reload,
     reloadCategories,
-  } = useOpportunitiesBoard(initialFilters);
+  } = useOpportunitiesBoard();
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   const hasAppliedFilters = Boolean(filters.categoriaId || filters.urgencia);
-  const visibleOpportunities =
-    limit === undefined ? opportunities : opportunities.slice(0, limit);
-  const hasMore = limit !== undefined && opportunities.length > limit;
 
   const countLabel = loading
     ? 'Cargando oportunidades…'
@@ -87,16 +73,6 @@ export function OpportunitiesBoard({
           >
             <Ionicons name="refresh-outline" size={20} color={colors.primary} />
           </Pressable>
-          {showNotificationsAction && onOpenNotifications ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Notificaciones"
-              onPress={onOpenNotifications}
-              style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
-            >
-              <Ionicons name="notifications-outline" size={20} color={colors.primary} />
-            </Pressable>
-          ) : null}
         </View>
       </View>
 
@@ -144,20 +120,13 @@ export function OpportunitiesBoard({
         </Card>
       ) : (
         <View style={styles.list}>
-          {visibleOpportunities.map((opportunity) => (
+          {opportunities.map((opportunity) => (
             <OpportunityCard
               key={opportunity.solicitudId}
               opportunity={opportunity}
               onPress={() => onOpenOpportunity(opportunity.solicitudId)}
             />
           ))}
-          {hasMore && onOpenAll ? (
-            <PrimaryButton
-              label={`Ver todas (${opportunities.length})`}
-              variant="secondary"
-              onPress={() => onOpenAll(filters)}
-            />
-          ) : null}
         </View>
       )}
 
