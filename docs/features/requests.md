@@ -9,6 +9,7 @@ Cubre SPEC-04 para el rol **Cliente**:
 - Crear una solicitud completa y publicarla.
 - Guardar un borrador parcial, retomarlo y publicarlo después.
 - Listar las solicitudes propias con estado, categoría, zona, urgencia y fecha.
+- Mostrar un resumen de las solicitudes propias en **Inicio** para Cliente, con la misma lista, estados y acción de creación.
 - Consultar el detalle propio.
 - Editar una solicitud abierta (`BORRADOR` o `PUBLICADA`).
 - Cancelar una solicitud abierta con confirmación explícita.
@@ -78,7 +79,7 @@ src/features/requests/
 └── index.ts
 ```
 
-La barra inferior incluye `Solicitudes` solo para `CLIENTE`. `RequestForm` y `RequestDetail` se abren fuera de la barra para conservar jerarquía e historial. La lista vuelve a comprobar el rol y el backend exige `CLIENTE` en todas las rutas; la app no sustituye esa autorización.
+La barra inferior incluye `Solicitudes` solo para `CLIENTE`. `RequestForm` y `RequestDetail` se abren fuera de la barra para conservar jerarquía e historial. `RequestsBoard` se comparte entre Inicio y la pestaña Solicitudes; Inicio muestra hasta tres solicitudes, la acción **Nueva** y **Ver todas** cuando hay más, mientras la pestaña conserva la lista completa. La lista vuelve a comprobar el rol y el backend exige `CLIENTE` en todas las rutas; la app no sustituye esa autorización.
 
 ## Flujos y estados
 

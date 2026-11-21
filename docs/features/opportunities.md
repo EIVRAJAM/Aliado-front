@@ -7,6 +7,7 @@
 Cubre SPEC-06 para el rol **Prestador**:
 
 - pestaña **Oportunidades** en la barra inferior, con Inicio, Oportunidades, Profesional y Mi perfil;
+- resumen de oportunidades en **Inicio** para Prestador, con los mismos filtros, tarjetas, estados y acceso al detalle;
 - tablero de solicitudes compatibles calculado por el servidor;
 - filtros opcionales por categoría y urgencia enviados a la API desde un botón compacto y un modal;
 - detalle de una oportunidad con encabezado compacto, descripción completa, referencia de solicitud, fecha y cantidad de fotos como metadatos secundarios;
@@ -74,7 +75,8 @@ src/features/opportunities/
 └── utils/            # formato y mensajes
 ```
 
-- `OpportunitiesScreen`: carga el tablero y el catálogo, muestra un botón de filtros con indicador de estado activo, y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal. El conteo aparece una sola vez junto a las acciones; el subtítulo es la única explicación general de compatibilidad y se retiró la tarjeta redundante de alcance.
+- `OpportunitiesBoard`: contiene el tablero compartido por `Inicio` y `OpportunitiesScreen`; carga el catálogo, muestra un botón de filtros con indicador de estado activo y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal. El conteo aparece una sola vez junto a las acciones; el subtítulo es la única explicación general de compatibilidad y se retiró la tarjeta redundante de alcance. En Inicio limita la presentación a tres oportunidades, oculta la campana duplicada y ofrece **Ver todas** cuando hay más resultados. Los filtros aplicados se transfieren a la pestaña al usar **Ver todas**.
+- `OpportunitiesScreen`: conserva la experiencia completa con el tablero sin límite y la campana de avisos.
 - `OpportunityFilterModal`: usa el patrón modal de la app, respeta safe areas, cierra con botón, overlay y Atrás, y mantiene áreas táctiles de al menos 44 puntos.
 - `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` al recibir foco y presenta un único bloque con categoría, urgencia, zona aproximada, descripción completa, fecha, referencia corta de `solicitudId` y cantidad de fotos. No repite campos y usa un aviso compacto para privacidad y límites del contrato.
 - La campana de Oportunidades abre la misma pantalla **Notificaciones** de F09 que la campana de Inicio. No hay pantalla, hook, tarjeta ni operación de gateway de avisos dentro de F06; los `NUEVA_OPORTUNIDAD` se muestran y navegan desde la bandeja unificada.
