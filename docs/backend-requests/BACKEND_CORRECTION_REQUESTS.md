@@ -6,11 +6,11 @@ Este documento consolida los defectos del backend y las brechas de contrato que 
 
 | ID | Feature | Tipo | Solicitud | Estado |
 |---|---|---|---|---|
-| BE-01 | F05 | Defecto de persistencia | Corregir el mapeo de `datos_generales` a PostgreSQL `jsonb` al crear el perfil profesional. | Bloqueante, pendiente de comunicar |
+| BE-01 | F05 | Defecto de persistencia | Corregir el mapeo de `datos_generales` a PostgreSQL `jsonb` al crear el perfil profesional. | Corregido en rama backend; pendiente integración/despliegue |
 | BE-02 | F04 | Defecto de persistencia e idempotencia | Corregir el guardado y la reproducción de respuestas en `idempotency_keys.respuesta`. | Bloqueante para reintentos seguros, pendiente de comunicar |
 | BE-03 | F04 | Respuesta incompleta | Exponer identificador estable de cada foto en consultas de solicitud. | Pendiente de contrato, pendiente de comunicar |
-| BE-04 | F05 | Endpoint de lectura faltante | Añadir lectura autenticada del perfil profesional propio. | Bloqueante para hidratar y editar, pendiente de comunicar |
-| BE-05 | F05 | Definición de contrato | Acordar y documentar campos, tipos y validaciones de `datosGenerales`. | Pendiente de definición conjunta con producto |
+| BE-04 | F05 | Endpoint de lectura faltante | Añadir lectura autenticada del perfil profesional propio. | Implementado en rama backend; pendiente integración/despliegue |
+| BE-05 | F05 | Definición de contrato | Acordar y documentar campos, tipos y validaciones de `datosGenerales`. | Contrato mínimo implementado en rama backend; pendiente integración/despliegue |
 | BE-06 | F04/F05 | Documentación API | Alinear OpenAPI con requests, respuestas y códigos HTTP observados en el backend. | Pendiente de comunicar |
 | BE-07 | F08 | Endpoint de lectura faltante | Añadir un listado autenticado y paginable de los servicios propios del Cliente o Prestador. | Pendiente de comunicar |
 | BE-08 | F10 | Endpoint de lectura faltante | Exponer la calificación propia de un servicio o incluirla en el detalle para poder detectar duplicados y recuperar el `calificacionId` de una reseña pendiente. | Pendiente de comunicar |
@@ -49,6 +49,8 @@ El código revisado declara `PerfilProfesionalEntity.datosGenerales` como `Strin
 **Comportamiento frontend corregido:** tras el `500` y la consulta de vista previa `404`, la app muestra “Perfil no creado” y explica que el servidor falló al crear el perfil, sin mostrar detalles SQL. Conserva las categorías y zonas, no repite el POST automáticamente y solo ofrece un reintento manual explícito. Si la consulta de reconciliación no puede completarse, muestra “Resultado pendiente” sin sugerir un nuevo envío.
 
 **Fuentes:** `aliado-prb/src/main/java/.../perfiles/infrastructure/persistence/entity/PerfilProfesionalEntity.java`, mapper de persistencia, `V3` y registro del intento local del 2026-11-13. El reporte de diagnóstico encontró cero filas de perfil después del fallo.
+
+**Actualización 2026-11-24:** la rama `feature/mvp-backend-corrections` incluye la persistencia JSONB corregida y pruebas de integración; la app podrá crear el perfil al integrar/desplegar esa rama.
 
 ### BE-02 — Persistencia y replay de claves de idempotencia
 
@@ -100,15 +102,25 @@ El código revisado declara `PerfilProfesionalEntity.datosGenerales` como `Strin
 
 Esto es una ampliación necesaria para completar el cliente, no el defecto que causó el `500` del alta.
 
+**Actualización 2026-11-24:** `GET /api/v1/perfiles/mio` está implementado en la rama `feature/mvp-backend-corrections`; el frontend lo usa para hidratar la descripción y el estado del perfil. Falta integrar y desplegar la rama.
+
 ### BE-05 — Esquema de `datosGenerales`
 
-**Evidencia observada:** requests y respuestas exponen `datosGenerales` como `Map<String,Object>` sin catálogo de claves, tipos, restricciones ni política de cambios. El backend filtra una lista de claves para la vista pública, pero esa lista no define por sí sola qué campos debe solicitar el formulario ni sus validaciones.
+**Estado:** contrato mínimo definido e implementado en `ALIADO-backend` rama `feature/mvp-backend-corrections` (commit `d6e27c4`). No está integrado en `develop` ni desplegado.
 
-**Solicitar a producto y backend:** acordar y documentar los campos editables, tipo, obligatoriedad, validaciones, compatibilidad de versiones y cuáles son públicos. Mantener explícitamente excluidos teléfono, dirección, correo y documento de la vista pública, conforme al filtro existente.
+**Campo del MVP:**
 
-**Motivo:** el móvil no debe inventar campos ni validar con reglas no aprobadas. En el flujo inicial actual se omite este mapa; la edición de datos generales seguirá pendiente hasta contar con definición.
+| Clave | Tipo | Obligatorio | Validación | Público |
+|---|---|---|---|---|
+| `descripcion` | string | No | Recortado; vacío/null elimina; máximo 1000 caracteres | Sí |
 
-**Criterios de aceptación propuestos:** definición aprobada y reflejada en SPEC/OpenAPI con ejemplos de request/response y una política de evolución compatible.
+**Justificación:** es una presentación libre del Prestador y no duplica categorías, zonas, experiencia, portafolio, disponibilidad ni agenda. No se incluye `anosExperiencia`; la experiencia conserva su operación propia.
+
+**Comportamiento:** en escrituras nuevas se ignoran claves desconocidas. En edición, las claves heredadas se conservan pero no forman parte del contrato ni se publican. La vista pública solo expone `descripcion`; teléfono, correo, dirección exacta y documentos quedan excluidos.
+
+**Frontend:** la creación y edición de la descripción están implementadas en la rama `feature/f05-be05-datos-generales`, pendientes de integrar junto con la rama backend. No se añaden otros campos ni se modifica SPEC-05.
+
+**Contrato real:** `DatosGeneralesRequest/Response` en OpenAPI, con `descripcion` opcional y `maxLength: 1000`. El request/response es tipado; el antiguo `Map<String,Object>` ya no forma parte del contrato móvil.
 
 ### BE-06 — Sincronización OpenAPI con el backend real
 
@@ -450,7 +462,7 @@ Con esa ruta absoluta, la descarga de la exportación existente respondió `200`
 
 - D-03 (zona horaria y reglas de solapamiento) requiere decisión funcional; no se propone resolverla por una corrección técnica unilateral.
 - D-02, D-06 y D-07 requieren decisiones de producto/operación sobre catálogo, almacenamiento y evidencias.
-- Las definiciones de campos de `datosGenerales` requieren acuerdo de producto, además de su documentación técnica.
+- BE-05 quedó concretado como `descripcion` opcional de hasta 1000 caracteres; no hay otros campos de datos generales en el MVP.
 
 ## Seguimiento
 

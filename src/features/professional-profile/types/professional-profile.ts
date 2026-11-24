@@ -14,14 +14,23 @@ export interface ProfessionalCatalogs {
   zones: ProfessionalZone[];
 }
 
+export const MAX_PROFESSIONAL_DESCRIPTION = 1000;
+
 export interface CreateProfessionalProfileInput {
   categoriaIds: string[];
   zonaIds: string[];
+  descripcion?: string | null;
 }
 
 export interface CreatedProfessionalProfile {
   id: string;
   prestadorId: string;
+}
+
+export interface OwnProfessionalProfile {
+  id: string;
+  prestadorId: string;
+  descripcion: string | null;
 }
 
 export interface AvailabilityBlock {

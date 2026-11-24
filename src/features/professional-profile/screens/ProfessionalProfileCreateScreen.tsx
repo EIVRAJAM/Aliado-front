@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import type { RootStackParamList } from '../../../navigation/types';
 import { Card } from '../../../shared/ui/Card';
+import { FormField } from '../../../shared/ui/FormField';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
@@ -15,6 +16,7 @@ import { ProfileFormSection } from '../components/ProfileFormSection';
 import { useProfessionalCatalogs } from '../hooks/useProfessionalCatalogs';
 import { professionalProfileGateway } from '../services/professional-profile-gateway-instance';
 import {
+  MAX_PROFESSIONAL_DESCRIPTION,
   ProfessionalProfileError,
   isProfileAlreadyExists,
   isProfileMissing,
@@ -30,6 +32,7 @@ type ProfessionalProfileCreateScreenProps = NativeStackScreenProps<
 interface FieldErrors {
   categories?: string;
   zones?: string;
+  description?: string;
 }
 
 type ReconciliationResult = 'found' | 'missing' | 'unknown';
@@ -47,6 +50,7 @@ export function ProfessionalProfileCreateScreen({
   const { catalogs, loading, error, reload } = useProfessionalCatalogs();
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [selectedZoneIds, setSelectedZoneIds] = useState<string[]>([]);
+  const [descripcion, setDescripcion] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -88,7 +92,7 @@ export function ProfessionalProfileCreateScreen({
       return 'unknown';
     }
     try {
-      await professionalProfileGateway.getPreview(session.token);
+      await professionalProfileGateway.getOwnProfile(session.token);
       return 'found';
     } catch (reconcileError) {
       if (isProfileMissing(reconcileError)) {
@@ -144,6 +148,7 @@ export function ProfessionalProfileCreateScreen({
       await professionalProfileGateway.createProfile(session.token, {
         categoriaIds: selectedCategoryIds,
         zonaIds: selectedZoneIds,
+        descripcion: descripcion.trim() || null,
       });
       Alert.alert(
         'Perfil profesional creado',
@@ -203,9 +208,12 @@ export function ProfessionalProfileCreateScreen({
     if (selectedZoneIds.length === 0) {
       nextErrors.zones = 'Selecciona al menos una zona.';
     }
+    if (descripcion.trim().length > MAX_PROFESSIONAL_DESCRIPTION) {
+      nextErrors.description = `La descripción admite máximo ${MAX_PROFESSIONAL_DESCRIPTION} caracteres.`;
+    }
     setFieldErrors(nextErrors);
     setFormError(null);
-    if (nextErrors.categories || nextErrors.zones) {
+    if (nextErrors.categories || nextErrors.zones || nextErrors.description) {
       return;
     }
 
@@ -254,7 +262,7 @@ export function ProfessionalProfileCreateScreen({
         <>
           <InlineMessage
             variant="info"
-            message="El perfil se crea con al menos una categoría y una zona. Los datos generales y la experiencia se omiten en este paso."
+            message="El perfil se crea con al menos una categoría y una zona. La descripción profesional es opcional; la experiencia se omite en este paso."
           />
 
           <ProfileFormSection
@@ -284,6 +292,25 @@ export function ProfessionalProfileCreateScreen({
               error={fieldErrors.zones}
               disabled={inputsDisabled}
               emptyMessage="No hay zonas activas disponibles."
+            />
+          </ProfileFormSection>
+
+          <ProfileFormSection
+            icon="document-text-outline"
+            title="Descripción profesional"
+            description="Opcional. Una presentación breve que verán los clientes en tu perfil público."
+          >
+            <FormField
+              label="Descripción"
+              value={descripcion}
+              onChangeText={setDescripcion}
+              multiline
+              maxLength={MAX_PROFESSIONAL_DESCRIPTION}
+              placeholder="Ej.: Plomero con experiencia en reparaciones domiciliarias."
+              hint={`${descripcion.length}/${MAX_PROFESSIONAL_DESCRIPTION} caracteres`}
+              error={fieldErrors.description}
+              editable={!inputsDisabled}
+              style={styles.descriptionInput}
             />
           </ProfileFormSection>
 
@@ -407,11 +434,11 @@ export function ProfessionalProfileCreateScreen({
               <Text style={styles.limitsTitle}>Alcance de este paso</Text>
             </View>
             <Text style={styles.limitItem}>
-              • La creación inicial solo envía categorías y zonas confirmadas por el catálogo.
+              • La creación envía categorías, zonas y una descripción profesional opcional.
             </Text>
             <Text style={styles.limitItem}>
-              • La experiencia, el portafolio, la edición completa y la disponibilidad se completarán
-              cuando el contrato de lectura del perfil esté disponible.
+              • La experiencia, el portafolio y la disponibilidad se gestionan en apartados propios
+              que aún no están disponibles en la app.
             </Text>
             <Text style={styles.limitItem}>
               • La agenda se consulta por separado y sus mutaciones siguen pendientes de la regla de
@@ -425,6 +452,10 @@ export function ProfessionalProfileCreateScreen({
 }
 
 const styles = StyleSheet.create({
+  descriptionInput: {
+    minHeight: 110,
+    textAlignVertical: 'top',
+  },
   stateCard: {
     flexDirection: 'row',
     alignItems: 'center',

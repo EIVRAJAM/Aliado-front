@@ -168,9 +168,9 @@ export function PublicPreviewCard({
       <View style={styles.note}>
         <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
         <Text style={styles.noteText}>
-          La vista pública no incluye el listado de experiencia, el portafolio ni los compromisos
-          de agenda. Los campos de datos generales se muestran con las claves de la lista pública
-          confirmada por el backend. La verificación básica no es una certificación legal.
+          La vista pública solo incluye la descripción profesional. Categorías, zonas y
+          disponibilidad se muestran aparte; experiencia, portafolio y agenda no se incluyen. La
+          verificación básica no es una certificación legal.
         </Text>
       </View>
     </Card>

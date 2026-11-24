@@ -5,6 +5,7 @@ import {
   type AvailabilityBlock,
   type CreateProfessionalProfileInput,
   type CreatedProfessionalProfile,
+  type OwnProfessionalProfile,
   type ProfessionalCatalogs,
   type ProfessionalPreview,
   type PublicReview,
@@ -189,6 +190,21 @@ function parseCatalogs(categories: unknown, zones: unknown): ProfessionalCatalog
   };
 }
 
+function parseOwnProfile(value: unknown): OwnProfessionalProfile {
+  if (!isRecord(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  const datos = isRecord(value.datosGenerales) ? value.datosGenerales : {};
+  return {
+    id: requiredString(value.id),
+    prestadorId: requiredString(value.prestadorId),
+    descripcion: typeof datos.descripcion === 'string' ? datos.descripcion : null,
+  };
+}
+
 function parseCreatedProfile(value: unknown): CreatedProfessionalProfile {
   if (!isRecord(value)) {
     throw new ProfessionalProfileError(
@@ -313,6 +329,18 @@ export class HttpProfessionalProfileGateway implements ProfessionalProfileGatewa
     }
   }
 
+  async getOwnProfile(token: string): Promise<OwnProfessionalProfile> {
+    try {
+      const response = await requestJson<unknown>(this.requireBaseUrl(), '/api/v1/perfiles/mio', {
+        method: 'GET',
+        token,
+      });
+      return parseOwnProfile(response);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible cargar tu perfil profesional.');
+    }
+  }
+
   async getPreview(token: string): Promise<ProfessionalPreview> {
     try {
       const response = await requestJson<unknown>(
@@ -337,11 +365,32 @@ export class HttpProfessionalProfileGateway implements ProfessionalProfileGatewa
         body: {
           categoriaIds: input.categoriaIds,
           zonaIds: input.zonaIds,
+          datosGenerales: input.descripcion?.trim()
+            ? { descripcion: input.descripcion.trim() }
+            : {},
         },
       });
       return parseCreatedProfile(response);
     } catch (error) {
       throw mapApiError(error, 'No fue posible crear el perfil profesional.');
+    }
+  }
+
+  async updateDescription(
+    token: string,
+    descripcion: string | null
+  ): Promise<OwnProfessionalProfile> {
+    try {
+      const response = await requestJson<unknown>(this.requireBaseUrl(), '/api/v1/perfiles/mio', {
+        method: 'PUT',
+        token,
+        body: {
+          datosGenerales: { descripcion: descripcion?.trim() || null },
+        },
+      });
+      return parseOwnProfile(response);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible actualizar la descripción profesional.');
     }
   }
 

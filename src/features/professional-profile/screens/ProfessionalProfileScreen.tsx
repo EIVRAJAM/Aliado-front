@@ -15,6 +15,7 @@ import { useAuthSession } from '../../auth';
 import { ReportReviewModal } from '../../trust/components/ReportReviewModal';
 import { VerificationCard } from '../../trust/components/VerificationCard';
 import { AgendaSection } from '../components/AgendaSection';
+import { ProfessionalDescriptionCard } from '../components/ProfessionalDescriptionCard';
 import { PublicPreviewCard } from '../components/PublicPreviewCard';
 import { useProfessionalProfileOverview } from '../hooks/useProfessionalProfileOverview';
 
@@ -26,6 +27,10 @@ type ProfessionalProfileScreenProps = CompositeScreenProps<
 export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScreenProps) {
   const { session } = useAuthSession();
   const {
+    profile,
+    profileLoading,
+    profileError,
+    profileMissing,
     preview,
     agenda,
     previewLoading,
@@ -34,6 +39,7 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
     agendaError,
     previewMissing,
     agendaMissing,
+    saveDescription,
     reload,
   } = useProfessionalProfileOverview();
   const [reviewToReport, setReviewToReport] = useState<{ id: string; texto: string } | null>(null);
@@ -56,7 +62,7 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
     );
   }
 
-  const loading = previewLoading && agendaLoading;
+  const loading = profileLoading && previewLoading && agendaLoading;
 
   return (
     <ScreenLayout
@@ -70,14 +76,18 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
         </View>
       ) : (
         <>
-          {previewLoading ? (
-            <Card style={styles.loadingCard}>
-              <ActivityIndicator color={colors.primary} />
-              <Text style={styles.loadingText}>Cargando vista previa…</Text>
-            </Card>
-          ) : previewError ? (
-            <InlineMessage message={previewError} />
-          ) : previewMissing || !preview ? (
+          {profileError ? (
+            <>
+              <InlineMessage message={profileError} />
+              <PrimaryButton
+                label="Reintentar"
+                variant="secondary"
+                onPress={() => {
+                  void reload();
+                }}
+              />
+            </>
+          ) : profileMissing ? (
             <Card style={styles.missingCard}>
               <View style={styles.missingHeader}>
                 <View style={styles.missingIcon}>
@@ -96,7 +106,28 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
               />
             </Card>
           ) : (
-            <PublicPreviewCard preview={preview} onReportReview={setReviewToReport} />
+            <>
+              <ProfessionalDescriptionCard
+                description={profile?.descripcion ?? null}
+                onSave={saveDescription}
+              />
+
+              {previewLoading ? (
+                <Card style={styles.loadingCard}>
+                  <ActivityIndicator color={colors.primary} />
+                  <Text style={styles.loadingText}>Cargando vista previa…</Text>
+                </Card>
+              ) : previewError ? (
+                <InlineMessage message={previewError} />
+              ) : previewMissing || !preview ? (
+                <InlineMessage
+                  variant="info"
+                  message="La vista previa pública no está disponible en este momento. Puedes seguir editando tu descripción profesional."
+                />
+              ) : (
+                <PublicPreviewCard preview={preview} onReportReview={setReviewToReport} />
+              )}
+            </>
           )}
 
           <VerificationCard />
@@ -116,18 +147,16 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
               <Text style={styles.limitsTitle}>Alcance actual</Text>
             </View>
             <Text style={styles.limitItem}>
-              • La vista pública y la agenda están disponibles en modo consulta.
+              • Puedes consultar y editar la descripción profesional; la vista pública la muestra
+              cuando tiene contenido.
             </Text>
             <Text style={styles.limitItem}>
-              • La edición del perfil, experiencia, portafolio y disponibilidad aún no está
-              disponible en la app.
+              • Experiencia, portafolio y disponibilidad aún no están disponibles para edición en la
+              app.
             </Text>
             <Text style={styles.limitItem}>
-              • La evidencia del portafolio no se puede mostrar todavía.
-            </Text>
-            <Text style={styles.limitItem}>
-              • La creación o edición de compromisos de agenda espera la definición de la regla de
-              zona horaria.
+              • La agenda permanece en modo consulta; sus mutaciones esperan la regla de zona
+              horaria.
             </Text>
           </Card>
 
