@@ -1,7 +1,5 @@
-export { AccountActivityScreen } from './screens/AccountActivityScreen';
+export { ActivityScreen } from './screens/ActivityScreen';
 export { NotificationPreferencesScreen } from './screens/NotificationPreferencesScreen';
-export { ProviderIndicatorsScreen } from './screens/ProviderIndicatorsScreen';
-export { RecentActivityScreen } from './screens/RecentActivityScreen';
 export { WorkHistoryScreen } from './screens/WorkHistoryScreen';
 export type {
   HistoryExport,

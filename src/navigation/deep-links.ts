@@ -15,10 +15,12 @@ export const linking: LinkingOptions<RootStackParamList> = {
         screens: {
           Home: '',
           Discovery: 'buscar',
-          ProfessionalProfile: 'perfil-profesional',
+          Agenda: 'agenda',
+          Activity: 'actividad',
           Profile: 'perfil',
         },
       },
+      ProfessionalProfile: 'perfil-profesional',
       ProviderProfile: 'prestadores/:providerId',
     },
   },

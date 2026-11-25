@@ -25,7 +25,7 @@ export function AgendaSection({ agenda, loading, error, missing }: AgendaSection
           <Ionicons name="calendar-outline" size={18} color={colors.primary} />
         </View>
         <View style={styles.headerText}>
-          <Text style={styles.title}>Agenda</Text>
+          <Text style={styles.title}>Compromisos</Text>
           <Text style={styles.subtitle}>Tus compromisos registrados.</Text>
         </View>
         {agenda.length > 0 ? <Text style={styles.count}>{agenda.length}</Text> : null}

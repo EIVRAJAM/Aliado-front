@@ -13,7 +13,7 @@ Cubre SPEC-02 para el usuario autenticado:
 - Vista previa pública que nunca expone la dirección exacta.
 - Solicitud y confirmación de eliminación de cuenta, sin prometer borrado definitivo.
 
-El perfil profesional (SPEC-05) y las superficies de Administrador quedan fuera de esta feature.
+El perfil profesional (SPEC-05) y las superficies de Administrador quedan fuera de esta feature. Para `PRESTADOR`, Mi perfil incluye una entrada a la pantalla de gestión `ProfessionalProfile`; su contenido y permisos pertenecen a F05.
 
 ## Fuente técnica del contrato
 
@@ -64,11 +64,12 @@ src/features/profile/
 └── index.ts
 ```
 
-`Mi perfil` es una pestaña de la barra inferior autenticada. Las pantallas de edición, ubicación, privacidad, vista pública y eliminación se abren fuera de la barra para conservar el historial.
+`Mi perfil` es una pestaña de la barra inferior autenticada. Las pantallas de edición, ubicación, privacidad, vista pública, eliminación y, para Prestador, Perfil profesional se abren fuera de la barra para conservar el historial.
 
 ## Cuenta y cierre de sesión
 
 - `Mi perfil` concentra la información de cuenta y el aviso de que la sesión solo vive durante la ejecución actual.
+- `Preferencias de notificación` se abre desde Mi perfil para ambos roles como ajuste de cuenta.
 - `Cerrar sesión` aparece al final, también cuando el perfil está cargando o falla la API, porque la acción no depende de que existan datos de perfil.
 - La acción usa la misma limpieza de sesión de F01 y muestra error si el servidor no responde al logout.
 - Se presenta como acción de cuenta neutra, no como acción destructiva; `Eliminar cuenta` mantiene su tratamiento de peligro y su confirmación explícita.

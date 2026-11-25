@@ -50,7 +50,7 @@ No se duplican llamadas a confianza/reseñas en las vistas que ya reciben esos d
 
 ### Verificación del Prestador
 
-- La tarjeta de verificación se muestra en la pantalla **Profesional** para `PRESTADOR`.
+- La tarjeta de verificación se muestra en la pantalla **Perfil profesional** para `PRESTADOR`, accesible desde **Mi perfil**.
 - Consulta `GET /verificaciones/mia` al enfocar y representa:
   - sin solicitud (`404 SIN_VERIFICACION`);
   - `PENDIENTE`, sin permitir otra solicitud mientras siga en revisión;
@@ -117,7 +117,7 @@ Integraciones:
 - `ServiceDetailScreen`: bloque de calificación/reseña obligatorias para Cliente con servicio finalizado; conserva el `calificacionId` en memoria y permite reintentar solo la reseña.
 - `ProfileOverviewScreen`: entrada **Mis calificaciones y reseñas** solo para Cliente.
 - `MyRatingsScreen`: historial privado de solo lectura conectado a la ruta propuesta BE-11.
-- `ProfessionalProfileScreen`: tarjeta de verificación y reporte de reseñas de la vista previa.
+- `ProfessionalProfileScreen`: pantalla de gestión abierta desde Mi perfil; tarjeta de verificación y reporte de reseñas de la vista previa.
 - `ProviderProfileScreen` + `ProviderPublicProfileView`: reporte de reseñas públicas.
 - `PublicPreviewCard`: reporte de reseñas visibles por el Prestador.
 

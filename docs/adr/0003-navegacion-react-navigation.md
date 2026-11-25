@@ -30,8 +30,8 @@ El bootstrap se movió fuera de `src/app/` para que Expo CLI no lo detecte como 
 
 La sesión autenticada se organiza con una barra inferior persistente para las superficies principales:
 
-- **Cliente:** Inicio, Buscar y Mi perfil.
-- **Prestador:** Inicio, Profesional y Mi perfil.
+- **Cliente:** Inicio, Buscar, Actividad y Mi perfil.
+- **Prestador:** Inicio, Agenda, Actividad y Mi perfil.
 
 La raíz sigue siendo un stack nativo. `MainTabs` es una pantalla del stack y las subpantallas —formularios, detalles, edición, privacidad, creación de perfil y perfil público— se abren fuera de la barra para preservar jerarquía e historial. `Inicio` sustituye a la antigua pantalla mínima “Sesión iniciada” y no duplica los destinos ya presentes en la barra.
 
@@ -41,13 +41,21 @@ La barra usa `@react-navigation/bottom-tabs` con `react-native-safe-area-context
 
 `Cerrar sesión` se movió de Inicio a `Mi perfil` para agrupar información y acciones de cuenta. Permanece disponible aunque el perfil esté cargando o falle la API, y se presenta con un tratamiento neutro distinto de `Eliminar cuenta`.
 
+### Actualización 2026-11-24: Actividad como pestaña F14
+
+La actividad de F14 pasa a ser una pestaña inferior para ambos roles. Reúne actividad reciente e historial, y en Prestador añade indicadores agrupados. Las preferencias de notificación se mueven a Mi perfil como ajuste de cuenta. La campana de Inicio sigue abriendo la bandeja F09 y no se mezcla con preferencias.
+
+### Actualización 2026-11-24: Perfil profesional y Agenda separados
+
+La gestión del perfil profesional, incluida la descripción y la verificación documental, se abre desde **Mi perfil** como `ProfessionalProfile` en el stack raíz. La pestaña inferior del Prestador pasa a llamarse **Agenda** y solo consulta compromisos; no contiene descripción ni verificación. La creación sigue disponible desde `ProfessionalProfile` cuando no existe perfil.
+
 ### Actualización 2026-11-20: Inicio como superficie única
 
-Inicio absorbe las solicitudes del Cliente y las oportunidades del Prestador. Se retiraron las pestañas `Solicitudes` y `Oportunidades` de la barra inferior para evitar dos accesos a la misma experiencia: Cliente conserva Inicio, Buscar y Mi perfil; Prestador conserva Inicio, Profesional y Mi perfil. Las rutas de detalle, creación y propuesta siguen en el stack raíz. La campana de avisos permanece en Inicio.
+Inicio absorbe las solicitudes del Cliente y las oportunidades del Prestador. Se retiraron las pestañas `Solicitudes` y `Oportunidades` de la barra inferior para evitar dos accesos a la misma experiencia: Cliente conserva Inicio, Buscar, Actividad y Mi perfil; Prestador conserva Inicio, Agenda, Actividad y Mi perfil. Las rutas de detalle, creación y propuesta siguen en el stack raíz. La campana de avisos permanece en Inicio.
 
 ### Actualización 2026-11-16: Oportunidades para Prestador
 
-F06 añadió la pestaña `Oportunidades` solo para `PRESTADOR`, entre Inicio y Profesional; fue retirada el 2026-11-20 al integrar el tablero en Inicio. El detalle de oportunidad se registra en el stack raíz únicamente para ese rol y vuelve a comprobar la sesión; el Cliente no ve la pestaña ni puede navegar directamente a esa pantalla. La campana de Inicio abre la bandeja unificada F09; no existe una pantalla de avisos propia de F06. La bandeja es una consulta al servidor, no un mecanismo de push.
+F06 añadió la pestaña `Oportunidades` solo para `PRESTADOR`, entre Inicio y Agenda; fue retirada el 2026-11-20 al integrar el tablero en Inicio. El detalle de oportunidad se registra en el stack raíz únicamente para ese rol y vuelve a comprobar la sesión; el Cliente no ve la pestaña ni puede navegar directamente a esa pantalla. La campana de Inicio abre la bandeja unificada F09; no existe una pantalla de avisos propia de F06. La bandeja es una consulta al servidor, no un mecanismo de push.
 
 ## Alternativas consideradas
 

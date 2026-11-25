@@ -5,7 +5,8 @@ import type { ProposalOpportunityContext } from '../features/proposals/types/pro
 export type MainTabParamList = {
   Home: undefined;
   Discovery: undefined;
-  ProfessionalProfile: undefined;
+  Agenda: undefined;
+  Activity: undefined;
   Profile: undefined;
 };
 
@@ -21,13 +22,11 @@ export type RootStackParamList = {
   ProfilePrivacy: undefined;
   ProfilePublicPreview: { userId: string };
   ProfileDelete: undefined;
+  ProfessionalProfile: undefined;
   ProfessionalProfileCreate: undefined;
   Formalization: undefined;
-  AccountActivity: undefined;
   NotificationPreferences: undefined;
   WorkHistory: undefined;
-  RecentActivity: undefined;
-  ProviderIndicators: undefined;
   OpportunityDetail: { solicitudId: string };
   ProposalFlow: { solicitudId: string; opportunity?: ProposalOpportunityContext };
   ReceivedProposals: { solicitudId: string };

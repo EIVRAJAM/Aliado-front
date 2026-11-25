@@ -68,6 +68,14 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
             tone="teal"
             onPress={() => navigation.navigate('ProfileLocation')}
           />
+          {session?.role === 'PRESTADOR' ? (
+            <ProfileActionCard
+              icon="▣"
+              title="Perfil profesional"
+              subtitle="Descripción, vista pública y verificación."
+              onPress={() => navigation.navigate('ProfessionalProfile')}
+            />
+          ) : null}
           <ProfileActionCard
             icon="◉"
             title="Privacidad"
@@ -85,10 +93,9 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
           ) : null}
           <ProfileActionCard
             icon="◷"
-            title="Actividad y avisos"
-            subtitle="Historial, notificaciones e indicadores."
-            tone="green"
-            onPress={() => navigation.navigate('AccountActivity')}
+            title="Preferencias de notificación"
+            subtitle="Elige qué avisos recibir y por qué canal."
+            onPress={() => navigation.navigate('NotificationPreferences')}
           />
           {session?.role === 'PRESTADOR' ? (
             <ProfileActionCard

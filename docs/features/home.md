@@ -8,8 +8,8 @@
 - **Cliente:** Inicio muestra todas sus solicitudes reales y una acción visible para crear una. Se reutilizan la lista, los estados y el gateway `GET /api/v1/solicitudes/mias` de F04.
 - Si el Cliente no tiene solicitudes, el estado vacío ofrece una sola acción principal: **Publicar una solicitud**. La barra oculta **Nueva** en ese estado para no duplicar la acción; con solicitudes existentes, **Nueva** se conserva. Durante carga o error se mantiene el acceso a crear.
 - La barra inferior queda sin módulos duplicados:
-  - **Cliente:** Inicio, Buscar y Mi perfil.
-  - **Prestador:** Inicio, Profesional y Mi perfil.
+  - **Cliente:** Inicio, Buscar, Actividad y Mi perfil.
+  - **Prestador:** Inicio, Agenda, Actividad y Mi perfil.
 - No se añaden endpoints, datos de demostración, métricas, avisos ni tarjetas de cuenta. Se retiraron de Inicio la tarjeta de cuenta y la guía redundante.
 - La campana de notificaciones permanece en la cabecera de Inicio y no se duplica dentro del tablero de oportunidades.
 - Las antiguas pantallas de lista completa `RequestListScreen` y `OpportunitiesScreen` se retiraron; Inicio contiene la lista completa. Los detalles, el formulario de solicitud y la propuesta siguen en el stack raíz.

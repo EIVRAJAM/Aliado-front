@@ -71,7 +71,7 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
 
 ## Implementación frontend actual
 
-- Entrada **“Profesional”** en la barra inferior para el rol `PRESTADOR`; las subpantallas de creación se abren fuera de la barra.
+- La barra inferior del `PRESTADOR` contiene **Inicio**, **Agenda** y **Mi perfil**. La gestión del perfil profesional se abre desde **Mi perfil**, fuera de la barra, y la creación se mantiene como subpantalla del stack.
 - Pantalla `ProfessionalProfileCreateScreen`:
   - Carga real de catálogos, selección múltiple, validación local y POST de creación.
   - Incluye una descripción profesional opcional, con contador, recorte y máximo de 1000 caracteres.
@@ -81,9 +81,12 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
   - La vista previa pública muestra únicamente `descripcion` entre los datos generales; también incluye categorías, zonas, disponibilidad, reputación, nivel de verificación y reseñas visibles (texto, estrellas y fecha).
   - Tarjeta de verificación F10: consulta `GET /verificaciones/mia`, muestra ausencia, pendiente, aprobada o rechazada y permite seleccionar documentos con `expo-document-picker` y enviarlos como multipart `documentos`. No fija MIME, tamaño ni cantidad locales.
   - Acción **Reportar** en reseñas visibles; envía únicamente el motivo al endpoint real.
-  - Agenda real desde `GET /api/v1/perfiles/mio/agenda`, con estado vacío, error, carga y ausencia de perfil.
   - Estado “Sin perfil profesional” cuando `GET /api/v1/perfiles/mio` responde `404`.
   - La descripción se puede editar aunque la vista previa pública no esté disponible; el resto de apartados conserva sus límites.
+  - Incluye la tarjeta de verificación documental F10 del Prestador; no incluye agenda.
+- Pantalla `AgendaScreen`:
+  - Pestaña **Agenda** con consulta real de `GET /api/v1/perfiles/mio/agenda`, estados de carga, error, reintento, vacío y ausencia de perfil.
+  - No muestra descripción, vista previa ni verificación.
 
 ### Flujo de creación inicial
 
@@ -91,10 +94,10 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
 - La pantalla de creación carga categorías y zonas desde `GET /api/v1/catalogo/categorias` y `GET /api/v1/catalogo/zonas` con la sesión actual.
 - Permite seleccionar una o varias categorías y zonas, muestra el nombre y la cobertura recibidos, y exige al menos una de cada una.
 - Envía `{ categoriaIds, zonaIds, datosGenerales: { descripcion? } }` a `POST /api/v1/perfiles`; no añade experiencia ni claves desconocidas.
-- Tras `201`, vuelve a la pantalla de consulta, que recarga vista previa y agenda con sus endpoints reales.
+- Tras `201`, vuelve a la pantalla de gestión, que recarga el perfil y la vista previa; la agenda se consulta en su pestaña independiente.
 - Un `409` no repite el POST: informa que el perfil existe y vuelve a la consulta para cargar el perfil.
 - Un resultado incierto por timeout, desconexión o error de servidor no permite reenviar el formulario automáticamente. La app consulta una vez `GET /api/v1/perfiles/mio` para reconciliar y distingue tres estados:
-  - **Perfil encontrado:** `GET /mio` devuelve el perfil; se permite volver a la vista previa y agenda.
+  - **Perfil encontrado:** `GET /mio` devuelve el perfil; se permite volver a la gestión y la vista previa.
   - **Perfil no encontrado (`404`):** la consulta confirma que no existe perfil. Si el POST había respondido `5xx`, la app muestra que el servidor tuvo un error al crearlo, sin detalles SQL. Las categorías y zonas se conservan y el reintento es manual y explícito.
   - **Verificación no disponible:** si la consulta falla por red o servidor, se muestra “Resultado pendiente” sin ofrecer un nuevo envío de creación.
 - La prueba local del 2026-11-13 registró un `500` por SQLState `42804` en el backend anterior. La rama de correcciones incluye la persistencia JSONB corregida; la integración debe verificarse al desplegar esa rama. La UI conserva selección y descripción, y no repite el POST automáticamente ante un resultado incierto.
@@ -114,15 +117,15 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
 
 ```text
 src/features/professional-profile/
-├── components/        # vista previa pública y agenda
-├── hooks/             # carga independiente de vista previa y agenda
+├── components/        # descripción, vista previa, verificación y agenda
+├── hooks/             # carga independiente de perfil, vista previa y agenda
 ├── screens/           # perfil profesional
 ├── services/          # gateway y adaptador HTTP
 ├── types/             # respuestas reales y errores
 └── utils/             # formato de agenda, verificación y errores
 ```
 
-La ruta `ProfessionalProfile` se registra en la navegación autenticada y la pantalla vuelve a comprobar el rol. El backend sigue siendo la autoridad de autorización.
+La ruta `ProfessionalProfile` se registra en el stack autenticado y se abre desde **Mi perfil**; la pestaña inferior `Agenda` usa `AgendaScreen`. Ambas pantallas vuelven a comprobar el rol y el backend sigue siendo la autoridad de autorización.
 
 ## Validación y límites
 

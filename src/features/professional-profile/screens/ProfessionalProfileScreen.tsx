@@ -1,11 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import type { CompositeScreenProps } from '@react-navigation/native';
-import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-import type { MainTabParamList, RootStackParamList } from '../../../navigation/types';
+import type { RootStackParamList } from '../../../navigation/types';
 import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
@@ -14,14 +12,13 @@ import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { ReportReviewModal } from '../../trust/components/ReportReviewModal';
 import { VerificationCard } from '../../trust/components/VerificationCard';
-import { AgendaSection } from '../components/AgendaSection';
 import { ProfessionalDescriptionCard } from '../components/ProfessionalDescriptionCard';
 import { PublicPreviewCard } from '../components/PublicPreviewCard';
 import { useProfessionalProfileOverview } from '../hooks/useProfessionalProfileOverview';
 
-type ProfessionalProfileScreenProps = CompositeScreenProps<
-  BottomTabScreenProps<MainTabParamList, 'ProfessionalProfile'>,
-  NativeStackScreenProps<RootStackParamList>
+type ProfessionalProfileScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  'ProfessionalProfile'
 >;
 
 export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScreenProps) {
@@ -32,13 +29,9 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
     profileError,
     profileMissing,
     preview,
-    agenda,
     previewLoading,
-    agendaLoading,
     previewError,
-    agendaError,
     previewMissing,
-    agendaMissing,
     saveDescription,
     reload,
   } = useProfessionalProfileOverview();
@@ -62,12 +55,13 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
     );
   }
 
-  const loading = profileLoading && previewLoading && agendaLoading;
+  const loading = profileLoading && previewLoading;
 
   return (
     <ScreenLayout
       title="Perfil profesional"
-      subtitle="Consulta tu vista pública y tu agenda."
+      subtitle="Gestiona tu descripción, vista pública y verificación."
+      onBack={() => navigation.goBack()}
     >
       {loading ? (
         <View style={styles.loading}>
@@ -132,13 +126,6 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
 
           <VerificationCard />
 
-          <AgendaSection
-            agenda={agenda}
-            loading={agendaLoading}
-            error={agendaError}
-            missing={agendaMissing}
-          />
-
           <Card style={styles.limitsCard}>
             <View style={styles.limitsHeader}>
               <View style={styles.limitsIcon}>
@@ -155,8 +142,8 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
               app.
             </Text>
             <Text style={styles.limitItem}>
-              • La agenda permanece en modo consulta; sus mutaciones esperan la regla de zona
-              horaria.
+              • La agenda se consulta en su pestaña independiente; sus mutaciones esperan la regla
+              de zona horaria.
             </Text>
           </Card>
 

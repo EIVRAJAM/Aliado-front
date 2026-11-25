@@ -1,14 +1,14 @@
 # F14 — Preferencias, historial, indicadores y actividad (app móvil)
 
-**Estado:** frontend implementado contra los contratos reales. Lectura, exportación CSV, menú nativo y estado de éxito fueron validados en el emulador con una sesión Prestador. La descarga requiere iniciar el backend con `ALIADO_STORAGE_DIR` absoluto mientras BE-20 no esté corregido; no se modificó el código backend.
+**Estado:** frontend implementado contra los contratos reales. La pestaña **Actividad** reúne historial, actividad reciente e indicadores del Prestador; **Preferencias de notificación** vive en Mi perfil. Lectura, exportación CSV, menú nativo y estado de éxito fueron validados en el emulador con una sesión Prestador. La descarga requiere iniciar el backend con `ALIADO_STORAGE_DIR` absoluto mientras BE-20 no esté corregido; no se modificó el código backend.
 
 ## Alcance móvil
 
-- Acceso desde **Mi perfil → Actividad y avisos** para `CLIENTE` y `PRESTADOR`.
-- Preferencias de notificación por tipo y canal, mostrando los avisos obligatorios como no editables.
-- Historial de trabajos paginado, con acceso al detalle de cada servicio.
-- Exportación del historial completo a CSV y apertura del menú del sistema para guardarlo o compartirlo.
-- Indicadores del Prestador mostrados desde el cálculo del backend, sin recalcularlos en la app.
+- Pestaña inferior **Actividad** para `CLIENTE` y `PRESTADOR`; reúne historial y actividad reciente, e indicadores para Prestador.
+- **Preferencias de notificación** accesibles desde **Mi perfil**, como ajuste de cuenta.
+- Actividad muestra un resumen de historial con acceso al historial completo y al detalle de cada servicio.
+- Exportación del historial completo a CSV desde el historial y apertura del menú del sistema para guardarlo o compartirlo.
+- Indicadores del Prestador agrupados en un único resumen: total, estados, reputación y cantidad de calificaciones, desde el cálculo del backend y sin recalcularlos.
 - Actividad reciente ordenada por el backend.
 
 No se modificó el esquema del backend ni su configuración. La prueba autorizada agregó una exportación real de la cuenta Prestador; no se crearon cuentas, servicios, preferencias ni contenido de prueba.
@@ -26,6 +26,15 @@ No se modificó el esquema del backend ni su configuración. La prueba autorizad
 | Actividad | `GET /api/v1/actividad-reciente` | Devuelve hasta 20 eventos `{ tipo, resumen, fecha }` ordenados por el backend. |
 
 ## Comportamiento implementado
+
+### Pantalla Actividad
+
+- Es una pantalla de contenido, no un menú de accesos.
+- Cliente: actividad reciente y acceso al historial completo.
+- Prestador: resumen agrupado de indicadores, actividad reciente y acceso al historial completo.
+- Los indicadores se presentan juntos: total de servicios con estados y reputación con cantidad de calificaciones. No se muestran gráficos, tendencias, periodos ni métricas inventadas.
+- El historial completo conserva paginación y exportación CSV; la actividad no duplica el historial completo.
+- Cada sección mantiene carga, error, reintento, vacío y sesión expirada mediante los hooks F14 existentes.
 
 ### Preferencias
 
@@ -88,7 +97,7 @@ Las brechas que requieren contrato backend se registran en [BE-17 a BE-20](../ba
 - **Exportación validada con entorno absoluto:** el 2026-11-20 se creó una exportación desde la app y el menú nativo se abrió; no se compartió ni se guardó una copia permanente. La fila quedó `LISTA`.
 - **BE-20 abierto:** la configuración por defecto `./storage` no permite leer archivos existentes por la comparación de rutas. No se modificó el backend; la prueba usó una ruta absoluta.
 - **Preferencias sin mutación:** no se activaron switches ni se modificó ninguna preferencia.
-- **Vista Cliente:** el hub se abrió con Cliente y no mostró Indicadores; no se probaron mutaciones de Cliente.
+- **Vista Cliente:** la pestaña Actividad no mostró Indicadores; no se probaron mutaciones de Cliente.
 
 ## Validación
 
@@ -99,7 +108,7 @@ Las brechas que requieren contrato backend se registran en [BE-17 a BE-20](../ba
 - `npm run verify:config` → `0`; Expo Config válido (`3403` bytes).
 - `npm run doctor` → `20/20`.
 - `git diff --check` → `0`.
-- `npx expo export --platform android` → bundle correcto (1124 módulos).
+- `npx expo export --platform android` → bundle correcto (1125 módulos).
 - Dependencias añadidas: `expo-file-system` y `expo-sharing`; el config plugin de sharing actualizó `app.json`.
 
 ### Gateway
@@ -128,11 +137,11 @@ Resultado: `9/9`. Evidencia en `/tmp/aliado-f14-validation/gateway-tests.log`.
 
 Se utilizó una sesión Prestador ya iniciada; no se creó una cuenta nueva. Se verificó:
 
-- Acceso desde Mi perfil a **Actividad y avisos**.
+- Acceso a la pestaña **Actividad**; **Preferencias de notificación** se abre desde Mi perfil.
 - Historial con un servicio y acceso a su detalle.
 - Preferencias con los cinco tipos, dos canales y el tipo de seguridad marcado como obligatorio.
 - Indicadores reales del backend: total 1, en curso 1, finalizados 0, reputación 0.0, calificaciones 0.
-- Actividad reciente con dos eventos ordenados.
+- Actividad reciente con dos eventos ordenados en la pestaña Actividad.
 - Capturas `f14-00..06.png` en `/tmp/aliado-f14-validation/`.
 
 ### Exportación CSV en emulador
@@ -143,6 +152,14 @@ Se utilizó una sesión Prestador ya iniciada; no se creó una cuenta nueva. Se 
 - La app mostró el estado de éxito. No se repitió el POST ni se borraron exportaciones.
 - Conteo de exportaciones: 1 antes, 2 después; ambas `LISTA`. No se expusieron IDs, claves ni contenido.
 - La prueba se hizo con `ALIADO_STORAGE_DIR` absoluto. Con `./storage`, el backend devuelve `ARCHIVO_NO_ENCONTRADO` por BE-20.
+
+### Reorganización de navegación 2026-11-25
+
+- Se verificó la pestaña **Actividad** con sesión Prestador: resumen agrupado, actividad reciente, historial y acceso al historial completo.
+- Se verificó **Preferencias de notificación** desde Mi perfil y la ausencia de la tarjeta **Actividad y avisos**.
+- Se conservaron **Agenda** y **Perfil profesional**. La cuenta visual no tenía servicios ni actividad; por eso el estado mostrado fue vacío/cero.
+- No se activaron switches, no se exportó CSV y no se mutaron datos.
+- Capturas en `/tmp/aliado-f14-activity-visual/`.
 
 No se modificó el backend; la única fila añadida fue la exportación solicitada. No se cambió ninguna preferencia.
 

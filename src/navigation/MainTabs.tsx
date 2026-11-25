@@ -2,11 +2,12 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { ActivityScreen } from '../features/account-activity';
 import { useAuthSession } from '../features/auth';
 import { DiscoveryScreen } from '../features/discovery';
 import { HomeScreen } from '../features/home';
 import { ProfileOverviewScreen } from '../features/profile';
-import { ProfessionalProfileScreen } from '../features/professional-profile';
+import { AgendaScreen } from '../features/professional-profile';
 import { colors } from '../shared/ui/theme';
 import type { MainTabParamList } from './types';
 
@@ -18,7 +19,8 @@ const icons: Record<
 > = {
   Home: { active: 'home', inactive: 'home-outline' },
   Discovery: { active: 'search', inactive: 'search-outline' },
-  ProfessionalProfile: { active: 'briefcase', inactive: 'briefcase-outline' },
+  Agenda: { active: 'calendar', inactive: 'calendar-outline' },
+  Activity: { active: 'pulse', inactive: 'pulse-outline' },
   Profile: { active: 'person', inactive: 'person-outline' },
 };
 
@@ -74,11 +76,16 @@ export function MainTabs() {
       ) : null}
       {session.role === 'PRESTADOR' ? (
         <Tab.Screen
-          name="ProfessionalProfile"
-          component={ProfessionalProfileScreen}
-          options={{ title: 'Profesional' }}
+          name="Agenda"
+          component={AgendaScreen}
+          options={{ title: 'Agenda' }}
         />
       ) : null}
+      <Tab.Screen
+        name="Activity"
+        component={ActivityScreen}
+        options={{ title: 'Actividad' }}
+      />
       <Tab.Screen name="Profile" component={ProfileOverviewScreen} options={{ title: 'Mi perfil' }} />
     </Tab.Navigator>
   );
