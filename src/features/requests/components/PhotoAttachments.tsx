@@ -1,7 +1,8 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { File, Paths } from 'expo-file-system';
+import { Image, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
@@ -28,6 +29,19 @@ function extensionFor(type: string): string {
     return 'webp';
   }
   return 'jpg';
+}
+
+async function preparePhotoUri(uri: string, type: string, index: number): Promise<string> {
+  if (!uri.startsWith('content://')) {
+    return uri;
+  }
+
+  const destination = new File(
+    Paths.cache,
+    `f04-photo-${Date.now()}-${index + 1}.${extensionFor(type)}`
+  );
+  await new File(uri).copy(destination);
+  return destination.uri;
 }
 
 function mimeFromFileName(fileName?: string | null): string | undefined {
@@ -59,60 +73,71 @@ export function PhotoAttachments({
     }
 
     setError(null);
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permission.granted) {
-      setError('Permite el acceso a tus fotos para adjuntarlas a la solicitud.');
-      return;
-    }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsMultipleSelection: true,
-      selectionLimit: remaining,
-      quality: 0.8,
-    });
-
-    if (result.canceled) {
-      return;
-    }
-
-    const accepted: LocalPhoto[] = [];
-    const rejected: string[] = [];
-
-    result.assets.slice(0, remaining).forEach((asset, index) => {
-      const type = (asset.mimeType ?? mimeFromFileName(asset.fileName) ?? '').toLowerCase();
-      const name =
-        asset.fileName ??
-        `foto-${Date.now()}-${index + 1}.${extensionFor(type || 'image/jpeg')}`;
-
-      if (!ALLOWED_PHOTO_TYPES.includes(type)) {
-        rejected.push(`${name}: formato no compatible`);
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        setError('Permite el acceso a tus fotos para adjuntarlas a la solicitud.');
         return;
       }
 
-      if (asset.fileSize !== undefined && asset.fileSize > MAX_PHOTO_BYTES) {
-        rejected.push(`${name}: supera 5 MB`);
-        return;
-      }
-
-      accepted.push({
-        uri: asset.uri,
-        name,
-        type,
-        size: asset.fileSize,
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        selectionLimit: remaining,
+        quality: Platform.OS === 'android' ? 1 : 0.8,
       });
-    });
 
-    if (result.assets.length > remaining) {
-      rejected.push(`solo puedes adjuntar ${remaining} foto(s) más`);
-    }
+      if (result.canceled) {
+        return;
+      }
 
-    if (accepted.length > 0) {
-      onChange([...photos, ...accepted]);
-    }
+      const accepted: LocalPhoto[] = [];
+      const rejected: string[] = [];
+      const selectedAssets = result.assets.slice(0, remaining);
 
-    if (rejected.length > 0) {
-      setError(`No se agregaron: ${rejected.join('; ')}.`);
+      for (const [index, asset] of selectedAssets.entries()) {
+        const type = (asset.mimeType ?? mimeFromFileName(asset.fileName) ?? '').toLowerCase();
+        const name =
+          asset.fileName ??
+          `foto-${Date.now()}-${index + 1}.${extensionFor(type || 'image/jpeg')}`;
+
+        if (!ALLOWED_PHOTO_TYPES.includes(type)) {
+          rejected.push(`${name}: formato no compatible`);
+          continue;
+        }
+
+        if (asset.fileSize !== undefined && asset.fileSize > MAX_PHOTO_BYTES) {
+          rejected.push(`${name}: supera 5 MB`);
+          continue;
+        }
+
+        try {
+          const uri = await preparePhotoUri(asset.uri, type, index);
+          accepted.push({
+            uri,
+            name,
+            type,
+            size: asset.fileSize,
+          });
+        } catch {
+          rejected.push(`${name}: no se pudo preparar la imagen`);
+        }
+      }
+
+      if (result.assets.length > remaining) {
+        rejected.push(`solo puedes adjuntar ${remaining} foto(s) más`);
+      }
+
+      if (accepted.length > 0) {
+        onChange([...photos, ...accepted]);
+      }
+
+      if (rejected.length > 0) {
+        setError(`No se agregaron: ${rejected.join('; ')}.`);
+      }
+    } catch {
+      setError('No fue posible abrir o preparar las fotos. Intenta de nuevo.');
     }
   };
 
