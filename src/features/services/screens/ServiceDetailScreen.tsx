@@ -8,6 +8,7 @@ import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
+import { formatCop } from '../../../shared/format/currency';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { ReportTargetModal } from '../../reports';
@@ -397,6 +398,8 @@ function ServiceProposalCard({ service }: { service: ContractedService }) {
       </View>
       <Text style={styles.fieldLabel}>Disponibilidad</Text>
       <Text style={styles.fieldValue}>{service.propuesta.disponibilidad}</Text>
+      <Text style={styles.fieldLabel}>Tarifa</Text>
+      <Text style={styles.fieldValue}>{formatCop(service.propuesta.tarifaCop)}</Text>
       <Text style={styles.fieldLabel}>Mensaje</Text>
       <Text style={styles.fieldValue}>
         {service.propuesta.mensaje?.trim() || 'Sin mensaje.'}

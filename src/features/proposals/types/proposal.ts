@@ -13,6 +13,7 @@ export interface Proposal {
   prestadorId: string;
   disponibilidad: string;
   mensaje: string | null;
+  tarifaCop: number | null;
   estado: ProposalState;
 }
 
@@ -20,11 +21,13 @@ export interface CreateProposalInput {
   solicitudId: string;
   disponibilidad: string;
   mensaje: string | null;
+  tarifaCop: number;
 }
 
 export interface UpdateProposalInput {
   disponibilidad: string;
   mensaje: string;
+  tarifaCop: number;
 }
 
 export interface RetireProposalResponse {

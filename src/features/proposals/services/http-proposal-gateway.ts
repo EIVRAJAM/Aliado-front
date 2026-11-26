@@ -37,6 +37,19 @@ function nullableString(value: unknown): string | null {
   return value;
 }
 
+function nullablePositiveInteger(value: unknown): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
+    throw new ProposalError(
+      'INVALID_RESPONSE',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return value;
+}
+
 function parseProposal(value: unknown): Proposal {
   if (!isRecord(value) || !isProposalState(value.estado)) {
     throw new ProposalError(
@@ -50,6 +63,7 @@ function parseProposal(value: unknown): Proposal {
     prestadorId: requiredString(value.prestadorId),
     disponibilidad: requiredString(value.disponibilidad),
     mensaje: nullableString(value.mensaje),
+    tarifaCop: nullablePositiveInteger(value.tarifaCop),
     estado: value.estado,
   };
 }
@@ -187,9 +201,17 @@ export class HttpProposalGateway implements ProposalGateway {
           solicitudId: input.solicitudId,
           disponibilidad: input.disponibilidad,
           ...(input.mensaje ? { mensaje: input.mensaje } : {}),
+          tarifaCop: input.tarifaCop,
         },
       });
-      return parseProposal(response);
+      const proposal = parseProposal(response);
+      if (proposal.tarifaCop !== input.tarifaCop) {
+        throw new ProposalError(
+          'INVALID_RESPONSE',
+          'La respuesta del servidor no confirma la tarifa enviada.'
+        );
+      }
+      return proposal;
     } catch (error) {
       throw mapApiError(error, 'No fue posible enviar la propuesta. Intenta de nuevo.');
     }
@@ -210,6 +232,7 @@ export class HttpProposalGateway implements ProposalGateway {
           body: {
             disponibilidad: input.disponibilidad,
             mensaje: input.mensaje,
+            tarifaCop: input.tarifaCop,
           },
         }
       );
@@ -218,6 +241,12 @@ export class HttpProposalGateway implements ProposalGateway {
         throw new ProposalError(
           'INVALID_RESPONSE',
           'La respuesta no corresponde a la propuesta solicitada.'
+        );
+      }
+      if (proposal.tarifaCop !== input.tarifaCop) {
+        throw new ProposalError(
+          'INVALID_RESPONSE',
+          'La respuesta del servidor no confirma la tarifa actualizada.'
         );
       }
       return proposal;

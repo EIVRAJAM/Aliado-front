@@ -8,6 +8,7 @@ import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
+import { formatCop } from '../../../shared/format/currency';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { ProposalFields } from '../components/ProposalFields';
@@ -93,6 +94,7 @@ function ProviderProposalFlow({
   const [availabilityRaw, setAvailabilityRaw] = useState<string | null>(null);
   const [availabilityUnreadable, setAvailabilityUnreadable] = useState(false);
   const [mensaje, setMensaje] = useState('');
+  const [tarifaCop, setTarifaCop] = useState('');
   const [fieldErrors, setFieldErrors] = useState<ProposalFieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -142,6 +144,11 @@ function ProviderProposalFlow({
     setAvailabilityRaw(rawAvailability);
     setAvailabilityUnreadable(Boolean(rawAvailability) && !parsedAvailability);
     setMensaje(nextProposal?.mensaje ?? '');
+    setTarifaCop(
+      nextProposal?.tarifaCop !== null && nextProposal?.tarifaCop !== undefined
+        ? String(nextProposal.tarifaCop)
+        : ''
+    );
     setFieldErrors({});
   };
 
@@ -164,6 +171,7 @@ function ProviderProposalFlow({
       date: availabilityDate,
       time: availabilityTime,
       mensaje,
+      tarifaCop,
     });
     setFieldErrors(nextErrors);
     setFormError(null);
@@ -188,6 +196,7 @@ function ProviderProposalFlow({
         solicitudId,
         disponibilidad: availability,
         mensaje: trimmedMessage || null,
+        tarifaCop: Number(tarifaCop),
       });
       if (created.solicitudId !== solicitudId) {
         setCreationUncertain(true);
@@ -246,6 +255,7 @@ function ProviderProposalFlow({
       date: availabilityDate,
       time: availabilityTime,
       mensaje,
+      tarifaCop,
     });
     setFieldErrors(nextErrors);
     setFormError(null);
@@ -268,6 +278,7 @@ function ProviderProposalFlow({
       const updated = await proposalGateway.update(session.token, proposal.id, {
         disponibilidad: availability,
         mensaje: mensaje.trim(),
+        tarifaCop: Number(tarifaCop),
       });
       if (
         updated.solicitudId !== proposal.solicitudId ||
@@ -379,7 +390,7 @@ function ProviderProposalFlow({
               <View style={styles.cardHeaderText}>
                 <Text style={styles.cardTitle}>Detalles de tu propuesta</Text>
                 <Text style={styles.cardSubtitle}>
-                  Elige fecha y hora. El mensaje es opcional.
+                  Elige fecha y hora, indica tu tarifa. El mensaje es opcional.
                 </Text>
               </View>
             </View>
@@ -390,8 +401,10 @@ function ProviderProposalFlow({
               onAvailabilityDateChange={setAvailabilityDate}
               onAvailabilityTimeChange={setAvailabilityTime}
               mensaje={mensaje}
+              tarifaCop={tarifaCop}
               errors={fieldErrors}
               onChangeMensaje={setMensaje}
+              onChangeTarifaCop={setTarifaCop}
               disabled={submitting || creationUncertain}
               existingAvailability={availabilityRaw}
               existingAvailabilityUnreadable={availabilityUnreadable}
@@ -447,8 +460,10 @@ function ProviderProposalFlow({
                   onAvailabilityDateChange={setAvailabilityDate}
                   onAvailabilityTimeChange={setAvailabilityTime}
                   mensaje={mensaje}
+                  tarifaCop={tarifaCop}
                   errors={fieldErrors}
                   onChangeMensaje={setMensaje}
+                  onChangeTarifaCop={setTarifaCop}
                   disabled={submitting}
                   existingAvailability={availabilityRaw}
                   existingAvailabilityUnreadable={availabilityUnreadable}
@@ -477,6 +492,12 @@ function ProviderProposalFlow({
                   icon="calendar-outline"
                   label="Disponibilidad"
                   value={proposal.disponibilidad}
+                />
+                <ProposalValue
+                  icon="cash-outline"
+                  label="Tarifa"
+                  value={formatCop(proposal.tarifaCop)}
+                  empty={proposal.tarifaCop === null}
                 />
                 <ProposalValue
                   icon="chatbubble-ellipses-outline"

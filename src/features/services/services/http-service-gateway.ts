@@ -22,6 +22,16 @@ function requiredString(value: unknown): string {
   return value;
 }
 
+function nullablePositiveInteger(value: unknown): number | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
+    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+  }
+  return value;
+}
+
 function nullableString(value: unknown): string | null {
   if (value === null || value === undefined) {
     return null;
@@ -68,6 +78,7 @@ function parseDetail(value: unknown): ContractedService {
       prestadorId: requiredString(propuesta.prestadorId),
       disponibilidad: requiredString(propuesta.disponibilidad),
       mensaje: nullableString(propuesta.mensaje),
+      tarifaCop: nullablePositiveInteger(propuesta.tarifaCop),
       estado: propuesta.estado,
       fechaCreacion: requiredString(propuesta.fechaCreacion),
     },

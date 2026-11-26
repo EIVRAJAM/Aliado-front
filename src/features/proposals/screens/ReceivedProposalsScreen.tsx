@@ -9,6 +9,7 @@ import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
+import { formatCop } from '../../../shared/format/currency';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { useProposalError } from '../hooks/useProposalError';
@@ -124,7 +125,7 @@ export function ReceivedProposalsScreen({
   const handleAccept = (proposal: Proposal) => {
     Alert.alert(
       'Aceptar propuesta',
-      `Se contratará el servicio con disponibilidad "${proposal.disponibilidad}". Las demás propuestas de esta solicitud se cerrarán.`,
+      `Se contratará el servicio con disponibilidad "${proposal.disponibilidad}" y tarifa ${formatCop(proposal.tarifaCop)}. Las demás propuestas de esta solicitud se cerrarán.`,
       [
         { text: 'Volver', style: 'cancel' },
         {
@@ -146,7 +147,7 @@ export function ReceivedProposalsScreen({
   return (
     <ScreenLayout
       title="Propuestas recibidas"
-      subtitle="Compara disponibilidad y mensaje antes de aceptar."
+      subtitle="Compara disponibilidad, tarifa y mensaje antes de aceptar."
       onBack={() => navigation.goBack()}
     >
       <View style={styles.toolbar}>
@@ -209,6 +210,17 @@ export function ReceivedProposalsScreen({
               <View style={styles.field}>
                 <Text style={styles.fieldLabel}>Disponibilidad</Text>
                 <Text style={styles.fieldValue}>{proposal.disponibilidad}</Text>
+              </View>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Tarifa</Text>
+                <Text
+                  style={[
+                    styles.fieldValue,
+                    proposal.tarifaCop === null ? styles.mutedValue : null,
+                  ]}
+                >
+                  {formatCop(proposal.tarifaCop)}
+                </Text>
               </View>
               <View style={styles.field}>
                 <Text style={styles.fieldLabel}>Mensaje</Text>

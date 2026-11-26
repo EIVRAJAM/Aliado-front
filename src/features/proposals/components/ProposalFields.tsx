@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { formatCop } from '../../../shared/format/currency';
 import { FormField } from '../../../shared/ui/FormField';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
@@ -24,8 +25,10 @@ interface ProposalFieldsProps {
   onAvailabilityDateChange: (date: Date) => void;
   onAvailabilityTimeChange: (time: Date) => void;
   mensaje: string;
+  tarifaCop: string;
   errors: ProposalFieldErrors;
   onChangeMensaje: (value: string) => void;
+  onChangeTarifaCop: (value: string) => void;
   disabled?: boolean;
   existingAvailability?: string | null;
   existingAvailabilityUnreadable?: boolean;
@@ -48,8 +51,10 @@ export function ProposalFields({
   onAvailabilityDateChange,
   onAvailabilityTimeChange,
   mensaje,
+  tarifaCop,
   errors,
   onChangeMensaje,
+  onChangeTarifaCop,
   disabled = false,
   existingAvailability,
   existingAvailabilityUnreadable = false,
@@ -207,6 +212,24 @@ export function ProposalFields({
           una coincidencia horaria calculada por el servidor.
         </Text>
       </View>
+
+      <FormField
+        label="Tarifa (COP)"
+        placeholder="Ej.: 250000"
+        value={tarifaCop}
+        onChangeText={onChangeTarifaCop}
+        error={errors.tarifaCop}
+        hint={
+          tarifaCop.trim() && /^\d+$/.test(tarifaCop.trim())
+            ? `Se mostrará como ${formatCop(Number(tarifaCop))}.`
+            : 'Ingresa un entero positivo en pesos colombianos, sin decimales.'
+        }
+        keyboardType="number-pad"
+        inputMode="numeric"
+        maxLength={10}
+        editable={!disabled}
+        style={styles.tarifaInput}
+      />
 
       <FormField
         label="Mensaje (opcional)"
@@ -382,6 +405,9 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 12,
     lineHeight: 17,
+  },
+  tarifaInput: {
+    fontSize: 18,
   },
   messageInput: {
     minHeight: 116,

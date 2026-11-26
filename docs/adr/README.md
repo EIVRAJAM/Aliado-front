@@ -20,7 +20,7 @@ Las decisiones compartidas de backend y producto se mantienen en `../aliado-prb/
 | D-06 | Proveedor y ciclo de vida de storage | Pendiente. La app necesita contrato de carga y acceso privado; puede avanzar con adaptadores de desarrollo. |
 | D-07 | MIME, tamaño y cantidad de archivos | Pendiente. Afecta carga móvil, validación y mensajes de error. |
 | D-08 | Push/correo, tokens de dispositivo y reintentos | Pendiente. No asumir push productivo ni inventar almacenamiento de tokens. |
-| D-09 | Edición/reintento de propuestas y precio | Pendiente de producto/API. No mostrar precio si el contrato no lo define. |
+| D-09 | Edición/reintento de propuestas y precio | Tarifa resuelta: `tarifaCop` obligatoria en propuestas nuevas (entero positivo COP) y nullable en históricas. Recuperación/listado de propuestas propias sigue pendiente. |
 | D-10 | Comunicación en estados de servicio cerrados | Pendiente. Afecta qué acciones de mensajería/seguimiento presenta la app. |
 | D-13 | Fuente y representación del progreso de formalización | Pendiente. F13 consulta solo el progreso sustentado por el contrato; no actualiza, calcula ni inventa un avance. |
 | D-15 | Fórmulas y formato de indicadores/exportación | Pendiente. F14 muestra indicadores del backend y exporta el CSV actual; no calcula ni fija fórmula, periodo, límites o snapshot. |

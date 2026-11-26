@@ -36,6 +36,7 @@ export interface ServiceProposalSummary {
   prestadorId: string;
   disponibilidad: string;
   mensaje: string | null;
+  tarifaCop: number | null;
   estado: ServiceProposalState;
   fechaCreacion: string;
 }

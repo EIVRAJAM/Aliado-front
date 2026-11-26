@@ -4,7 +4,7 @@
 
 ## Alcance móvil
 
-- Cliente: consulta y compara propuestas activas de una solicitud propia, acepta una y abre el servicio contratado.
+- Cliente: consulta y compara propuestas activas (disponibilidad, tarifa y mensaje) de una solicitud propia, acepta una y abre el servicio contratado.
 - Cliente y Prestador: consultan el detalle, estado, propuesta aceptada e historial.
 - Prestador: inicia el servicio y lo marca como terminado.
 - Cliente: confirma la finalización o cancela mientras el servidor lo permita.
@@ -14,15 +14,15 @@
 - Calificación y reseña obligatorias en el flujo móvil del Cliente sobre un servicio `FINALIZADO`; se envían en dos operaciones separadas y F10 conserva el reintento solo de reseña. Ver [F10](trust.md).
 - Reporte del servicio y de la contraparte desde el detalle, con evidencia posterior al `reporteId`; ver [F11](reports.md).
 
-No se implementa F09 push, F15 chat realtime, precios, datos de contacto ni un listado de servicios.
+No se implementa F09 push, F15 chat realtime, pagos, datos de contacto ni un listado de servicios.
 
 ## Contratos reales
 
 | Operación | Endpoint | Respuesta usada |
 |---|---|---|
-| Propuestas recibidas | `GET /api/v1/solicitudes/{solicitudId}/propuestas` | `PropuestaResponse[]`; exclusivo de Cliente dueño. |
+| Propuestas recibidas | `GET /api/v1/solicitudes/{solicitudId}/propuestas` | `PropuestaResponse[]` con `tarifaCop`; exclusivo de Cliente dueño. |
 | Aceptar propuesta | `POST /api/v1/propuestas/{id}/aceptar` | `200 { servicioId, estado }`. |
-| Detalle del servicio | `GET /api/v1/servicios/{id}` | Servicio + resumen de solicitud + propuesta aceptada. |
+| Detalle del servicio | `GET /api/v1/servicios/{id}` | Servicio + resumen de solicitud + propuesta aceptada, incluida `tarifaCop`. |
 | Iniciar | `POST /api/v1/servicios/{id}/en-ejecucion` | `{ id, estado }`. |
 | Terminar | `POST /api/v1/servicios/{id}/terminado` | `{ id, estado }`. |
 | Confirmar finalización | `POST /api/v1/servicios/{id}/confirmar-finalizacion` | `{ id, estado }`. |
@@ -38,7 +38,8 @@ El detalle de servicio expone IDs de la solicitud y propuesta, pero no nombres d
 ## Reglas y límites
 
 - **Estados:** `CONTRATADO → EN_EJECUCION → TERMINADO → FINALIZADO`; cancelación antes de finalizar. El servidor sigue siendo la autoridad. Cada acción exige releer el servicio y solo muestra éxito si el estado releído es el esperado por la acción: `EN_EJECUCION`, `TERMINADO`, `FINALIZADO` o `CANCELADO`. Si la respuesta es inválida, diferente o la recarga no confirma el estado, el resultado queda como incierto.
-- **Aceptación:** cierra las demás propuestas, crea el servicio y habilita comunicación en una sola operación.
+- **Aceptación:** cierra las demás propuestas, crea el servicio y habilita comunicación en una sola operación. La tarifa forma parte de la propuesta aceptada y no cambia al aceptar; se muestra en el servicio para ambos roles.
+- **Tarifa histórica:** si la propuesta aceptada es anterior a `tarifaCop`, el servicio muestra `Sin tarifa registrada`; no se inventa un valor.
 - **Idempotencia desactivada:** no se envía `Idempotency-Key` en aceptación ni transiciones mientras BE-02 siga abierto. Ante un resultado incierto de aceptación no se reintenta automáticamente.
 - **Sin lista de servicios:** no existe endpoint para listar o recuperar servicios de una cuenta. El Cliente abre el servicio con el `servicioId` devuelto por la aceptación; el Prestador puede abrirlo desde un aviso de servicio. Al salir de esos contextos, el `servicioId` se pierde y la app no inventa recuperación persistente. La operación faltante está registrada en [BE-07](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-07--listado-de-servicios-propios).
 - **Notificaciones:** solo se consultan al abrir; no hay push, polling ni WebSocket. El Cliente recibe `PROPUESTA_RECIBIDA` al crearse una propuesta, pero el DTO real no entrega `solicitudId` ni el identificador de la propuesta, así que la app abre Inicio como salida segura; no puede abrir directamente esa propuesta desde el aviso. La aceptación genera `ACEPTACION_PROPUESTA` para el Prestador; los cambios posteriores se notifican a la contraparte. Si el Cliente pierde la respuesta de aceptación y sale, no puede recuperar el servicio desde la app.
@@ -46,7 +47,7 @@ El detalle de servicio expone IDs de la solicitud y propuesta, pero no nombres d
 - **Mensaje con resultado incierto:** no se envía `Idempotency-Key`. Ante timeout, red, `5xx` o respuesta inválida se conserva el texto y se vuelven a consultar los mensajes. Si aparece un mensaje nuevo del usuario actual con el mismo contenido desde el inicio del intento, se confirma y se limpia el campo. Si no se puede confirmar, se bloquea el reenvío en esa pantalla y se advierte que podría duplicarse; no se deduce que falló por perder la respuesta HTTP.
 - **Historial:** se muestra el orden entregado por el backend; los actores se identifican como Cliente o Prestador, sin nombre ni contacto. Si una cuenta fue eliminada, el backend marca al actor y la UI muestra “Cuenta eliminada”; el contenido libre del actor eliminado se neutraliza.
 - **409:** las acciones y mensajes recargan servicio, historial y mensajes antes de ofrecer nuevas acciones.
-- **Sin datos inventados:** no se muestran precio, nombre/contacto, dirección exacta ni campos que el DTO no entregue.
+- **Sin datos inventados:** no se muestran pagos, nombre/contacto, dirección exacta ni campos que el DTO no entregue. La tarifa solo se muestra si el contrato la entrega; en históricos se indica su ausencia.
 
 ## Implementación
 
@@ -112,7 +113,7 @@ src/features/proposals/screens/ReceivedProposalsScreen.tsx
 
 ## Fuera de alcance
 
-F09 push, F15 chat realtime, precios y recuperación persistente de servicios. La bandeja unificada F09 y la calificación/reseña F10 forman parte del alcance actual; push y tokens siguen fuera. D-10 debe definir la política de mensajes después de cancelar/finalizar. La atomicidad de calificación+reseña, la lectura de la calificación propia y el comprobante de reporte siguen pendientes (BE-10/BE-08/BE-09).
+F09 push, F15 chat realtime, pagos y recuperación persistente de servicios. La bandeja unificada F09 y la calificación/reseña F10 forman parte del alcance actual; push y tokens siguen fuera. D-10 debe definir la política de mensajes después de cancelar/finalizar. La atomicidad de calificación+reseña, la lectura de la calificación propia y el comprobante de reporte siguen pendientes (BE-10/BE-08/BE-09).
 
 ## Enlaces
 
