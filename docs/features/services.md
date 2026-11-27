@@ -1,6 +1,6 @@
 # F08 — Contratación, ciclo del servicio y comunicación (app móvil)
 
-**Estado:** flujo Cliente de consulta/aceptación de propuestas, detalle compartido del servicio, transiciones, historial y mensajes implementado contra el controlador/DTO reales. La bandeja unificada de F09 permite abrir un servicio desde notificaciones existentes y F10 agrega calificación/reseña cuando el Cliente finaliza el servicio. No se validaron mutaciones autenticadas ni revisión visual porque el development build requiere reconstrucción y no se autorizó crear servicios. No se usan mocks ni datos ficticios.
+**Estado:** flujo Cliente de consulta/aceptación de propuestas, detalle compartido del servicio, transiciones, historial y mensajes implementado contra el controlador/DTO reales. La bandeja unificada de F09 permite abrir un servicio desde notificaciones existentes y F10 agrega calificación/reseña cuando el Cliente finaliza el servicio. La cancelación se validó en Android contra API/PostgreSQL efímeros para Cliente y Prestador, con datos desechables. La app no usa mocks ni datos reales.
 
 ## Alcance móvil
 
@@ -44,7 +44,7 @@ El detalle de servicio expone IDs de la solicitud y propuesta, pero no nombres d
 - **Notificaciones:** solo se consultan al abrir; no hay push, polling ni WebSocket. El Cliente recibe `PROPUESTA_RECIBIDA` al crearse una propuesta, pero el DTO real no entrega `solicitudId` ni el identificador de la propuesta, así que la app abre Inicio como salida segura; no puede abrir directamente esa propuesta desde el aviso. La aceptación genera `ACEPTACION_PROPUESTA` para el Prestador; los cambios posteriores se notifican a la contraparte. Si el Cliente pierde la respuesta de aceptación y sale, no puede recuperar el servicio desde la app.
 - **Mensajería y D-10:** la UI permite enviar mientras `comunicacionHabilitada` sea verdadero. No se agregan restricciones propias por estado porque la política después de cancelar/finalizar sigue pendiente de [D-10](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#d-10--mensajería-después-de-cancelar-o-finalizar); si el servidor rechaza, se muestra el error. No es un defecto confirmado.
 - **Mensaje con resultado incierto:** no se envía `Idempotency-Key`. Ante timeout, red, `5xx` o respuesta inválida se conserva el texto y se vuelven a consultar los mensajes. Si aparece un mensaje nuevo del usuario actual con el mismo contenido desde el inicio del intento, se confirma y se limpia el campo. Si no se puede confirmar, se bloquea el reenvío en esa pantalla y se advierte que podría duplicarse; no se deduce que falló por perder la respuesta HTTP.
-- **Historial:** se muestra el orden entregado por el backend; los actores se identifican como Cliente o Prestador, sin nombre ni contacto.
+- **Historial:** se muestra el orden entregado por el backend; los actores se identifican como Cliente o Prestador, sin nombre ni contacto. Si una cuenta fue eliminada, el backend marca al actor y la UI muestra “Cuenta eliminada”; el contenido libre del actor eliminado se neutraliza.
 - **409:** las acciones y mensajes recargan servicio, historial y mensajes antes de ofrecer nuevas acciones.
 - **Sin datos inventados:** no se muestran precio, nombre/contacto, dirección exacta ni campos que el DTO no entregue.
 
@@ -81,7 +81,13 @@ src/features/proposals/screens/ReceivedProposalsScreen.tsx
 - Aceptación incierta: se bloquean nuevas aceptaciones y se informa que no se pudo confirmar el resultado. No se reintenta ni se promete recuperación.
 - Red/timeout: error recuperable con reintento manual; no hay reintento automático de mutaciones.
 
-## Verificación
+### Cancelación autenticada real (2026-11-26)
+
+- Se crearon servicios desechables separados y se abrieron desde Actividad/Historial en el emulador Android.
+- Cliente canceló un servicio `CONTRATADO`: confirmación explícita, estado `CANCELADO`, recarga del detalle e historial `CONTRATADO → CANCELADO`.
+- Prestador canceló otro servicio `CONTRATADO`: mismo resultado y persistencia.
+- Un segundo intento de cancelación por API respondió `409 TRANSICION_INVALIDA`; un servicio `FINALIZADO` no mostró la acción y el intento por API respondió `409`.
+- La cancelación solo afecta servicios contratados; los compromisos manuales de agenda F05 no tienen relación compartida Cliente–Prestador ni endpoint de cancelación para el Cliente.
 
 ### Estática
 

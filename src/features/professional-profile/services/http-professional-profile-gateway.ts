@@ -3,6 +3,8 @@ import {
   ProfessionalProfileError,
   type AgendaCommitment,
   type AvailabilityBlock,
+  type AvailabilityBlockInput,
+  type CommitmentInput,
   type CreateProfessionalProfileInput,
   type CreatedProfessionalProfile,
   type OwnProfessionalProfile,
@@ -126,6 +128,21 @@ function parsePreview(value: unknown): ProfessionalPreview {
   };
 }
 
+function parseCommitment(value: unknown): AgendaCommitment {
+  if (!isRecord(value)) {
+    throw new ProfessionalProfileError(
+      'UNKNOWN',
+      'La respuesta del servidor no tiene el formato esperado.'
+    );
+  }
+  return {
+    id: requiredString(value.id),
+    fechaHoraInicio: requiredString(value.fechaHoraInicio),
+    fechaHoraFin: requiredString(value.fechaHoraFin),
+    origen: requiredString(value.origen),
+  };
+}
+
 function parseAgenda(value: unknown): AgendaCommitment[] {
   if (!Array.isArray(value)) {
     throw new ProfessionalProfileError(
@@ -133,20 +150,7 @@ function parseAgenda(value: unknown): AgendaCommitment[] {
       'La respuesta del servidor no tiene el formato esperado.'
     );
   }
-  return value.map((item) => {
-    if (!isRecord(item)) {
-      throw new ProfessionalProfileError(
-        'UNKNOWN',
-        'La respuesta del servidor no tiene el formato esperado.'
-      );
-    }
-    return {
-      id: requiredString(item.id),
-      fechaHoraInicio: requiredString(item.fechaHoraInicio),
-      fechaHoraFin: requiredString(item.fechaHoraFin),
-      origen: requiredString(item.origen),
-    };
-  });
+  return value.map(parseCommitment);
 }
 
 function parseCategory(value: unknown) {
@@ -202,6 +206,7 @@ function parseOwnProfile(value: unknown): OwnProfessionalProfile {
     id: requiredString(value.id),
     prestadorId: requiredString(value.prestadorId),
     descripcion: typeof datos.descripcion === 'string' ? datos.descripcion : null,
+    disponibilidades: parseAvailability(value.disponibilidades),
   };
 }
 
@@ -259,12 +264,22 @@ function mapApiError(error: unknown, fallback: string): ProfessionalProfileError
     if (error.status === 404) {
       return new ProfessionalProfileError(
         'NOT_FOUND',
-        'Todavía no tienes un perfil profesional.',
+        serverCode === 'COMPROMISO_NO_ENCONTRADO'
+          ? getServerMessage(error.body) ?? 'El compromiso ya no está disponible.'
+          : 'Todavía no tienes un perfil profesional.',
         404,
         serverCode
       );
     }
     if (error.status === 409) {
+      if (serverCode === 'CONFLICTO_AGENDA') {
+        return new ProfessionalProfileError(
+          'CONFLICT',
+          getServerMessage(error.body) ?? 'El horario se solapa con otro compromiso.',
+          409,
+          serverCode
+        );
+      }
       return new ProfessionalProfileError(
         'PROFILE_ALREADY_EXISTS',
         'Ya tienes un perfil profesional.',
@@ -404,6 +419,62 @@ export class HttpProfessionalProfileGateway implements ProfessionalProfileGatewa
       return parseAgenda(response);
     } catch (error) {
       throw mapApiError(error, 'No fue posible cargar la agenda.');
+    }
+  }
+
+  async updateAvailability(
+    token: string,
+    bloques: AvailabilityBlockInput[]
+  ): Promise<OwnProfessionalProfile> {
+    try {
+      const response = await requestJson<unknown>(
+        this.requireBaseUrl(),
+        '/api/v1/perfiles/mio/disponibilidad',
+        { method: 'PUT', token, body: { bloques } }
+      );
+      return parseOwnProfile(response);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible guardar la disponibilidad.');
+    }
+  }
+
+  async createCommitment(
+    token: string,
+    input: CommitmentInput
+  ): Promise<AgendaCommitment> {
+    try {
+      const response = await requestJson<unknown>(
+        this.requireBaseUrl(),
+        '/api/v1/perfiles/mio/agenda',
+        { method: 'POST', token, body: input }
+      );
+      return parseCommitment(response);
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible crear el compromiso.');
+    }
+  }
+
+  async updateCommitment(
+    token: string,
+    commitmentId: string,
+    input: CommitmentInput
+  ): Promise<AgendaCommitment> {
+    try {
+      const response = await requestJson<unknown>(
+        this.requireBaseUrl(),
+        '/api/v1/perfiles/mio/agenda',
+        { method: 'PUT', token, body: { id: commitmentId, ...input } }
+      );
+      const commitment = parseCommitment(response);
+      if (commitment.id !== commitmentId) {
+        throw new ProfessionalProfileError(
+          'UNKNOWN',
+          'La respuesta no corresponde al compromiso solicitado.'
+        );
+      }
+      return commitment;
+    } catch (error) {
+      throw mapApiError(error, 'No fue posible actualizar el compromiso.');
     }
   }
 }

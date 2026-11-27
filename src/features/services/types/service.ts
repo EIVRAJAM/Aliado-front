@@ -49,6 +49,8 @@ export interface ContractedService {
   estado: ServiceState;
   comunicacionHabilitada: boolean;
   fechaContratacion: string;
+  clienteEliminado: boolean;
+  prestadorEliminado: boolean;
   solicitud: ServiceSolicitudSummary;
   propuesta: ServiceProposalSummary;
 }
@@ -57,6 +59,7 @@ export interface ServiceHistoryEntry {
   estadoAnterior: ServiceState | null;
   estadoNuevo: ServiceState;
   actorId: string;
+  actorEliminado: boolean;
   fecha: string;
 }
 
@@ -64,6 +67,7 @@ export interface ServiceMessage {
   id: string;
   remitenteId: string;
   contenido: string;
+  remitenteEliminado: boolean;
   fechaEnvio: string;
 }
 

@@ -460,7 +460,7 @@ Con esa ruta absoluta, la descarga de la exportación existente respondió `200`
 
 ## Dependencias que no son defectos de backend
 
-- D-03 (zona horaria y reglas de solapamiento) requiere decisión funcional; no se propone resolverla por una corrección técnica unilateral.
+- D-03 (zona horaria y reglas de solapamiento): la zona operativa `America/Bogota` quedó decidida para el conflicto disponibilidad/agenda y el backend la aplica. Siguen abiertas las ventanas temporales de solicitud y el matching.
 - D-02, D-06 y D-07 requieren decisiones de producto/operación sobre catálogo, almacenamiento y evidencias.
 - BE-05 quedó concretado como `descripcion` opcional de hasta 1000 caracteres; no hay otros campos de datos generales en el MVP.
 

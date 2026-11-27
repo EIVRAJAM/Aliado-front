@@ -16,6 +16,8 @@ export function getProfileErrorMessage(error: unknown, fallback: string): string
     case 'NOT_FOUND':
     case 'EXPIRED':
       return error.message;
+    case 'UNSUPPORTED':
+      return error.message;
     case 'SESSION_EXPIRED':
       return 'Tu sesión expiró. Inicia sesión de nuevo.';
     case 'UNKNOWN':

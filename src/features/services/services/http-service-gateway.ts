@@ -53,6 +53,8 @@ function parseDetail(value: unknown): ContractedService {
     estado: value.estado,
     comunicacionHabilitada: value.comunicacionHabilitada === true,
     fechaContratacion: requiredString(value.fechaContratacion),
+    clienteEliminado: value.clienteEliminado === true,
+    prestadorEliminado: value.prestadorEliminado === true,
     solicitud: {
       id: requiredString(solicitud.id),
       descripcion: nullableString(solicitud.descripcion),
@@ -89,6 +91,7 @@ function parseHistory(value: unknown): ServiceHistoryEntry[] {
             : null,
       estadoNuevo: item.estadoNuevo,
       actorId: requiredString(item.actorId),
+      actorEliminado: item.actorEliminado === true,
       fecha: requiredString(item.fecha),
     };
   });
@@ -102,6 +105,7 @@ function parseMessage(value: unknown): ServiceMessage {
     id: requiredString(value.id),
     remitenteId: requiredString(value.remitenteId),
     contenido: requiredString(value.contenido),
+    remitenteEliminado: value.remitenteEliminado === true,
     fechaEnvio: requiredString(value.fechaEnvio),
   };
 }

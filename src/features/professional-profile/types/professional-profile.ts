@@ -31,6 +31,7 @@ export interface OwnProfessionalProfile {
   id: string;
   prestadorId: string;
   descripcion: string | null;
+  disponibilidades: AvailabilityBlock[];
 }
 
 export interface AvailabilityBlock {
@@ -38,6 +39,17 @@ export interface AvailabilityBlock {
   diaSemana: number | null;
   horaInicio: string;
   horaFin: string;
+}
+
+export interface AvailabilityBlockInput {
+  diaSemana: number | null;
+  horaInicio: string;
+  horaFin: string;
+}
+
+export interface CommitmentInput {
+  fechaHoraInicio: string;
+  fechaHoraFin: string;
 }
 
 export interface PublicReview {
@@ -97,7 +109,13 @@ export class ProfessionalProfileError extends Error {
 }
 
 export function isProfileMissing(error: unknown): boolean {
-  return error instanceof ProfessionalProfileError && error.code === 'NOT_FOUND';
+  return (
+    error instanceof ProfessionalProfileError &&
+    error.code === 'NOT_FOUND' &&
+    (error.serverCode === undefined ||
+      error.serverCode === 'PERFIL_NO_ENCONTRADO' ||
+      error.serverCode === 'PERFIL_NO_DISPONIBLE')
+  );
 }
 
 export function isProfileAlreadyExists(error: unknown): boolean {

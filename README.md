@@ -2,7 +2,7 @@
 
 Repositorio de la aplicación móvil de ALIADO, construida con **Expo SDK 58**, **React Native 0.88.1**, **TypeScript 6.0.x** y **Continuous Native Generation (CNG)**. El backend, la base de datos y el panel administrativo viven en `../aliado-prb` y no forman parte de este repositorio.
 
-La base técnica está lista. F01 (acceso e identidad), F02 (perfil) y F04 (solicitudes de servicio) tienen UI, validación e integración HTTP verificada contra backend local. F05 (perfil profesional) incluye formulario de creación, vista previa y agenda; el alta está bloqueada por un defecto de persistencia JSONB del backend. La autenticación real sigue pendiente de API desplegada, D-04 y configuración de términos; no hay cuentas demo ni sesión simulada.
+La base técnica está lista. F01 (acceso e identidad), F02 (perfil) y F04 (solicitudes de servicio) tienen UI, validación e integración HTTP verificada contra backend local. F05 (perfil profesional) incluye formulario de creación, vista previa, disponibilidad semanal y agenda editable contra la rama de correcciones; el alta real requiere integrar/desplegar esa rama. La autenticación real sigue pendiente de API desplegada y D-04; el prototipo usa la versión de términos `aliado-academico-mvp-v1`. No hay cuentas demo ni sesión simulada.
 
 ## Requisitos
 
@@ -22,7 +22,7 @@ npm run verify:config
 npm run doctor
 ```
 
-El archivo `.env` es local y no se versiona. `EXPO_PUBLIC_API_BASE_URL` debe apuntar al servidor sin `/api/v1` (el cliente añade el prefijo del OpenAPI); `EXPO_PUBLIC_TERMS_VERSION` debe contener la versión aprobada de términos. Sin esos valores, F01 muestra el bloqueo correspondiente y no simula autenticación.
+El archivo `.env` es local y no se versiona. `EXPO_PUBLIC_API_BASE_URL` debe apuntar al servidor sin `/api/v1` (el cliente añade el prefijo del OpenAPI); si falta, F01 muestra el bloqueo correspondiente y no simula autenticación. `EXPO_PUBLIC_TERMS_VERSION` es opcional: el prototipo usa por defecto `aliado-academico-mvp-v1` y permite sobreescribirlo por entorno.
 
 ## Comandos
 
@@ -160,9 +160,9 @@ La corrección de captura se verificó simulando el fallo original y el parche s
 - Stack y versiones: [ADR 0001](docs/adr/0001-stack-y-versiones-movil.md).
 - Flujo de ramas: [ADR 0002](docs/adr/0002-gitflow-fast-forward.md). `develop` integra F01/F02 y F04 se desarrolla en `feature/f04-solicitudes-servicio`.
 - Navegación: [ADR 0003](docs/adr/0003-navegacion-react-navigation.md).
-- F01: UI, validación y contrato de integración implementados; la autenticación real sigue bloqueada por API desplegada, D-04 y versión de términos. Ver [docs/features/auth.md](docs/features/auth.md).
+- F01: UI, validación y contrato de integración implementados; la autenticación real sigue bloqueada por API desplegada y D-04. El prototipo usa `aliado-academico-mvp-v1` para términos. Ver [docs/features/auth.md](docs/features/auth.md).
 - F02: perfil propio, edición, ubicación, visibilidad, vista pública y eliminación implementados; D-05 sigue pendiente. Ver [docs/features/profile.md](docs/features/profile.md).
 - F04: solicitudes propias, borrador, publicación, edición, cancelación y fotos opcionales implementados, con una iteración visual alineada al prototipo; no se declara cerrada mientras la idempotencia server-side y la gestión de fotos existentes sigan bloqueadas. Ver [docs/features/requests.md](docs/features/requests.md).
-- F05: formulario de creación con categorías/zonas reales, vista previa pública y agenda en modo consulta. El alta real está bloqueada por el error backend `jsonb`/`varchar`; la edición completa requiere `GET /api/v1/perfiles/mio`, definición de `datosGenerales` y decisiones de agenda. Ver [docs/features/professional-profile.md](docs/features/professional-profile.md) y [solicitudes al equipo backend](docs/backend-requests/BACKEND_CORRECTION_REQUESTS.md).
-- Pendientes que bloquean la siguiente fase: D-03 (regla temporal), D-04 (sesión segura), D-05 (eliminación/retención), D-06/D-07 (storage/archivos), contrato API desplegado, versión de términos, canal/deep link de recuperación y cierre de las decisiones indicadas en [docs/adr/README.md](docs/adr/README.md).
+- F05: formulario de creación con categorías/zonas reales, descripción, vista previa, disponibilidad semanal y agenda editable contra la rama de correcciones. El alta real requiere integrar/desplegar esa rama; el matching temporal automático sigue pendiente de D-03. Ver [docs/features/professional-profile.md](docs/features/professional-profile.md) y [solicitudes al equipo backend](docs/backend-requests/BACKEND_CORRECTION_REQUESTS.md).
+- Pendientes que bloquean la siguiente fase: D-03 (regla temporal), D-04 (sesión segura), D-05 (eliminación/retención), D-06/D-07 (storage/archivos), contrato API desplegado, aprobación legal de términos de producción, canal/deep link de recuperación y cierre de las decisiones indicadas en [docs/adr/README.md](docs/adr/README.md).
 - Los iconos actuales son provisionales y los identificadores `com.aliado.movil` deben confirmarse antes de publicar.

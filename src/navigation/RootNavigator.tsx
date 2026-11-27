@@ -28,7 +28,7 @@ import {
   WorkHistoryScreen,
 } from '../features/account-activity';
 import { FormalizationScreen } from '../features/formalization';
-import { ProfessionalProfileCreateScreen, ProfessionalProfileScreen } from '../features/professional-profile';
+import { ProfessionalAvailabilityScreen, ProfessionalProfileCreateScreen, ProfessionalProfileScreen } from '../features/professional-profile';
 import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
 import { colors } from '../shared/ui/theme';
 import { DeepLinkHandler } from './DeepLinkHandler';
@@ -38,7 +38,11 @@ import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export function RootNavigator() {
+export interface RootNavigatorProps {
+  initialAuthRoute?: 'Login' | 'Register';
+}
+
+export function RootNavigator({ initialAuthRoute = 'Login' }: RootNavigatorProps) {
   const { session } = useAuthSession();
   const [navigationReady, setNavigationReady] = useState(false);
 
@@ -50,6 +54,7 @@ export function RootNavigator() {
         onReady={() => setNavigationReady(true)}
       >
       <Stack.Navigator
+        initialRouteName={session ? 'MainTabs' : initialAuthRoute}
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: colors.background },
@@ -72,6 +77,7 @@ export function RootNavigator() {
               name="ProfessionalProfileCreate"
               component={ProfessionalProfileCreateScreen}
             />
+            {session.role === 'PRESTADOR' ? <Stack.Screen name="ProfessionalAvailability" component={ProfessionalAvailabilityScreen} /> : null}
             {session.role === 'CLIENTE' ? (
               <>
                 <Stack.Screen name="ReceivedProposals" component={ReceivedProposalsScreen} />

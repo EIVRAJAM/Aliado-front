@@ -16,6 +16,8 @@ export function getAuthErrorMessage(error: unknown, fallback: string): string {
       return 'Correo o contraseña incorrectos.';
     case 'ACCOUNT_BLOCKED':
       return 'La cuenta está bloqueada preventivamente. Contacta al equipo de soporte de ALIADO.';
+    case 'ACCOUNT_DELETED':
+      return 'Esta cuenta fue eliminada y no puede recuperarse.';
     case 'ADMIN_PORTAL_REQUIRED':
       return 'La administración se realiza desde el panel web. Esta app es solo para Cliente y Prestador.';
     case 'SESSION_EXPIRED':

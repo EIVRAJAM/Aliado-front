@@ -34,7 +34,7 @@ export function ServiceHistoryCard({ service, history }: ServiceHistoryCardProps
                     : serviceStateLabel(entry.estadoNuevo)}
                 </Text>
                 <Text style={styles.meta}>
-                  {actorRole(service, entry.actorId)} · {formatServiceDateTime(entry.fecha)}
+                  {entry.actorEliminado ? 'Cuenta eliminada' : actorRole(service, entry.actorId)} · {formatServiceDateTime(entry.fecha)}
                 </Text>
               </View>
             </View>

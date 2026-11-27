@@ -15,6 +15,7 @@ import { VerificationCard } from '../../trust/components/VerificationCard';
 import { ProfessionalDescriptionCard } from '../components/ProfessionalDescriptionCard';
 import { PublicPreviewCard } from '../components/PublicPreviewCard';
 import { useProfessionalProfileOverview } from '../hooks/useProfessionalProfileOverview';
+import { formatAvailability } from '../utils/professional-profile-format';
 
 type ProfessionalProfileScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -106,6 +107,12 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
                 onSave={saveDescription}
               />
 
+              <Card style={styles.availabilityCard}>
+                <View style={styles.availabilityHeader}><View style={styles.availabilityIcon}><Ionicons name="time-outline" size={18} color={colors.primary} /></View><View style={styles.availabilityText}><Text style={styles.availabilityTitle}>Disponibilidad</Text><Text style={styles.availabilitySubtitle}>Bloques semanales de atención declarados.</Text></View></View>
+                {profile?.disponibilidades.length ? <Text style={styles.availabilityList}>{profile.disponibilidades.map(formatAvailability).join(' · ')}</Text> : <InlineMessage variant="info" message="Aún no configuraste bloques de disponibilidad." />}
+                <PrimaryButton label="Configurar disponibilidad" variant="secondary" onPress={() => navigation.navigate('ProfessionalAvailability')} />
+              </Card>
+
               {previewLoading ? (
                 <Card style={styles.loadingCard}>
                   <ActivityIndicator color={colors.primary} />
@@ -138,12 +145,11 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
               cuando tiene contenido.
             </Text>
             <Text style={styles.limitItem}>
-              • Experiencia, portafolio y disponibilidad aún no están disponibles para edición en la
-              app.
+              • La disponibilidad semanal y los compromisos de agenda ya se pueden editar desde la
+              app con el contrato actual.
             </Text>
             <Text style={styles.limitItem}>
-              • La agenda se consulta en su pestaña independiente; sus mutaciones esperan la regla
-              de zona horaria.
+              • El matching automático entre solicitudes y disponibilidad sigue pendiente de D-03.
             </Text>
           </Card>
 
@@ -212,6 +218,13 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
   },
+  availabilityCard: { gap: spacing.md },
+  availabilityHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  availabilityIcon: { width: 38, height: 38, borderRadius: radii.md, backgroundColor: colors.infoSurface, alignItems: 'center', justifyContent: 'center' },
+  availabilityText: { flex: 1, gap: 2 },
+  availabilityTitle: { color: colors.text, fontSize: 16, fontWeight: '800' },
+  availabilitySubtitle: { color: colors.muted, fontSize: 12, lineHeight: 17 },
+  availabilityList: { color: colors.text, fontSize: 13, lineHeight: 19 },
   limitsCard: {
     gap: spacing.sm,
   },

@@ -20,6 +20,7 @@ export type DeletionState = 'PENDIENTE' | 'CONFIRMADA' | 'EXPIRADA' | 'RECHAZADA
 export interface DeletionRequest {
   estado: DeletionState;
   expiraEn: string;
+  archivosPendientes: number;
 }
 
 export interface UpdateProfileInput {
@@ -40,6 +41,7 @@ export type ProfileErrorCode =
   | 'CONFLICT'
   | 'NOT_FOUND'
   | 'EXPIRED'
+  | 'UNSUPPORTED'
   | 'SESSION_EXPIRED'
   | 'UNKNOWN';
 

@@ -1,7 +1,6 @@
 import { ApiError, requestJson } from '../../../shared/api/http-client';
 import {
   ProfileError,
-  isDeletionState,
   isVisibilityPreference,
   type DeletionRequest,
   type PublicProfile,
@@ -11,6 +10,7 @@ import {
   type VisibilityPreference,
 } from '../types/profile';
 import type { ProfileGateway } from './profile-gateway';
+import { parseDeletionResponse } from '../utils/deletion-contract';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -54,16 +54,6 @@ function parsePublicProfile(value: unknown): PublicProfile {
   return {
     usuarioId: value.usuarioId,
     zonaAproximada: nullableString(value.zonaAproximada),
-  };
-}
-
-function parseDeletion(value: unknown): DeletionRequest {
-  if (!isRecord(value) || !isDeletionState(value.estado) || typeof value.expiraEn !== 'string') {
-    throw new ProfileError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
-  }
-  return {
-    estado: value.estado,
-    expiraEn: value.expiraEn,
   };
 }
 
@@ -240,7 +230,7 @@ export class HttpProfileGateway implements ProfileGateway {
         method: 'POST',
         token,
       });
-      return parseDeletion(response);
+      return parseDeletionResponse(response);
     } catch (error) {
       throw mapApiError(error, 'No fue posible solicitar la eliminación de la cuenta.');
     }
@@ -256,7 +246,7 @@ export class HttpProfileGateway implements ProfileGateway {
           token,
         }
       );
-      return parseDeletion(response);
+      return parseDeletionResponse(response);
     } catch (error) {
       throw mapApiError(error, 'No fue posible confirmar la eliminación de la cuenta.');
     }

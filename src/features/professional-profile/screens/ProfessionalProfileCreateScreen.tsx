@@ -437,12 +437,11 @@ export function ProfessionalProfileCreateScreen({
               • La creación envía categorías, zonas y una descripción profesional opcional.
             </Text>
             <Text style={styles.limitItem}>
-              • La experiencia, el portafolio y la disponibilidad se gestionan en apartados propios
-              que aún no están disponibles en la app.
+              • La experiencia, el portafolio y la disponibilidad se gestionan en apartados propios.
             </Text>
             <Text style={styles.limitItem}>
-              • La agenda se consulta por separado y sus mutaciones siguen pendientes de la regla de
-              zona horaria.
+              • La agenda se consulta por separado y los compromisos se guardan como instantes. La
+              disponibilidad semanal se interpreta en la hora de Colombia (America/Bogota).
             </Text>
           </Card>
         </>

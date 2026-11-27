@@ -64,9 +64,11 @@ export function ServiceMessagesCard({
                 const own = message.remitenteId === ownId;
                 const sender = own
                   ? 'Tú'
-                  : message.remitenteId === service.clienteId
-                    ? 'Cliente'
-                    : 'Prestador';
+                  : message.remitenteEliminado
+                    ? 'Cuenta eliminada'
+                    : message.remitenteId === service.clienteId
+                      ? 'Cliente'
+                      : 'Prestador';
                 return (
                   <View
                     key={message.id}

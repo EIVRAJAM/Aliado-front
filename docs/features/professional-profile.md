@@ -1,6 +1,6 @@
 # F05 — Perfil profesional (app móvil)
 
-**Estado:** implementación frontend ampliada contra la rama backend `feature/mvp-backend-corrections`. La creación incluye una descripción profesional opcional; el perfil existente hidrata esa descripción desde `GET /api/v1/perfiles/mio` y permite editarla con `PUT /api/v1/perfiles/mio`; la vista pública solo muestra `descripcion` entre los datos generales. El contrato y la corrección JSONB aún no están integrados en `develop` ni desplegados. Experiencia, portafolio, disponibilidad y mutaciones de agenda siguen fuera de esta integración. No se usan mocks ni datos simulados. Seguimiento: [solicitudes de corrección y contrato backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-05--esquema-de-datosgenerales).
+**Estado:** implementación frontend ampliada contra la rama backend `feature/mvp-backend-corrections`. La creación incluye una descripción profesional opcional; el perfil existente hidrata esa descripción desde `GET /api/v1/perfiles/mio` y permite editarla con `PUT /api/v1/perfiles/mio`; la vista pública solo muestra `descripcion` entre los datos generales. El contrato y la corrección JSONB aún no están integrados en `develop` ni desplegados. También se implementaron la configuración semanal de disponibilidad y la creación/edición de compromisos de agenda contra los endpoints existentes. La compatibilidad/matching temporal automático sigue pendiente de D-03. No se usan mocks ni datos simulados. Seguimiento: [solicitudes de corrección y contrato backend](../backend-requests/BACKEND_CORRECTION_REQUESTS.md#be-05--esquema-de-datosgenerales).
 
 ## Alcance y corrección del diagnóstico inicial
 
@@ -29,7 +29,7 @@ Implementación frontend:
 - La vista pública muestra `descripcion` cuando tiene contenido y no muestra teléfono, correo, dirección exacta, documentos ni claves heredadas.
 - Se mantienen carga, error, reintento y sesión expirada con los patrones existentes.
 
-La integración depende de que la rama backend se integre y despliegue; la experiencia, el portafolio y la disponibilidad siguen en sus flujos pendientes.
+La integración depende de que la rama backend se integre y despliegue. La disponibilidad semanal y la agenda ya están implementadas contra esa rama; experiencia y portafolio siguen pendientes.
 
 ## Operaciones reales disponibles
 
@@ -45,11 +45,11 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
 | Agregar experiencia | `POST /api/v1/perfiles/mio/experiencia` | `201 ExperienciaResponse` | Lectura incluida en `GET /mio`; edición no implementada. |
 | Agregar portafolio | `POST /api/v1/perfiles/mio/portafolio` multipart | `201 PortafolioResponse` | Lectura incluida en `GET /mio`; edición y evidencia siguen pendientes (D-07). |
 | Eliminar portafolio | `DELETE /api/v1/perfiles/mio/portafolio/{id}` | `204` | No implementado en esta integración. |
-| Consultar disponibilidad | Incluida en `PerfilResponse` | — | Se hidrata con `GET /mio`; la edición sigue pendiente de D-03. |
-| Actualizar disponibilidad | `PUT /api/v1/perfiles/mio/disponibilidad` | `200 PerfilResponse` | No implementado; D-03 pendiente. |
-| Consultar agenda | `GET /api/v1/perfiles/mio/agenda` | `200 CompromisoResponse[]` | **Implementado en modo consulta.** |
-| Crear compromiso | `POST /api/v1/perfiles/mio/agenda` | `201 CompromisoResponse` | Bloqueado: D-03 y regla de zona horaria pendientes. |
-| Editar compromiso | `PUT /api/v1/perfiles/mio/agenda` | `200 CompromisoResponse` | Bloqueado: mismas reglas temporales. |
+| Consultar disponibilidad | Incluida en `PerfilResponse` | — | Se hidrata con `GET /mio`; la configuración semanal se edita desde la pantalla de disponibilidad. |
+| Actualizar disponibilidad | `PUT /api/v1/perfiles/mio/disponibilidad` | `200 PerfilResponse` | **Implementado**: bloques semanales interpretados en la hora de Colombia (`America/Bogota`). |
+| Consultar agenda | `GET /api/v1/perfiles/mio/agenda` | `200 CompromisoResponse[]` | **Implementado en consulta y mutaciones.** |
+| Crear compromiso | `POST /api/v1/perfiles/mio/agenda` | `201 CompromisoResponse` | **Implementado**: la fecha/hora se guarda como instante. |
+| Editar compromiso | `PUT /api/v1/perfiles/mio/agenda` | `200 CompromisoResponse` | **Implementado**: la fecha/hora se guarda como instante; sin endpoint de borrado. |
 | Vista previa pública | `GET /api/v1/perfiles/mio/vista-previa` | `200 VistaPreviaResponse` | **Implementado en modo consulta; entre los datos generales solo se muestra `descripcion`.** |
 | Exposición pública | `PUT /api/v1/perfiles/mio/exposicion` | `200 PerfilResponse` | No implementado en esta fase. |
 
@@ -86,7 +86,7 @@ Todas exigen rol `PRESTADOR` y sesión bearer.
   - Incluye la tarjeta de verificación documental F10 del Prestador; no incluye agenda.
 - Pantalla `AgendaScreen`:
   - Pestaña **Agenda** con consulta real de `GET /api/v1/perfiles/mio/agenda`, estados de carga, error, reintento, vacío y ausencia de perfil.
-  - No muestra descripción, vista previa ni verificación.
+  - Permite crear y editar compromisos con selectores de fecha/hora; muestra validación local y `409 CONFLICTO_AGENDA` del backend.
 
 ### Flujo de creación inicial
 
@@ -132,16 +132,17 @@ La ruta `ProfessionalProfile` se registra en el stack autenticado y se abre desd
 - **Estática:** `npm run typecheck`, `npm run verify:config`, `git diff --check` y export Android correctos con Node 24.
 - **Integración API:** contra la rama backend en entorno efímero se comprobó creación con descripción, `GET /mio`, edición, descripción vacía, límite de 1000/1001 caracteres, claves desconocidas y compatibilidad con claves heredadas.
 - **Visual Android:** con Metro y backend temporales dedicados se verificó la descripción inicial, edición, guardado, recarga desde `GET /mio` y persistencia SQL exacta. La captura y el informe están en `/tmp/aliado-f05-description-save/`.
-- La vista previa pública respondió `404 PERFIL_NO_DISPONIBLE` por falta de perfil base/disponibilidad; la app mostró el estado informativo. No se configuró D-03.
+- La vista previa pública respondió `404 PERFIL_NO_DISPONIBLE` por falta de perfil base/disponibilidad; la app mostró el estado informativo. La regla operativa de disponibilidad/agenda quedó fijada en `America/Bogota`.
 - El máximo exacto de 1000 caracteres no se comprobó visualmente: la inyección ADB se truncó. Queda cubierto por `maxLength`, contador, pruebas estáticas y API 1000/1001.
-- La agenda se presenta en la hora local del dispositivo; la regla de zona horaria y los solapes formales siguen pendientes de D-03.
-- La creación y la edición de la descripción están implementadas contra la rama backend. La experiencia, el portafolio, la disponibilidad y las mutaciones de agenda siguen pendientes de sus contratos/decisiones.
+- Los compromisos se guardan como instantes y se muestran en la zona horaria del dispositivo. La disponibilidad semanal se interpreta en la hora de Colombia (`America/Bogota`); el matching automático sigue pendiente de D-03.
+- La descripción, la disponibilidad semanal y la agenda están implementadas contra la rama backend. Experiencia y portafolio siguen pendientes.
+- La prueba de conflicto entre una nueva disponibilidad y un compromiso existente quedó corregida en backend: los compromisos se convierten con `atZoneSameInstant(America/Bogota)`, se manejan cruces de medianoche y la API rechaza el solape con `409 CONFLICTO_AGENDA` sin alterar la disponibilidad previa. La validación HTTP y visual está documentada en `/tmp/aliado-agenda-timezone-followup/`.
 
 ## Dependencias y decisiones abiertas
 
 - F01 identidad/roles y F04 catálogo/storage: disponibles.
 - D-02: granularidad de catálogo, oferta y portafolio.
-- D-03: regla temporal y zona horaria para disponibilidad/agenda.
+- D-03: regla temporal y zona horaria para disponibilidad/agenda. La zona operativa `America/Bogota` quedó fijada para el conflicto disponibilidad/agenda; ventanas de solicitud y matching siguen abiertas.
 - D-06/D-07: storage productivo y límites/MIME de evidencias; la app no impone reglas locales de verificación.
 - F10 requiere reconstruir el development build para incluir `expo-document-picker`.
 - `GET /api/v1/perfiles/mio` está implementado en la rama backend de correcciones; falta integrarlo y desplegarlo.

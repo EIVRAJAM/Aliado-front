@@ -72,9 +72,12 @@ export function ProfileDeleteScreen({ navigation }: ProfileDeleteScreenProps) {
       setPending(null);
       setCanConfirm(false);
       setConfirmed(request);
+      const pendingFiles = request.archivosPendientes;
       Alert.alert(
-        'Cuenta bloqueada',
-        'La cuenta quedó bloqueada y la sesión se cerró. La eliminación definitiva y la retención de datos dependen de la política aprobada (D-05); no se garantiza borrado inmediato.',
+        pendingFiles > 0 ? 'Cuenta eliminada; limpieza pendiente' : 'Cuenta eliminada',
+        pendingFiles > 0
+          ? `La cuenta y sus datos personales fueron eliminados. La limpieza de ${pendingFiles} archivo(s) personales quedó pendiente y se reintentará automáticamente. La sesión se cerró y no podrás iniciar sesión ni recuperar la cuenta. El historial compartido permanece anonimizado.`
+          : 'La cuenta y sus datos personales fueron eliminados. Los archivos personales fueron eliminados. La sesión se cerró y no podrás iniciar sesión ni recuperar la cuenta. El historial compartido permanece anonimizado y se muestra como “Cuenta eliminada”.',
         [{ text: 'Volver a iniciar sesión', onPress: clearSession }],
         { cancelable: false }
       );
@@ -101,7 +104,7 @@ export function ProfileDeleteScreen({ navigation }: ProfileDeleteScreenProps) {
   const handleConfirm = () => {
     Alert.alert(
       'Confirmar eliminación',
-      'La cuenta se bloqueará y se cerrarán sus sesiones. La eliminación definitiva y la retención de datos dependen de la política aprobada (D-05).',
+      'Se eliminarán tu correo, contraseña, sesiones, nombre, teléfono, ubicación exacta, perfil, preferencias y archivos personales. El historial compartido de servicios se conservará anonimizado. Esta acción no se puede deshacer.',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -123,13 +126,19 @@ export function ProfileDeleteScreen({ navigation }: ProfileDeleteScreenProps) {
     >
       <InlineMessage
         variant="info"
-        message="Solicitar la eliminación no borra la cuenta de inmediato. La confirmación bloquea la cuenta y cierra sus sesiones; la eliminación definitiva y la retención de datos siguen pendientes de D-05."
+        message="Se eliminarán tus credenciales, sesiones, nombre, teléfono, ubicación exacta, perfil, preferencias y archivos personales. Se conservará el historial compartido de servicios, propuestas, mensajes, calificaciones/reseñas y reportes sin asociarlo a tu identidad; la persona aparecerá como “Cuenta eliminada”. No podrás iniciar sesión ni recuperar la cuenta."
+      />
+      <InlineMessage
+        variant="info"
+        message="La eliminación se bloquea si tienes un servicio en ejecución."
       />
       {formError ? <InlineMessage message={formError} /> : null}
       {confirmed ? (
         <InlineMessage
           variant="success"
-          message="La cuenta quedó bloqueada. La eliminación definitiva y la retención de datos dependen de la política aprobada (D-05)."
+          message={confirmed.archivosPendientes > 0
+            ? 'La cuenta fue eliminada, pero la limpieza de algunos archivos personales quedó pendiente y se reintentará automáticamente.'
+            : 'La cuenta fue eliminada y los archivos personales fueron eliminados. La sesión se cerró y tus datos personales ya no están disponibles; el historial compartido permanece anonimizado.'}
         />
       ) : pending ? (
         <InlineMessage
@@ -149,7 +158,7 @@ export function ProfileDeleteScreen({ navigation }: ProfileDeleteScreenProps) {
         </View>
       </Card>
       {!confirmed && (pending || canConfirm) ? (
-        <PrimaryButton label="Confirmar eliminación" variant="danger" onPress={handleConfirm} loading={submitting} />
+        <PrimaryButton label="Confirmar eliminación definitiva" variant="danger" onPress={handleConfirm} loading={submitting} />
       ) : null}
       {!confirmed && !pending && !canConfirm ? (
         <PrimaryButton label="Solicitar eliminación" variant="danger" onPress={handleRequest} loading={submitting} />

@@ -24,6 +24,7 @@ export type RootStackParamList = {
   ProfileDelete: undefined;
   ProfessionalProfile: undefined;
   ProfessionalProfileCreate: undefined;
+  ProfessionalAvailability: undefined;
   Formalization: undefined;
   NotificationPreferences: undefined;
   WorkHistory: undefined;

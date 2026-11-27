@@ -402,7 +402,7 @@ function ServiceProposalCard({ service }: { service: ContractedService }) {
         {service.propuesta.mensaje?.trim() || 'Sin mensaje.'}
       </Text>
       <Text style={styles.footerText}>
-        Prestador {shortId(service.prestadorId)}
+        {service.prestadorEliminado ? 'Cuenta eliminada' : `Prestador ${shortId(service.prestadorId)}`}
       </Text>
     </Card>
   );

@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
@@ -15,9 +15,10 @@ interface AgendaSectionProps {
   loading: boolean;
   error: string | null;
   missing: boolean;
+  onEdit: (commitment: AgendaCommitment) => void;
 }
 
-export function AgendaSection({ agenda, loading, error, missing }: AgendaSectionProps) {
+export function AgendaSection({ agenda, loading, error, missing, onEdit }: AgendaSectionProps) {
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
@@ -56,6 +57,9 @@ export function AgendaSection({ agenda, loading, error, missing }: AgendaSection
                 <Text style={styles.itemTime}>{formatCommitmentTime(commitment)}</Text>
                 <Text style={styles.itemOrigin}>{originLabel(commitment.origen)}</Text>
               </View>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Editar compromiso ${formatCommitmentTime(commitment)}`} onPress={() => onEdit(commitment)} style={styles.editButton}>
+                <Text style={styles.editText}>Editar</Text>
+              </Pressable>
             </View>
           ))}
         </View>
@@ -64,8 +68,10 @@ export function AgendaSection({ agenda, loading, error, missing }: AgendaSection
       <View style={styles.note}>
         <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
         <Text style={styles.noteText}>
-          Los horarios se muestran según la hora local del dispositivo. La creación y edición de
-          compromisos aún no están disponibles en la app.
+          Los compromisos se guardan como instantes y se muestran en la zona horaria del
+          dispositivo. La disponibilidad semanal se interpreta en la hora de Colombia
+          (America/Bogota). No representan una reserva ni confirman compatibilidad automática con
+          solicitudes; esa regla sigue pendiente de D-03.
         </Text>
       </View>
     </Card>
@@ -150,6 +156,8 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 12,
   },
+  editButton: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
+  editText: { color: colors.primary, fontSize: 13, fontWeight: '700' },
   note: {
     flexDirection: 'row',
     alignItems: 'flex-start',

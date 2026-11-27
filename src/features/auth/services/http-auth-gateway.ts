@@ -135,6 +135,17 @@ export class HttpAuthGateway implements AuthGateway {
       if (
         error instanceof ApiError &&
         error.status === 403 &&
+        getServerCode(error.body) === 'CUENTA_ELIMINADA'
+      ) {
+        throw new AuthError(
+          'ACCOUNT_DELETED',
+          'Esta cuenta fue eliminada y no puede recuperarse.',
+          403
+        );
+      }
+      if (
+        error instanceof ApiError &&
+        error.status === 403 &&
         getServerCode(error.body) === 'CUENTA_BLOQUEADA'
       ) {
         throw new AuthError(

@@ -1,6 +1,6 @@
 # F01 — Acceso e identidad (app móvil)
 
-**Estado:** UI, validación y cliente HTTP alineados al OpenAPI entregado por backend. Integración HTTP autenticada verificada contra backend local; API desplegada, D-04, configuración de entorno y versión de términos siguen pendientes. La verificación local no constituye aceptación formal.
+**Estado:** UI, validación y cliente HTTP alineados al OpenAPI entregado por backend. Integración HTTP autenticada verificada contra backend local; API desplegada, D-04 y configuración de entorno siguen pendientes. El prototipo usa la versión pública `aliado-academico-mvp-v1` y permite sobreescribirla por entorno; la aprobación legal de una versión de producción sigue pendiente.
 
 ## Alcance móvil
 
@@ -11,6 +11,7 @@ Cubre SPEC-01 para los roles **Cliente** y **Prestador**:
 - Solicitud de recuperación y confirmación con código y nueva contraseña.
 - Validación de formularios, estados de carga, error, éxito confirmado y mensajes genéricos.
 - Navegación condicional entre el flujo de acceso y una sesión autenticada.
+- Onboarding visual de tres pasos antes del login; aparece en cada inicio en frío y no guarda una marca persistente. “Omitir” lleva a la pantalla de elección.
 
 El acceso de Administrador pertenece al panel web y no se implementa aquí.
 
@@ -28,11 +29,11 @@ src/features/auth/
 └── index.ts           # superficie pública de la feature
 ```
 
-La navegación raíz vive en `src/navigation/` y el bootstrap en `src/bootstrap/App.tsx`.
+La navegación raíz vive en `src/navigation/`; el bootstrap en `src/bootstrap/App.tsx` monta `OnboardingGate`, que conserva la elección solo en memoria durante la ejecución actual y no añade persistencia.
 
 ## Patrón visual
 
-El acceso usa fondo azul oscuro, marca ALIADO visible y una tarjeta blanca para el formulario, siguiendo el lenguaje visual del prototipo sin copiar su implementación web. Los avisos de API no configurada y de versión de términos faltante permanecen visibles.
+El acceso usa fondo azul oscuro, marca ALIADO visible y una tarjeta blanca para el formulario, siguiendo el lenguaje visual del prototipo sin copiar su implementación web. El aviso de API no configurada permanece visible; el prototipo usa una versión de términos por defecto y no muestra bloqueo por versión legal de producción.
 
 ## Fuente técnica del contrato
 
@@ -113,7 +114,7 @@ CORS: la preflight de navegador no devolvió `Access-Control-Allow-Origin`. No s
 
 - **D-04 abierta:** no se implementa persistencia de sesión ni almacenamiento de tokens. La sesión vive únicamente en memoria durante la ejecución actual. No se usa AsyncStorage, localStorage ni logs para tokens.
 - **API local verificada, sin entorno desplegado:** el flujo se probó contra el backend local en `localhost:8080`; no se definió todavía una URL de API desplegada para el equipo móvil.
-- **Versión de términos:** `EXPO_PUBLIC_TERMS_VERSION` debe ser definida por producto/legal. Sin ella el registro queda bloqueado y no se inventa una versión.
+- **Versión de términos:** el prototipo usa por defecto `aliado-academico-mvp-v1` si no hay `EXPO_PUBLIC_TERMS_VERSION`. La UI muestra un aviso breve de prototipo académico, con modal opcional, y mantiene el consentimiento obligatorio. Una versión legal de producción sigue pendiente de aprobación.
 - **Recuperación:** el contrato define token y nueva contraseña, pero no el canal ni el deep link. La app permite pegar el código manualmente hasta que exista una decisión de enlace.
 - **Idempotencia:** `Idempotency-Key` es opcional en OpenAPI, pero D-18 sigue abierta; no se implementa generación ni reintento automático.
 - **Login de Administrador:** fuera de alcance móvil. SPEC-12 no agrega rol, navegación ni pantallas administrativas. La app envía `X-ALIADO-Client: MOBILE` y mapea el `403 ADMINISTRADOR_NO_DISPONIBLE_EN_MOVIL` solicitado en BE-15 al aviso para usar el panel web. Como fallback con el backend actual, si llega `200` con `rol: ADMINISTRADOR`, intenta cerrar el token recién emitido y no conserva la sesión; esto no puede restaurar sesiones previas que el backend haya cerrado. No probar cuentas Administrador desde el móvil hasta que BE-15 esté implementado.
@@ -133,7 +134,7 @@ CORS: la preflight de navegador no devolvió `Access-Control-Allow-Origin`. No s
 - Reconciliar con backend las diferencias de status, errores, seguridad global y respuesta de registro.
 - Aprobar D-04: duración, concurrencia, transporte, revocación y almacenamiento seguro.
 - Configurar la API desplegada de F01 en `EXPO_PUBLIC_API_BASE_URL`; la verificación local usó el backend en `localhost:8080`.
-- Definir la versión de términos aprobada y cargarla en el entorno.
+- Definir y aprobar la versión legal de términos para producción; el prototipo usa `aliado-academico-mvp-v1`.
 - Definir el canal y deep link de recuperación si producto lo requiere.
 - Resolver D-18 si el registro debe enviar `Idempotency-Key` y cómo se reintenta.
 - Añadir pruebas E2E de UI contra API real; la verificación actual cubrió el gateway y los flujos HTTP, no la interacción de pantallas.

@@ -1,5 +1,7 @@
 import type {
   AgendaCommitment,
+  AvailabilityBlockInput,
+  CommitmentInput,
   CreateProfessionalProfileInput,
   CreatedProfessionalProfile,
   OwnProfessionalProfile,
@@ -17,4 +19,7 @@ export interface ProfessionalProfileGateway {
     input: CreateProfessionalProfileInput
   ): Promise<CreatedProfessionalProfile>;
   updateDescription(token: string, descripcion: string | null): Promise<OwnProfessionalProfile>;
+  updateAvailability(token: string, bloques: AvailabilityBlockInput[]): Promise<OwnProfessionalProfile>;
+  createCommitment(token: string, input: CommitmentInput): Promise<AgendaCommitment>;
+  updateCommitment(token: string, commitmentId: string, input: CommitmentInput): Promise<AgendaCommitment>;
 }
