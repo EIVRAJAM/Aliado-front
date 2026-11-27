@@ -1,6 +1,7 @@
 import { ApiError, requestJson } from '../../../shared/api/http-client';
 import {
   OpportunityError,
+  isOpportunityId,
   isOpportunityUrgency,
   type Opportunity,
   type OpportunityCategory,
@@ -35,14 +36,18 @@ function nullableString(value: unknown): string | null {
   return value;
 }
 
-function parseStringArray(value: unknown): string[] {
+function parsePhotoReferences(value: unknown): Array<{ id: string; orden: number }> {
+  if (value === undefined || value === null) return [];
   if (!Array.isArray(value)) {
-    throw new OpportunityError(
-      'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
-    );
+    throw new OpportunityError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
   }
-  return value.filter((item): item is string => typeof item === 'string');
+  return value.map((item) => {
+    if (!isRecord(item) || typeof item.id !== 'string' || !isOpportunityId(item.id)
+      || typeof item.orden !== 'number' || !Number.isInteger(item.orden) || item.orden < 1) {
+      throw new OpportunityError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    }
+    return { id: item.id, orden: item.orden };
+  });
 }
 
 function parseCategory(value: unknown): OpportunityCategory {
@@ -81,7 +86,7 @@ function parseOpportunity(value: unknown): Opportunity {
     urgencia: urgencia === null || urgencia === undefined ? null : urgencia,
     descripcion: nullableString(value.descripcion),
     fechaCreacion: requiredString(value.fechaCreacion),
-    fotos: parseStringArray(value.fotos),
+    fotosDetalle: parsePhotoReferences(value.fotosDetalle),
   };
 }
 
@@ -224,6 +229,10 @@ export class HttpOpportunitiesGateway implements OpportunitiesGateway {
     } catch (error) {
       throw mapApiError(error, 'No fue posible cargar la oportunidad.');
     }
+  }
+
+  photoUrl(solicitudId: string, fotoId: string): string {
+    return `${this.requireBaseUrl().replace(/\/+$/, '')}/api/v1/solicitudes/${encodeURIComponent(solicitudId)}/fotos/${encodeURIComponent(fotoId)}`;
   }
 
 }

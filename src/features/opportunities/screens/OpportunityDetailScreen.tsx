@@ -10,6 +10,7 @@ import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { OpportunityStateView } from '../components/OpportunityStateView';
+import { OpportunityPhotoGallery } from '../components/OpportunityPhotoGallery';
 import { useOpportunityDetail } from '../hooks/useOpportunityDetail';
 import type { Opportunity } from '../types/opportunity';
 import {
@@ -54,6 +55,7 @@ export function OpportunityDetailScreen({
     <ProviderOpportunityDetailScreen
       navigation={navigation}
       solicitudId={route.params.solicitudId}
+      token={session.token}
     />
   );
 }
@@ -61,9 +63,11 @@ export function OpportunityDetailScreen({
 function ProviderOpportunityDetailScreen({
   navigation,
   solicitudId,
+  token,
 }: {
   navigation: OpportunityDetailScreenProps['navigation'];
   solicitudId: string;
+  token: string;
 }) {
   const { opportunity, loading, notFound, error, reload } =
     useOpportunityDetail(solicitudId);
@@ -101,6 +105,7 @@ function ProviderOpportunityDetailScreen({
       ) : (
         <OpportunityDetailContent
           opportunity={opportunity}
+          token={token}
           onPropose={() =>
             navigation.navigate('ProposalFlow', {
               solicitudId: opportunity.solicitudId,
@@ -120,15 +125,17 @@ function ProviderOpportunityDetailScreen({
 
 function OpportunityDetailContent({
   opportunity,
+  token,
   onPropose,
 }: {
   opportunity: Opportunity;
+  token: string;
   onPropose: () => void;
 }) {
   const tone = urgencyTone(opportunity.urgencia);
   const description = opportunity.descripcion?.trim() ?? '';
   const hasDescription = description.length > 0;
-  const photoCount = opportunity.fotos.length;
+  const photoCount = opportunity.fotosDetalle.length;
 
   return (
     <>
@@ -189,13 +196,11 @@ function OpportunityDetailContent({
       </Card>
 
       {photoCount > 0 ? (
-        <View style={styles.photoNotice}>
-          <Ionicons name="images-outline" size={16} color={colors.info} />
-          <Text style={styles.photoNoticeText}>
-            Las fotos no pueden abrirse: el contrato actual entrega solo referencias internas, no
-            una URL de descarga.
-          </Text>
-        </View>
+        <OpportunityPhotoGallery
+          requestId={opportunity.solicitudId}
+          photos={opportunity.fotosDetalle}
+          token={token}
+        />
       ) : null}
 
       <View style={styles.privacyNotice}>

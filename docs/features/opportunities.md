@@ -1,6 +1,6 @@
 # F06 — Compatibilidad y oportunidades (app móvil)
 
-**Estado:** tablero y detalle implementados contra el contrato real del backend; los avisos del Prestador se consultan desde la bandeja unificada F09. La iteración visual reduce la carga del tablero con filtros en modal y reorganiza el detalle en una lectura compacta. La UI se verificó en emulador Android con los datos locales `[DEMO LOCAL F06]`; no se usan mocks ni fixtures en la integración.
+**Estado:** tablero, detalle y galería autenticada de fotos implementados contra el contrato del backend; los avisos del Prestador se consultan desde la bandeja unificada F09. La galería depende de que el backend incluya `fotosDetalle` en oportunidades y aplique la autorización de compatibilidad en la descarga. La iteración visual reduce la carga del tablero con filtros en modal y reorganiza el detalle en una lectura compacta.
 
 ## Alcance móvil
 
@@ -9,7 +9,7 @@ Cubre SPEC-06 para el rol **Prestador**:
 - oportunidades en **Inicio** para Prestador, con filtros, tarjetas, estados y acceso al detalle;
 - tablero de solicitudes compatibles calculado por el servidor;
 - filtros opcionales por categoría y urgencia enviados a la API desde un botón compacto y un modal;
-- detalle de una oportunidad con encabezado compacto, descripción completa, referencia de solicitud, fecha y cantidad de fotos como metadatos secundarios;
+- detalle de una oportunidad con encabezado compacto, descripción completa, referencia de solicitud, fecha, cantidad de fotos y galería con vista ampliada;
 - acceso a los avisos desde la campana de Inicio; abre la bandeja unificada F09, sin simular push, polling ni notificaciones locales;
 - estados de carga, error recuperable, vacío, resultados y sesión expirada;
 - control de rol en navegación y pantallas, con el backend como autoridad final.
@@ -25,6 +25,7 @@ Todas las operaciones requieren sesión bearer. El tablero y el detalle exigen r
 | Catálogo de categorías | `GET /api/v1/catalogo/categorias` | — | `{ id, nombre }[]` para el filtro. |
 | Tablero | `GET /api/v1/oportunidades` | Query opcional `categoria` y `urgencia`. | `OportunidadResponse[]`. |
 | Detalle | `GET /api/v1/oportunidades/{solicitudId}` | Path UUID. | `OportunidadResponse`. |
+| Descargar foto | `GET /api/v1/solicitudes/{solicitudId}/fotos/{fotoId}` | Bearer autenticado. | Bytes de imagen con su `Content-Type`; el backend permite al Cliente propietario o al Prestador compatible mientras la solicitud siga publicada. |
 | Avisos | Bandeja unificada F09 | — | Ver [F09](notifications.md); F06 no mantiene una bandeja propia. |
 
 `OportunidadResponse` observado en el backend:
@@ -37,7 +38,7 @@ Todas las operaciones requieren sesión bearer. El tablero y el detalle exigen r
   "urgencia": "BAJA | MEDIA | ALTA | URGENTE | null",
   "descripcion": "texto o null",
   "fechaCreacion": "OffsetDateTime",
-  "fotos": ["clave-interna"]
+  "fotosDetalle": [{ "id": "uuid-foto", "orden": 1 }]
 }
 ```
 
@@ -76,7 +77,7 @@ src/features/opportunities/
 
 - `OpportunitiesBoard`: contiene el tablero de Inicio; carga el catálogo, muestra un botón de filtros con indicador de estado activo y concentra la selección de categoría, urgencia, aplicación y limpieza en un modal. El conteo aparece una sola vez junto a las acciones; el subtítulo es la única explicación general de compatibilidad y se retiró la tarjeta redundante de alcance. La campana de avisos vive en la cabecera de Inicio, no dentro del tablero.
 - `OpportunityFilterModal`: usa el patrón modal de la app, respeta safe areas, cierra con botón, overlay y Atrás, y mantiene áreas táctiles de al menos 44 puntos.
-- `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` al recibir foco y presenta un único bloque con categoría, urgencia, zona aproximada, descripción completa, fecha, referencia corta de `solicitudId` y cantidad de fotos. No repite campos y usa un aviso compacto para privacidad y límites del contrato.
+- `OpportunityDetailScreen`: vuelve a consultar `GET /oportunidades/{solicitudId}` al recibir foco y presenta categoría, urgencia, zona aproximada, descripción, fecha y referencia corta. Cuando hay fotos, las carga desde el endpoint binario usando el Bearer de la sesión; `OpportunityPhotoGallery` muestra miniaturas y permite abrirlas ampliadas. No presenta claves internas al Prestador.
 - La campana de Inicio abre la pantalla **Notificaciones** de F09. No hay pantalla, hook, tarjeta ni operación de gateway de avisos dentro de F06; los `NUEVA_OPORTUNIDAD` se muestran y navegan desde la bandeja unificada.
 - No se muestra identidad, correo, teléfono ni dirección exacta del Cliente; el DTO real tampoco los expone.
 
@@ -86,8 +87,8 @@ src/features/opportunities/
 - **La disponibilidad no es una ventana temporal.** El backend considera disponible al perfil que tiene al menos un bloque declarado; no hay comparación horaria. La app no promete coincidencia temporal.
 - **No hay paginación ni orden documentado.** Se muestra la lista completa que entrega el servidor.
 - **El detalle y el tablero comparten DTO.** No hay datos adicionales de contacto ni de Cliente.
-- **Fotos sin contrato de descarga.** La oportunidad entrega solo claves internas (`archivoKey`). La descarga existente exige `solicitudId` y `fotoId`, pero el DTO de oportunidad no expone `fotoId` ni una URL. La app muestra el número de fotos y advierte que aún no pueden visualizarse; no inventa URLs ni consulta endpoints por clave.
-- **Notificaciones sin push.** El endpoint es una bandeja persistida. No se implementa polling, WebSocket, push ni notificaciones locales porque el mecanismo de entrega (D-08) no está definido. `estadoEntrega` es un estado del worker del backend, no una confirmación de push.
+- **Contrato de fotos.** La oportunidad expone únicamente `fotosDetalle` con IDs y orden; no publica claves internas de almacenamiento. Si una respuesta no trae `fotosDetalle`, la app muestra que las fotos no están disponibles y no inventa URLs ni consulta endpoints por `archivoKey`.
+- **Entrega de notificaciones.** La bandeja persistida es el historial confiable; el piloto de push Android para Prestador se documenta en [F09](notifications.md) y depende de la configuración del APK y Firebase.
 - **El plan fuente menciona “401 sin rol Prestador”.** En el backend real, una sesión autenticada con rol distinto recibe `403`; sin sesión, `401`.
 - **El plan fuente describe casos de uso y puertos internos.** El backend actual expone un `OportunidadService` concreto y un `NotificacionController`; el cliente consume HTTP, no esos contratos internos.
 - **La propuesta se implementa desde F07.** El detalle ofrece **Enviar propuesta** y abre el flujo de F07. La contratación y la recepción/comparación de propuestas para Cliente pertenecen a F08 y no se simulan.
@@ -121,9 +122,9 @@ La sesión Prestador existente se usó contra los datos `[DEMO LOCAL F06]`:
 - filtro combinado `Aire acondicionado` + `Urgente`: `1` oportunidad; al reabrir el modal, ambas selecciones se conservaron;
 - limpiar desde el modal: volvió a `4` oportunidades y retiró el indicador;
 - filtro `Pintura`: `0` resultados con estado vacío; la acción de limpiar devolvió las `4` oportunidades;
-- detalle de una oportunidad demo: categoría, urgencia, zona aproximada, descripción completa, fecha de publicación, referencia `Ref. 66000000…0001`, “Sin fotos” y aviso compacto de privacidad y límites; sin campos repetidos.
+- detalle de una oportunidad demo: categoría, urgencia, zona aproximada, descripción completa, fecha de publicación, referencia `Ref. 66000000…0001` y cantidad de fotos; sin campos repetidos.
 
-Los datos demo no incluyen descripciones nulas/vacías, saltos de línea ni fotos, por lo que no se pudieron verificar visualmente esos estados. La UI implementa el texto de reemplazo para descripción ausente y la nota de fotos no descargables; no se crearon registros para forzarlos. Tampoco se repitieron el `404` unificado ni la denegación `403`, que no forman parte de este ajuste. La apertura de avisos desde Inicio se valida en [F09](notifications.md).
+La base compartida no se modificó. El estado de error de descarga se maneja por imagen; la validación con una foto real queda pendiente de ejecutar con el backend de esta corrección y una solicitud de prueba autorizada. Tampoco se repitieron el `404` unificado ni la denegación `403`, que no forman parte de este ajuste. La apertura de avisos desde Inicio se valida en [F09](notifications.md).
 
 ## Enlaces
 

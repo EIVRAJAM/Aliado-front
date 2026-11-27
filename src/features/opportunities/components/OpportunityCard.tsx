@@ -58,11 +58,11 @@ export function OpportunityCard({ opportunity, onPress }: OpportunityCardProps) 
               {opportunity.zonaAproximada}
             </Text>
           </View>
-          {opportunity.fotos.length > 0 ? (
+          {opportunity.fotosDetalle.length > 0 ? (
             <View style={styles.metaItem}>
               <Ionicons name="images-outline" size={15} color={colors.muted} />
               <Text style={styles.metaText}>
-                {photoCountLabel(opportunity.fotos.length)}
+                {photoCountLabel(opportunity.fotosDetalle.length)}
               </Text>
             </View>
           ) : null}

@@ -7,7 +7,12 @@ export interface Opportunity {
   urgencia: OpportunityUrgency | null;
   descripcion: string | null;
   fechaCreacion: string;
-  fotos: string[];
+  fotosDetalle: OpportunityPhotoReference[];
+}
+
+export interface OpportunityPhotoReference {
+  id: string;
+  orden: number;
 }
 
 export interface OpportunityCategory {
