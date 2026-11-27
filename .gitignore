@@ -46,3 +46,6 @@ Thumbs.db
 
 # Documentación temporal de análisis/prototipos; no versionar
 /docs/temporary/
+
+# Firebase Android local configuration
+google-services.json

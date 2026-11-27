@@ -23,9 +23,10 @@ const AuthSessionContext = createContext<AuthSessionContextValue | null>(null);
 
 interface AuthSessionProviderProps extends PropsWithChildren {
   gateway: AuthGateway;
+  retireInstallation?: (session: AuthSession) => Promise<void>;
 }
 
-export function AuthSessionProvider({ gateway, children }: AuthSessionProviderProps) {
+export function AuthSessionProvider({ gateway, retireInstallation, children }: AuthSessionProviderProps) {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
@@ -44,10 +45,12 @@ export function AuthSessionProvider({ gateway, children }: AuthSessionProviderPr
 
     setIsSigningOut(true);
     try {
+      await retireInstallation?.(session);
       await gateway.logout(session.token);
       setSession(null);
     } catch (error) {
-      if (error instanceof AuthError && error.code === 'SESSION_EXPIRED') {
+      if (error instanceof AuthError && (error.code === 'SESSION_EXPIRED'
+        || (retireInstallation && session.role === 'PRESTADOR' && error.code === 'NETWORK'))) {
         setSession(null);
         return;
       }
@@ -55,11 +58,12 @@ export function AuthSessionProvider({ gateway, children }: AuthSessionProviderPr
     } finally {
       setIsSigningOut(false);
     }
-  }, [gateway, session]);
+  }, [gateway, retireInstallation, session]);
 
   const clearSession = useCallback(() => {
     setSession(null);
-  }, []);
+    if (session && retireInstallation) void retireInstallation(session).catch(() => undefined);
+  }, [retireInstallation, session]);
 
   const value = useMemo(
     () => ({

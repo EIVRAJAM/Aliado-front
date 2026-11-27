@@ -10,6 +10,7 @@ import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { OpportunitiesBoard } from '../../opportunities/components/OpportunitiesBoard';
 import { RequestsBoard } from '../../requests/components/RequestsBoard';
+import { useUnreadNotifications } from '../../notifications/hooks/useUnreadNotifications';
 
 type HomeScreenProps = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Home'>,
@@ -18,6 +19,7 @@ type HomeScreenProps = CompositeScreenProps<
 
 export function HomeScreen({ navigation }: HomeScreenProps) {
   const { session } = useAuthSession();
+  const hasNewNotifications = useUnreadNotifications();
 
   if (!session) {
     return null;
@@ -31,7 +33,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
       headerAction={
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Notificaciones"
+          accessibilityLabel={hasNewNotifications ? 'Notificaciones nuevas' : 'Notificaciones'}
           onPress={() => navigation.navigate('Notifications')}
           style={({ pressed }) => [
             styles.headerAction,
@@ -39,6 +41,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
           ]}
         >
           <Ionicons name="notifications-outline" size={22} color={colors.primary} />
+          {hasNewNotifications ? <View style={styles.notificationDot} /> : null}
         </Pressable>
       }
     >
@@ -110,5 +113,16 @@ const styles = StyleSheet.create({
   },
   headerActionPressed: {
     backgroundColor: colors.background,
+  },
+  notificationDot: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: colors.surface,
+    backgroundColor: colors.danger,
   },
 });

@@ -3,6 +3,8 @@ import {
   NotificationError,
   isNotificationType,
   type AppNotification,
+  type NotificationPage,
+  type NotificationReadFilter,
 } from '../types/notification';
 import type { NotificationGateway } from './notification-gateway';
 
@@ -45,30 +47,19 @@ function parseNotifications(value: unknown): AppNotification[] {
     );
   }
 
-  return value
-    .flatMap<AppNotification>((item) => {
-      if (!isRecord(item) || !isNotificationType(item.tipo)) {
-        return [];
-      }
-      return [
-        {
-          id: requiredString(item.id),
-          tipo: item.tipo,
-          servicioId: nullableString(item.servicioId),
-          solicitudId: nullableString(item.solicitudId),
-          detalle: requiredString(item.detalle),
-          estadoEntrega: requiredString(item.estadoEntrega),
-          fechaGeneracion: requiredString(item.fechaGeneracion),
-        },
-      ];
-    })
-    .sort((left, right) => {
-      const leftTime = Date.parse(left.fechaGeneracion);
-      const rightTime = Date.parse(right.fechaGeneracion);
-      const safeLeft = Number.isNaN(leftTime) ? 0 : leftTime;
-      const safeRight = Number.isNaN(rightTime) ? 0 : rightTime;
-      return safeRight - safeLeft;
-    });
+  return value.flatMap<AppNotification>((item) => {
+    if (!isRecord(item) || !isNotificationType(item.tipo)) return [];
+    return [{
+      id: requiredString(item.id),
+      tipo: item.tipo,
+      servicioId: nullableString(item.servicioId),
+      solicitudId: nullableString(item.solicitudId),
+      detalle: requiredString(item.detalle),
+      estadoEntrega: requiredString(item.estadoEntrega),
+      fechaGeneracion: requiredString(item.fechaGeneracion),
+      leidaEn: item.leidaEn === null ? null : requiredString(item.leidaEn),
+    }];
+  });
 }
 
 function mapApiError(error: unknown, fallback: string): NotificationError {
@@ -114,22 +105,45 @@ export class HttpNotificationGateway implements NotificationGateway {
     this.baseUrl = baseUrl;
   }
 
-  async listMine(token: string): Promise<AppNotification[]> {
+  async listPage(token: string, filter: NotificationReadFilter, cursor?: string): Promise<NotificationPage> {
+    const query = 'estadoLectura=' + encodeURIComponent(filter)
+      + (cursor ? '&cursor=' + encodeURIComponent(cursor) : '');
+    const response = await this.request(token, '/bandeja?' + query, 'GET');
+    if (!isRecord(response)) {
+      throw new NotificationError('INVALID_RESPONSE', 'La respuesta de la bandeja no es válida.');
+    }
+    return {
+      items: parseNotifications(response.items),
+      cursorSiguiente: response.cursorSiguiente === null ? null : requiredString(response.cursorSiguiente),
+    };
+  }
+
+  async hasUnread(token: string): Promise<boolean> {
+    const response = await this.request(token, '/resumen', 'GET');
+    if (!isRecord(response) || typeof response.hayNoLeidas !== 'boolean') {
+      throw new NotificationError('INVALID_RESPONSE', 'La respuesta de la campana no es válida.');
+    }
+    return response.hayNoLeidas;
+  }
+
+  async markAsRead(token: string, id: string): Promise<void> {
+    await this.request(token, '/' + encodeURIComponent(id) + '/lectura', 'PUT');
+  }
+
+  async markAllAsRead(token: string): Promise<void> {
+    await this.request(token, '/lectura', 'PUT');
+  }
+
+  private async request(token: string, path: string, method: 'GET' | 'PUT'): Promise<unknown> {
     if (!this.baseUrl) {
-      throw new NotificationError(
-        'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno.'
-      );
+      throw new NotificationError('CONFIGURATION', 'La URL de la API no está configurada en este entorno.');
     }
     try {
-      const response = await requestJson<unknown>(
-        this.baseUrl,
-        '/api/v1/notificaciones',
-        { method: 'GET', token }
-      );
-      return parseNotifications(response);
+      return await requestJson<unknown>(this.baseUrl, '/api/v1/notificaciones' + path, { method, token });
     } catch (error) {
-      throw mapApiError(error, 'No fue posible cargar las notificaciones.');
+      throw mapApiError(error, method === 'GET'
+        ? 'No fue posible cargar las notificaciones.'
+        : 'No fue posible guardar la lectura.');
     }
   }
 }

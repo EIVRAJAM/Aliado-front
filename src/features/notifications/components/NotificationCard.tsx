@@ -43,9 +43,13 @@ function actionLabel(notification: AppNotification): string {
 export function NotificationCard({
   notification,
   onPress,
+  onMarkRead,
+  disabled = false,
 }: {
   notification: AppNotification;
   onPress?: () => void;
+  onMarkRead?: () => void;
+  disabled?: boolean;
 }) {
   const content = (
     <>
@@ -58,6 +62,9 @@ export function NotificationCard({
       </View>
       <View style={styles.text}>
         <Text style={styles.title}>{notificationTypeLabel(notification.tipo)}</Text>
+        <Text style={[styles.date, !notification.leidaEn && styles.unread]}>
+          {notification.leidaEn ? 'Leída' : 'Sin leer'}
+        </Text>
         <Text style={styles.detail}>{notification.detalle}</Text>
         <Text style={styles.date}>
           {formatNotificationDate(notification.fechaGeneracion)}
@@ -78,6 +85,7 @@ export function NotificationCard({
             notification.detalle
           } ${actionLabel(notification)}`}
           onPress={onPress}
+          disabled={disabled}
           style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
         >
           {content}
@@ -93,6 +101,16 @@ export function NotificationCard({
           {content}
         </View>
       )}
+      {onMarkRead ? (
+        <Pressable
+          accessibilityRole="button"
+          disabled={disabled}
+          onPress={onMarkRead}
+          style={styles.markRead}
+        >
+          <Text style={styles.markReadLabel}>Marcar como leída</Text>
+        </Pressable>
+      ) : null}
     </Card>
   );
 }
@@ -114,8 +132,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  markRead: {
+    alignSelf: 'flex-end',
+    justifyContent: 'center',
+    minHeight: 44,
+    marginRight: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  markReadLabel: { color: colors.primary, fontSize: 14, fontWeight: '700' },
   text: { flex: 1, gap: 3 },
   title: { color: colors.text, fontSize: 15, fontWeight: '800' },
   detail: { color: colors.muted, fontSize: 13, lineHeight: 19 },
   date: { color: colors.muted, fontSize: 12 },
+  unread: { color: colors.primary, fontWeight: '700' },
 });

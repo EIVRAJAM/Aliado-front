@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -11,16 +12,26 @@ import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { NotificationCard } from '../components/NotificationCard';
 import { useNotifications } from '../hooks/useNotifications';
-import type { AppNotification } from '../types/notification';
+import { androidPushEnabled } from '../hooks/useAndroidPush';
+import type { AppNotification, NotificationReadFilter } from '../types/notification';
 
 type NotificationsScreenProps = NativeStackScreenProps<
   RootStackParamList,
   'Notifications'
 >;
 
+const filters: { value: NotificationReadFilter; label: string }[] = [
+  { value: 'NO_LEIDA', label: 'No leídas' },
+  { value: 'LEIDA', label: 'Leídas' },
+  { value: 'TODAS', label: 'Todas' },
+];
+
 export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
   const { session } = useAuthSession();
-  const { notifications, loading, error, reload } = useNotifications();
+  const [filter, setFilter] = useState<NotificationReadFilter>('NO_LEIDA');
+  const {
+    notifications, hasMore, loading, loadingMore, saving, error, reload, loadMore, markRead,
+  } = useNotifications(filter);
 
   if (!session) {
     return null;
@@ -91,63 +102,89 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
         <View style={styles.toolbarText}>
           <Text style={styles.count}>{countLabel}</Text>
           <Text style={styles.hint}>
-            Se consultan al abrir la pantalla; no hay push ni marcado de lectura.
+            {androidPushEnabled && session.role === 'PRESTADOR'
+              ? 'Activa Nueva oportunidad en tus preferencias para recibir avisos en Android.'
+              : 'Abre un aviso o márcalo como leído desde esta bandeja.'}
           </Text>
         </View>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Actualizar notificaciones"
-          onPress={() => {
-            void reload();
-          }}
+          disabled={saving || loading}
+          onPress={() => void reload()}
           style={({ pressed }) => [styles.iconButton, pressed ? styles.pressed : null]}
         >
           <Ionicons name="refresh-outline" size={20} color={colors.primary} />
         </Pressable>
       </View>
 
-      {loading || error ? (
-        <>
-          {error ? <InlineMessage message={error} /> : null}
-          {error ? (
-            <PrimaryButton
-              label="Reintentar"
-              onPress={() => {
-                void reload();
-              }}
-            />
-          ) : (
-            <Card style={styles.loadingCard}>
-              <Text style={styles.loadingText}>Cargando notificaciones…</Text>
-            </Card>
-          )}
-        </>
-      ) : notifications.length === 0 ? (
-        <Card style={styles.emptyCard}>
-          <View style={styles.emptyIcon}>
-            <Ionicons name="notifications-off-outline" size={28} color={colors.primary} />
-          </View>
-          <Text style={styles.emptyTitle}>Sin notificaciones</Text>
-          <Text style={styles.emptyText}>
-            Cuando aparezca una oportunidad, recibas una propuesta o cambie un servicio,
-            se mostrará aquí.
-          </Text>
+      <View style={styles.filters}>
+        {filters.map(({ value, label }) => (
+          <Pressable
+            key={value}
+            accessibilityRole="button"
+            accessibilityState={{ selected: filter === value, disabled: saving }}
+            disabled={saving}
+            onPress={() => setFilter(value)}
+            style={[styles.filter, filter === value && styles.activeFilter]}
+          >
+            <Text style={[styles.filterLabel, filter === value && styles.activeFilterLabel]}>{label}</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {filter === 'NO_LEIDA' && notifications.length > 0 ? (
+        <PrimaryButton
+          label="Marcar todas como leídas"
+          variant="secondary"
+          disabled={loading || loadingMore}
+          loading={saving}
+          onPress={() => void markRead()}
+        />
+      ) : null}
+      {error ? <InlineMessage message={error} /> : null}
+      {loading ? (
+        <Card style={styles.loadingCard}>
+          <Text style={styles.loadingText}>Cargando notificaciones…</Text>
         </Card>
+      ) : notifications.length === 0 ? (
+        error ? <PrimaryButton label="Reintentar" onPress={() => void reload()} /> : (
+          <Card style={styles.emptyCard}>
+            <View style={styles.emptyIcon}>
+              <Ionicons name="notifications-off-outline" size={28} color={colors.primary} />
+            </View>
+            <Text style={styles.emptyTitle}>
+              {filter === 'NO_LEIDA' ? 'Estás al día' : 'Sin notificaciones'}
+            </Text>
+            <Text style={styles.emptyText}>
+              {filter === 'NO_LEIDA' ? 'Puedes consultar los avisos anteriores en Leídas.'
+                : 'Las notificaciones de esta vista aparecerán aquí.'}
+            </Text>
+          </Card>
+        )
       ) : (
         <View style={styles.list}>
           {notifications.map((notification) => (
             <NotificationCard
               key={notification.id}
               notification={notification}
-              onPress={
-                canOpen(notification)
-                  ? () => {
-                      openNotification(notification);
-                    }
-                  : undefined
-              }
+              disabled={saving || loadingMore}
+              onPress={canOpen(notification) ? async () => {
+                const canNavigate = notification.leidaEn !== null || await markRead(notification.id);
+                if (canNavigate && navigation.isFocused()) openNotification(notification);
+              } : undefined}
+              onMarkRead={notification.leidaEn ? undefined : () => void markRead(notification.id)}
             />
           ))}
+          {hasMore ? (
+            <PrimaryButton
+              label="Cargar más"
+              variant="secondary"
+              loading={loadingMore}
+              disabled={saving}
+              onPress={() => void loadMore()}
+            />
+          ) : null}
         </View>
       )}
     </ScreenLayout>
@@ -161,6 +198,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  filter: {
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: radii.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.surface,
+  },
+  activeFilter: { borderColor: colors.primary, backgroundColor: colors.infoSurface },
+  filterLabel: { color: colors.muted, fontSize: 14, fontWeight: '600' },
+  activeFilterLabel: { color: colors.primary },
   toolbarText: { flex: 1, gap: 2 },
   count: { color: colors.text, fontSize: 18, fontWeight: '800' },
   hint: { color: colors.muted, fontSize: 12 },

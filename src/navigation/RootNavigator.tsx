@@ -20,6 +20,7 @@ import {
 import { ProviderProfileScreen } from '../features/discovery';
 import { OpportunityDetailScreen } from '../features/opportunities';
 import { NotificationsScreen } from '../features/notifications';
+import { useAndroidPush } from '../features/notifications/hooks/useAndroidPush';
 import { MyRatingsScreen } from '../features/trust';
 import { ProposalFlowScreen, ReceivedProposalsScreen } from '../features/proposals';
 import { ServiceDetailScreen } from '../features/services';
@@ -42,9 +43,14 @@ export interface RootNavigatorProps {
   initialAuthRoute?: 'Login' | 'Register';
 }
 
+function openPushOpportunity(solicitudId: string) {
+  if (navigationRef.isReady()) navigationRef.navigate('OpportunityDetail', { solicitudId });
+}
+
 export function RootNavigator({ initialAuthRoute = 'Login' }: RootNavigatorProps) {
   const { session } = useAuthSession();
   const [navigationReady, setNavigationReady] = useState(false);
+  useAndroidPush(navigationReady, openPushOpportunity);
 
   return (
     <>

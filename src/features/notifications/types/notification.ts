@@ -13,6 +13,14 @@ export interface AppNotification {
   detalle: string;
   estadoEntrega: string;
   fechaGeneracion: string;
+  leidaEn: string | null;
+}
+
+export type NotificationReadFilter = 'NO_LEIDA' | 'LEIDA' | 'TODAS';
+
+export interface NotificationPage {
+  items: AppNotification[];
+  cursorSiguiente: string | null;
 }
 
 export type NotificationErrorCode =

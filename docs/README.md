@@ -36,7 +36,7 @@ La raíz de `docs/` debe mantenerse liviana. Los documentos vigentes se organiza
 9. [F06 — Compatibilidad y oportunidades](features/opportunities.md) — tablero, detalle y filtros para Prestador; los avisos se abren en la bandeja unificada F09.
 10. [F07 — Propuestas](features/proposals.md) — creación, edición y retiro; contrato real, manejo de `409` y límites de recuperación.
 11. [F08 — Contratación, servicio y comunicación](features/services.md) — aceptación de propuestas, estados, historial, mensajes y límites de recuperación.
-12. [F09 — Notificaciones](features/notifications.md) — bandeja unificada, destinos por tipo y límites sin push ni estado de lectura.
+12. [F09 — Notificaciones](features/notifications.md) — bandeja unificada y destinos por tipo. Ver también el [plan del piloto push Android](features/plan-push-android.md).
 13. [F10 — Calificaciones, reseñas y verificación](features/trust.md) — calificación y reseña obligatorias en el flujo móvil, verificación documental, reporte y límites de contrato.
 14. [F11 — Reportes y evidencias](features/reports.md) — reportes de cuenta/servicio, evidencia posterior y estado propio; BE-12 pendiente.
 15. [F12 — Administración y moderación](features/administration.md) — alcance móvil limitado a bloqueo y rol Administrador; panel fuera de alcance.
