@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useState } from 'react';
 import {
@@ -16,7 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { LinkButton } from '../../../shared/ui/LinkButton';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import {
   opportunityUrgencyOptions,
   type OpportunityCategory,
@@ -48,6 +50,8 @@ export function OpportunityFilterModal({
   onApply,
   onClear,
 }: OpportunityFilterModalProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [categoryId, setCategoryId] = useState<string | null>(filters.categoriaId);
   const [urgency, setUrgency] = useState<OpportunityUrgency | null>(filters.urgencia);
@@ -196,7 +200,7 @@ export function OpportunityFilterModal({
                   </Pressable>
                   {opportunityUrgencyOptions.map((option) => {
                     const selected = option.value === urgency;
-                    const tone = opportunityUrgencyTone[option.value];
+                    const tone = opportunityUrgencyTone(option.value, colors);
                     return (
                       <Pressable
                         key={option.value}
@@ -246,7 +250,12 @@ export function OpportunityFilterModal({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   flex: {
     flex: 1,
   },

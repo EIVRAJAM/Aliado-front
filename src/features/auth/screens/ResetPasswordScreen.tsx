@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -22,6 +24,8 @@ import {
 type ResetPasswordScreenProps = NativeStackScreenProps<RootStackParamList, 'ResetPassword'>;
 
 export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { gateway } = useAuthSession();
   const [token, setToken] = useState(route.params?.token ?? '');
   const [newPassword, setNewPassword] = useState('');
@@ -69,7 +73,7 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
       {!appEnv.apiBaseUrl ? (
         <InlineMessage
           variant="info"
-          message="La conexión con la API no está configurada en este entorno. La recuperación real permanece pendiente."
+          message="La recuperación de acceso no está disponible en este momento. Intenta de nuevo más tarde."
         />
       ) : null}
       {formError ? <InlineMessage message={formError} /> : null}
@@ -80,7 +84,7 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
         autoCapitalize="none"
         autoCorrect={false}
         error={errors.token}
-        hint="Pega el código recibido por el canal definido por ALIADO."
+        hint="Pega el código de recuperación que recibiste."
       />
       <FormField
         label="Nueva contraseña"
@@ -105,7 +109,12 @@ export function ResetPasswordScreen({ navigation, route }: ResetPasswordScreenPr
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   links: {
     gap: spacing.xs,
     marginTop: spacing.sm,

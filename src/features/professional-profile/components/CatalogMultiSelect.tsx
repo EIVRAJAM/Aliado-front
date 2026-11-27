@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -26,6 +28,8 @@ export function CatalogMultiSelect({
   disabled = false,
   emptyMessage,
 }: CatalogMultiSelectProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const toggle = (id: string) => {
     if (disabled) {
       return;
@@ -88,7 +92,12 @@ export function CatalogMultiSelect({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     gap: spacing.xs,
   },

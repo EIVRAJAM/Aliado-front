@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { requireOptionalNativeModule } from 'expo';
 import { useCallback, useEffect, useState } from 'react';
@@ -30,6 +32,8 @@ export function ReportEvidenceSection({
   reportId,
   onUncertainChange,
 }: ReportEvidenceSectionProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const resolveError = useReportError();
   const [detail, setDetail] = useState<ReportDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(true);
@@ -79,28 +83,23 @@ export function ReportEvidenceSection({
           const added = refreshed.evidencias.filter((item) => !known.has(item.id));
           if (added.length > 0) {
             setUploadError(
-              'El reporte muestra evidencia nueva, pero el backend no entrega un identificador de correlación. No se puede confirmar que corresponda a este archivo. El archivo se conserva y el resultado sigue siendo incierto.'
+              'El reporte muestra una evidencia nueva, pero no pudimos confirmar que corresponda a este archivo. El archivo se conserva y el resultado sigue pendiente.'
             );
           } else {
             setUploadError(
-              'La consulta no muestra evidencia nueva todavía, pero el intento anterior pudo haber quedado en proceso. El resultado sigue siendo incierto y se conserva el archivo; confirma antes de reintentar.'
+              'Todavía no vemos la evidencia en el reporte. El intento anterior pudo haberse guardado; revisa el estado antes de reintentar. El archivo se conserva.'
             );
           }
         } else {
           setUploadError(
-            'No se pudo comparar con un estado anterior del reporte. Revisa el estado antes de decidir si reintentas; el archivo se conserva y el intento anterior pudo haberse guardado.'
+            'No pudimos comparar con el estado anterior del reporte. Revisa el estado antes de reintentar; el archivo se conserva y el intento anterior pudo haberse guardado.'
           );
         }
       } catch (reconcileError) {
-        const message = resolveError(
-          reconcileError,
-          'No fue posible consultar el estado del reporte.'
-        );
+        resolveError(reconcileError, 'No fue posible consultar el estado del reporte.');
         setUncertain(true);
         setUploadError(
-          `Resultado incierto: no se pudo confirmar si la evidencia se guardó. La consulta de estado también falló${
-            message ? `: ${message}` : '.'
-          } El archivo seleccionado se conserva.`
+          'Resultado incierto: no pudimos confirmar si la evidencia se guardó. Tampoco pudimos consultar el estado. El archivo seleccionado se conserva.'
         );
       } finally {
         setReconciling(false);
@@ -118,7 +117,7 @@ export function ReportEvidenceSection({
     try {
       if (!requireOptionalNativeModule('ExpoDocumentPicker')) {
         setUploadError(
-          'El selector de documentos no está incluido en este development build. Reconstruye la app para habilitarlo.'
+          'La selección de documentos no está disponible en esta versión de la app. Intenta de nuevo más tarde.'
         );
         return;
       }
@@ -175,7 +174,7 @@ export function ReportEvidenceSection({
         setUncertain(true);
         setUncertainBaselineIds(baselineIds);
         setUploadError(
-          'Resultado incierto: el servidor pudo haber guardado la evidencia aunque la respuesta no llegó. No se reenviará automáticamente. Se conserva el archivo seleccionado.'
+          'Resultado incierto: es posible que la evidencia se haya guardado aunque no recibimos confirmación. No se reenviará automáticamente. El archivo seleccionado se conserva.'
         );
         await refreshUncertainState(baselineIds);
       } else {
@@ -219,7 +218,7 @@ export function ReportEvidenceSection({
   const confirmAbandonDocument = (pickAnother: boolean) => {
     Alert.alert(
       'Carga anterior incierta',
-      'La carga anterior pudo haberse guardado. Al descartar este archivo solo eliminas la copia local; no se elimina ninguna evidencia que el servidor pudiera haber guardado. Tampoco podrás reintentar esta carga desde esta pantalla.',
+      'La carga anterior pudo haberse guardado. Si descartas este archivo, solo eliminas la copia local; no se elimina ninguna evidencia que ya se haya guardado. Tampoco podrás reintentar esta carga desde esta pantalla.',
       [
         { text: 'Conservar archivo', style: 'cancel' },
         {
@@ -306,9 +305,7 @@ export function ReportEvidenceSection({
               {detail.evidencias.map((evidence, index) => (
                 <View key={evidence.id} style={styles.evidenceRow}>
                   <Ionicons name="document-outline" size={14} color={colors.primary} />
-                  <Text style={styles.evidenceText}>
-                    Evidencia {index + 1} · {evidence.tipoContenido}
-                  </Text>
+                  <Text style={styles.evidenceText}>Evidencia {index + 1}</Text>
                 </View>
               ))}
             </View>
@@ -317,8 +314,8 @@ export function ReportEvidenceSection({
       ) : null}
 
       <Text style={styles.hint}>
-        La evidencia es opcional. No se fijan tipos, tamaños ni cantidad en la app; el servidor
-        valida y puede responder con un error si el archivo no es aceptado.
+        La evidencia es opcional. La app no fija tipos, tamaños ni cantidad; si el archivo no es
+        aceptado, verás un error.
       </Text>
 
       <PrimaryButton
@@ -389,7 +386,12 @@ export function ReportEvidenceSection({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { gap: spacing.md },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconBadge: {

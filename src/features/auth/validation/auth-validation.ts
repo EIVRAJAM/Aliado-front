@@ -88,7 +88,7 @@ export function validateRegistration(values: RegisterFormValues): RegisterFieldE
 
   if (!values.termsVersion) {
     errors.termsVersion =
-      'La versión de términos no está configurada. El registro no puede completarse en este entorno.';
+      'No podemos validar los términos en este momento. Intenta completar el registro más tarde.';
   }
 
   return errors;

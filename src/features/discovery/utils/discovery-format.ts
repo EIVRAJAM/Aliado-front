@@ -30,7 +30,7 @@ export function formatAvailability(block: ProviderAvailabilityBlock): string {
   const day =
     block.diaSemana === null
       ? 'Todos los días'
-      : DAY_NAMES[block.diaSemana] ?? `Día ${block.diaSemana}`;
+      : DAY_NAMES[block.diaSemana] ?? 'Día no disponible';
   return `${day} · ${block.horaInicio.slice(0, 5)} – ${block.horaFin.slice(0, 5)}`;
 }
 
@@ -56,5 +56,5 @@ export function verificationLabel(value: string): string {
   if (value === 'BASICO') {
     return 'Verificación básica';
   }
-  return value.replaceAll('_', ' ').toLowerCase();
+  return 'Verificación no disponible';
 }

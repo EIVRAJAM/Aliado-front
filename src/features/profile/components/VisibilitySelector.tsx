@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radii, spacing } from '../../../shared/ui/theme';
@@ -10,6 +12,8 @@ interface VisibilitySelectorProps {
 }
 
 export function VisibilitySelector({ value, onChange, disabled = false }: VisibilitySelectorProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View style={styles.container}>
       {visibilityOptions.map((option) => {
@@ -35,7 +39,12 @@ export function VisibilitySelector({ value, onChange, disabled = false }: Visibi
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     gap: spacing.sm,
   },

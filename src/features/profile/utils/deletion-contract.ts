@@ -18,7 +18,7 @@ export function parseDeletionResponse(value: unknown): DeletionRequest {
   ) {
     throw new ProfileError(
       'UNSUPPORTED',
-      'El servidor no soporta la eliminación definitiva de esta versión. No se confirmó el borrado de la cuenta ni de sus archivos.'
+      'No se confirmó la eliminación de tu cuenta ni de tus archivos. La cuenta no se eliminó.'
     );
   }
   return {

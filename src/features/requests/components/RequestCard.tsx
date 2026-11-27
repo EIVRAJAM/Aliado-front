@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../../../shared/ui/Card';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import type { RequestCatalogs, ServiceRequest } from '../types/request';
 import {
   categoryName,
@@ -21,8 +23,10 @@ interface RequestCardProps {
 }
 
 export function RequestCard({ request, catalogs, onPress }: RequestCardProps) {
-  const statusTone = requestStatusTone[request.estado];
-  const urgency = request.urgencia ? urgencyTone[request.urgencia] : null;
+  const { colors } = useAppTheme();
+  const styles = useStyles();
+  const statusTone = requestStatusTone(request.estado, colors);
+  const urgency = request.urgencia ? urgencyTone(request.urgencia, colors) : null;
   const photoCount = request.fotos.length;
 
   return (
@@ -94,7 +98,12 @@ export function RequestCard({ request, catalogs, onPress }: RequestCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     padding: 0,
     borderLeftWidth: 4,

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -19,6 +21,8 @@ import type { VisibilityPreference } from '../types/profile';
 type ProfilePrivacyScreenProps = NativeStackScreenProps<RootStackParamList, 'ProfilePrivacy'>;
 
 export function ProfilePrivacyScreen({ navigation }: ProfilePrivacyScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const { profile, loading, error, reload } = useMyProfile();
   const resolveError = useProfileError();
@@ -66,7 +70,7 @@ export function ProfilePrivacyScreen({ navigation }: ProfilePrivacyScreenProps) 
         <>
           <InlineMessage
             variant="info"
-            message="La configuración no puede superar las reglas de privacidad base del producto. La dirección exacta nunca se publica."
+            message="Tu configuración limita la información visible en tu perfil. La dirección exacta nunca se publica."
           />
           <Card style={styles.formCard}>
             {formError ? <InlineMessage message={formError} /> : null}
@@ -79,7 +83,12 @@ export function ProfilePrivacyScreen({ navigation }: ProfilePrivacyScreenProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   formCard: {
     gap: spacing.lg,
   },

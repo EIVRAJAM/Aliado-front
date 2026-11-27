@@ -1,7 +1,8 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { useMemo } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   ActivityIndicator,
+  Pressable,
   StyleSheet,
   Switch,
   Text,
@@ -14,7 +15,8 @@ import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
+import { useAppTheme, type ThemeColors, type ThemeMode } from '../../../shared/ui/ThemeProvider';
 import { useNotificationPreferences } from '../hooks/useNotificationPreferences';
 import type {
   NotificationPreference,
@@ -39,6 +41,8 @@ interface PreferenceGroup {
 export function NotificationPreferencesScreen({
   navigation,
 }: NotificationPreferencesScreenProps) {
+  const { colors, mode, setMode } = useAppTheme();
+  const styles = useStyles();
   const {
     preferences,
     loading,
@@ -60,8 +64,8 @@ export function NotificationPreferencesScreen({
 
   return (
     <ScreenLayout
-      title="Preferencias de notificación"
-      subtitle="Elige qué avisos recibir y por qué canal."
+      title="Preferencias de la app"
+      subtitle="Personaliza la apariencia y elige qué avisos recibir."
       onBack={() => navigation.goBack()}
     >
       <InlineMessage
@@ -70,6 +74,56 @@ export function NotificationPreferencesScreen({
       />
 
       {mutationError ? <InlineMessage message={mutationError} /> : null}
+
+      <Card style={styles.appearanceCard}>
+        <View style={styles.appearanceHeader}>
+          <View style={styles.appearanceIcon}>
+            <Ionicons name="contrast-outline" size={18} color={colors.primary} />
+          </View>
+          <View style={styles.appearanceText}>
+            <Text style={styles.appearanceTitle}>Apariencia</Text>
+            <Text style={styles.appearanceSubtitle}>
+              Elige cómo se ve ALIADO en este dispositivo.
+            </Text>
+          </View>
+        </View>
+        <View style={styles.appearanceOptions} accessibilityRole="radiogroup">
+          {([
+            { value: 'light', label: 'Claro', icon: 'sunny-outline' },
+            { value: 'dark', label: 'Oscuro', icon: 'moon-outline' },
+            { value: 'system', label: 'Sistema', icon: 'phone-portrait-outline' },
+          ] as Array<{ value: ThemeMode; label: string; icon: keyof typeof Ionicons.glyphMap }>).map((option) => {
+            const selected = mode === option.value;
+            return (
+              <Pressable
+                key={option.value}
+                accessibilityRole="radio"
+                accessibilityState={{ checked: selected }}
+                accessibilityLabel={`Tema ${option.label.toLowerCase()}`}
+                onPress={() => setMode(option.value)}
+                style={[
+                  styles.appearanceOption,
+                  selected ? styles.appearanceOptionSelected : null,
+                ]}
+              >
+                <Ionicons
+                  name={option.icon}
+                  size={18}
+                  color={selected ? colors.primary : colors.muted}
+                />
+                <Text
+                  style={[
+                    styles.appearanceOptionLabel,
+                    selected ? styles.appearanceOptionLabelSelected : null,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </Card>
 
       {loading ? (
         <View style={styles.loading}>
@@ -86,7 +140,7 @@ export function NotificationPreferencesScreen({
           <Ionicons name="notifications-off-outline" size={28} color={colors.muted} />
           <Text style={styles.emptyTitle}>Sin preferencias disponibles</Text>
           <Text style={styles.emptyText}>
-            El servidor no devolvió preferencias de notificación para esta cuenta.
+            No hay preferencias de notificación disponibles para esta cuenta.
           </Text>
           <PrimaryButton label="Actualizar" variant="secondary" onPress={() => void reload()} />
         </Card>
@@ -150,7 +204,7 @@ export function NotificationPreferencesScreen({
                           );
                         }}
                         trackColor={{ false: colors.border, true: colors.success }}
-                        thumbColor={colors.surface}
+                        thumbColor={colors.onPrimary}
                         ios_backgroundColor={colors.border}
                       />
                     )}
@@ -165,7 +219,12 @@ export function NotificationPreferencesScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   loading: {
     alignItems: 'center',
     gap: spacing.sm,
@@ -260,5 +319,62 @@ const styles = StyleSheet.create({
     color: colors.muted,
     fontSize: 11,
     fontWeight: '700',
+  },
+  appearanceCard: {
+    gap: spacing.md,
+  },
+  appearanceHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  appearanceIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: radii.md,
+    backgroundColor: colors.infoSurface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  appearanceText: {
+    flex: 1,
+    gap: 2,
+  },
+  appearanceTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  appearanceSubtitle: {
+    color: colors.muted,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  appearanceOptions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  appearanceOption: {
+    flex: 1,
+    minHeight: 48,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.inputBackground,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  appearanceOptionSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primarySoft,
+  },
+  appearanceOptionLabel: {
+    color: colors.muted,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  appearanceOptionLabelSelected: {
+    color: colors.primary,
   },
 });

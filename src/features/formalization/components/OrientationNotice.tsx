@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -8,6 +10,8 @@ interface OrientationNoticeProps {
 }
 
 export function OrientationNotice({ message }: OrientationNoticeProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View
       accessibilityLiveRegion="polite"
@@ -29,7 +33,12 @@ export function OrientationNotice({ message }: OrientationNoticeProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'flex-start',

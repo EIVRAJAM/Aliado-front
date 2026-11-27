@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -55,6 +57,8 @@ const scrimSteps = Array.from({ length: 200 }, (_, index) => {
 });
 
 function OnboardingScrim() {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       {scrimSteps.map((opacity, index) => (
@@ -74,6 +78,8 @@ interface OnboardingScreenProps {
 }
 
 export function OnboardingScreen({ onSkip, onLogin, onRegister }: OnboardingScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { width } = useWindowDimensions();
   const listRef = useRef<FlatList<(typeof slides)[number]>>(null);
   const [page, setPage] = useState(0);
@@ -142,7 +148,7 @@ export function OnboardingScreen({ onSkip, onLogin, onRegister }: OnboardingScre
               onPress={() => goTo(page - 1)}
               style={[styles.topButton, styles.topControl]}
             >
-              <Ionicons name="chevron-back" size={22} color={colors.surface} />
+              <Ionicons name="chevron-back" size={22} color={colors.onImage} />
             </Pressable>
           ) : (
             <View style={styles.topButton} />
@@ -186,7 +192,12 @@ export function OnboardingScreen({ onSkip, onLogin, onRegister }: OnboardingScre
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.authBackground },
   topSafe: {
     position: 'absolute',
@@ -220,7 +231,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     borderRadius: 20,
   },
-  skipText: { color: colors.surface, fontSize: 14, fontWeight: '800' },
+  skipText: { color: colors.onImage, fontSize: 14, fontWeight: '800' },
   slide: { flex: 1 },
   slideContent: {
     flex: 1,
@@ -240,7 +251,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 5,
   },
   title: {
-    color: colors.surface,
+    color: colors.onImage,
     fontSize: 28,
     lineHeight: 34,
     fontWeight: '800',
@@ -259,6 +270,6 @@ const styles = StyleSheet.create({
   footer: { gap: spacing.md, paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
   dots: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm, minHeight: 20, alignItems: 'center' },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255, 255, 255, 0.42)' },
-  dotActive: { width: 24, backgroundColor: colors.surface },
+  dotActive: { width: 24, backgroundColor: colors.onImage },
   choices: { gap: spacing.sm },
 });

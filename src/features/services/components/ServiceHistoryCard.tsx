@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -12,6 +14,8 @@ interface ServiceHistoryCardProps {
 }
 
 export function ServiceHistoryCard({ service, history }: ServiceHistoryCardProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
@@ -21,7 +25,7 @@ export function ServiceHistoryCard({ service, history }: ServiceHistoryCardProps
         <Text style={styles.title}>Historial</Text>
       </View>
       {history.length === 0 ? (
-        <Text style={styles.empty}>Todavía no hay transiciones registradas.</Text>
+        <Text style={styles.empty}>Todavía no hay cambios registrados.</Text>
       ) : (
         <View style={styles.list}>
           {history.map((entry) => (
@@ -45,7 +49,12 @@ export function ServiceHistoryCard({ service, history }: ServiceHistoryCardProps
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: { gap: spacing.md },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconBadge: {

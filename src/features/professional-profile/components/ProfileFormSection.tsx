@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps, PropsWithChildren } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -19,6 +21,8 @@ export function ProfileFormSection({
   description,
   children,
 }: ProfileFormSectionProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
@@ -35,7 +39,12 @@ export function ProfileFormSection({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     gap: spacing.lg,
   },

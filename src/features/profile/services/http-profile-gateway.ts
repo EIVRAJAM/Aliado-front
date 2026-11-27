@@ -21,7 +21,7 @@ function nullableString(value: unknown): string | null {
     return null;
   }
   if (typeof value !== 'string') {
-    throw new ProfileError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ProfileError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value;
 }
@@ -33,7 +33,7 @@ function parseProfile(value: unknown): UserProfile {
     !isVisibilityPreference(value.preferenciaVisibilidad) ||
     typeof value.version !== 'number'
   ) {
-    throw new ProfileError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ProfileError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
 
   return {
@@ -49,7 +49,7 @@ function parseProfile(value: unknown): UserProfile {
 
 function parsePublicProfile(value: unknown): PublicProfile {
   if (!isRecord(value) || typeof value.usuarioId !== 'string') {
-    throw new ProfileError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ProfileError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     usuarioId: value.usuarioId,
@@ -79,12 +79,12 @@ function mapApiError(error: unknown, fallbackMessage: string): ProfileError {
     if (error.status === 409) {
       const message =
         serverCode === 'CONFLICTO_VERSION'
-          ? 'El perfil cambió desde tu última lectura. Vuelve a cargarlo.'
+          ? 'Tu perfil cambió en otra sesión. Recarga antes de guardar.'
           : serverCode === 'SERVICIO_EN_EJECUCION'
             ? 'Tienes un servicio en ejecución; la eliminación está bloqueada hasta que finalice.'
             : serverCode === 'ELIMINACION_PENDIENTE'
               ? 'Ya tienes una solicitud de eliminación pendiente.'
-              : 'No se pudo completar la operación por un conflicto con el estado actual.';
+              : 'No pudimos guardar los cambios porque tu perfil cambió. Recarga e inténtalo de nuevo.';
       return new ProfileError('CONFLICT', message, 409, serverCode);
     }
 
@@ -135,7 +135,7 @@ export class HttpProfileGateway implements ProfileGateway {
     if (!this.baseUrl) {
       throw new ProfileError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno. La integración con ALIADO sigue pendiente.'
+        'No podemos conectar con ALIADO en este momento. Intenta de nuevo más tarde.'
       );
     }
     return this.baseUrl;

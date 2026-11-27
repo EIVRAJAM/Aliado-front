@@ -7,7 +7,7 @@ export function getProfileErrorMessage(error: unknown, fallback: string): string
 
   switch (error.code) {
     case 'CONFIGURATION':
-      return 'La conexión con ALIADO no está configurada en este entorno.';
+      return 'No podemos conectar con ALIADO en este momento. Intenta de nuevo más tarde.';
     case 'NETWORK':
       return 'No se pudo conectar con ALIADO. Revisa tu conexión e intenta de nuevo.';
     case 'VALIDATION':

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -17,6 +19,8 @@ import { formatDateTime } from '../utils/profile-format';
 type ProfileDeleteScreenProps = NativeStackScreenProps<RootStackParamList, 'ProfileDelete'>;
 
 export function ProfileDeleteScreen({ navigation }: ProfileDeleteScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session, clearSession } = useAuthSession();
   const resolveError = useProfileError();
   const [pending, setPending] = useState<DeletionRequest | null>(null);
@@ -167,7 +171,12 @@ export function ProfileDeleteScreen({ navigation }: ProfileDeleteScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     padding: spacing.lg,
   },

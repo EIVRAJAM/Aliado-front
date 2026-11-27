@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -24,6 +26,8 @@ import {
 type ProfileEditScreenProps = NativeStackScreenProps<RootStackParamList, 'ProfileEdit'>;
 
 export function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const { profile, loading, error, reload } = useMyProfile();
   const resolveError = useProfileError();
@@ -64,7 +68,7 @@ export function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
     }
 
     if (input.nombre === undefined && input.telefono === undefined) {
-      setFormError('No hay cambios para guardar. Los campos vacíos conservan el valor actual.');
+      setFormError('No hay cambios para guardar.');
       return;
     }
 
@@ -120,7 +124,12 @@ export function ProfileEditScreen({ navigation }: ProfileEditScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   formCard: {
     gap: spacing.lg,
   },

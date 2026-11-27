@@ -17,7 +17,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value;
 }
@@ -27,7 +27,7 @@ function nullablePositiveInteger(value: unknown): number | null {
     return null;
   }
   if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value;
 }
@@ -37,22 +37,22 @@ function nullableString(value: unknown): string | null {
     return null;
   }
   if (typeof value !== 'string') {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value;
 }
 
 function parseDetail(value: unknown): ContractedService {
   if (!isRecord(value) || !isServiceState(value.estado)) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   const solicitud = value.solicitud;
   const propuesta = value.propuesta;
   if (!isRecord(solicitud) || !isRecord(propuesta)) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   if (propuesta.estado !== 'ACEPTADA') {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     id: requiredString(value.id),
@@ -87,11 +87,11 @@ function parseDetail(value: unknown): ContractedService {
 
 function parseHistory(value: unknown): ServiceHistoryEntry[] {
   if (!Array.isArray(value)) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value.map((item) => {
     if (!isRecord(item) || !isServiceState(item.estadoNuevo)) {
-      throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+      throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
     }
     return {
       estadoAnterior:
@@ -110,7 +110,7 @@ function parseHistory(value: unknown): ServiceHistoryEntry[] {
 
 function parseMessage(value: unknown): ServiceMessage {
   if (!isRecord(value)) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     id: requiredString(value.id),
@@ -123,7 +123,7 @@ function parseMessage(value: unknown): ServiceMessage {
 
 function parseMessages(value: unknown): ServiceMessage[] {
   if (!Array.isArray(value)) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value.map(parseMessage);
 }
@@ -137,18 +137,18 @@ function parseTransition(value: unknown, expectedId: string): ServiceTransitionR
 
 function parseCatalogs(categories: unknown, zones: unknown): ServiceCatalogs {
   if (!Array.isArray(categories) || !Array.isArray(zones)) {
-    throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     categories: categories.map((item) => {
       if (!isRecord(item)) {
-        throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+        throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
       }
       return { id: requiredString(item.id), nombre: requiredString(item.nombre) };
     }),
     zones: zones.map((item) => {
       if (!isRecord(item)) {
-        throw new ServiceError('INVALID_RESPONSE', 'La respuesta del servidor no tiene el formato esperado.');
+        throw new ServiceError('INVALID_RESPONSE', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
       }
       return { id: requiredString(item.id), nombre: requiredString(item.nombre) };
     }),
@@ -174,7 +174,7 @@ function conflictMessage(code: string | undefined): string {
     case 'COMUNICACION_NO_HABILITADA':
       return 'El canal de comunicación no está habilitado para este servicio.';
     case 'CONFLICTO_CONCURRENCIA':
-      return 'El servicio cambió por otra operación. Actualiza antes de intentar de nuevo.';
+      return 'El servicio cambió mientras lo usabas. Actualiza antes de intentar de nuevo.';
     default:
       return 'La operación no se pudo completar porque el servicio cambió de estado.';
   }
@@ -227,7 +227,7 @@ export class HttpServiceGateway implements ServiceGateway {
 
   private requireBaseUrl(): string {
     if (!this.baseUrl) {
-      throw new ServiceError('CONFIGURATION', 'La URL de la API no está configurada en este entorno.');
+      throw new ServiceError('CONFIGURATION', 'No podemos cargar el servicio en este momento. Intenta de nuevo más tarde.');
     }
     return this.baseUrl;
   }

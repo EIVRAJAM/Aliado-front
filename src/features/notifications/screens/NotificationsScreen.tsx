@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,7 +9,7 @@ import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { NotificationCard } from '../components/NotificationCard';
 import { useNotifications } from '../hooks/useNotifications';
@@ -27,6 +28,8 @@ const filters: { value: NotificationReadFilter; label: string }[] = [
 ];
 
 export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const [filter, setFilter] = useState<NotificationReadFilter>('NO_LEIDA');
   const {
@@ -191,7 +194,12 @@ export function NotificationsScreen({ navigation }: NotificationsScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',

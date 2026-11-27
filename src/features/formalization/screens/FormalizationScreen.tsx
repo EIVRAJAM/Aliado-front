@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Linking, StyleSheet, Text, View } from 'react-native';
@@ -30,6 +32,8 @@ function isExternalHttpUrl(value: string): boolean {
 }
 
 export function FormalizationScreen({ navigation }: FormalizationScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const resolveError = useFormalizationError();
   const {
@@ -95,7 +99,7 @@ export function FormalizationScreen({ navigation }: FormalizationScreenProps) {
         setLinkState(link.id, 'NO_DISPONIBLE');
         Alert.alert(
           'Enlace no disponible',
-          'El destino configurado no es un enlace web válido. No se modificó tu progreso.'
+          'El enlace no es válido. No se modificó tu progreso.'
         );
         return;
       }
@@ -181,8 +185,8 @@ export function FormalizationScreen({ navigation }: FormalizationScreenProps) {
               <Text style={styles.progressLimitTitle}>Sobre tu avance</Text>
             </View>
             <Text style={styles.progressLimitText}>
-              Esta app solo consulta el avance registrado. No lo modifica al abrir enlaces ni al
-              consultar los pasos, y todavía no permite actualizarlo.
+              Esta app solo consulta tu avance; no lo actualiza. Abrir un enlace o consultar los
+              pasos no modifica tu progreso.
             </Text>
           </Card>
 
@@ -193,7 +197,12 @@ export function FormalizationScreen({ navigation }: FormalizationScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   loading: {
     alignItems: 'center',
     gap: spacing.sm,

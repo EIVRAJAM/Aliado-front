@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useState } from 'react';
 import {
@@ -38,6 +40,8 @@ export function ReportTargetModal({
   target,
   onClose,
 }: ReportTargetModalProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const resolveError = useReportError();
   const [motivo, setMotivo] = useState('');
@@ -65,7 +69,7 @@ export function ReportTargetModal({
     if (evidenceUncertain) {
       Alert.alert(
         'Carga de evidencia incierta',
-        'La carga anterior pudo haberse guardado. Si cierras, solo se descarta la copia local; no se elimina ninguna evidencia del servidor y no podrás reintentar esta carga desde esta pantalla.',
+        'La carga anterior pudo haberse guardado. Si cierras, solo se descarta la copia local; no se elimina ninguna evidencia que ya se haya guardado y no podrás reintentar esta carga desde esta pantalla.',
         [
           { text: 'Conservar archivo', style: 'cancel' },
           {
@@ -109,7 +113,7 @@ export function ReportTargetModal({
       if (isUncertainReportError(submitError)) {
         setUncertain(true);
         setError(
-          'No se pudo confirmar si el reporte se creó. No se enviará automáticamente. Reintentar con el mismo motivo puede devolver el reporte consolidado por el servidor.'
+          'No se pudo confirmar si el reporte se creó. No se enviará automáticamente. Reintentar con el mismo motivo puede recuperar un reporte ya abierto.'
         );
       } else {
         setError(message);
@@ -148,8 +152,7 @@ export function ReportTargetModal({
               <View style={styles.headerText}>
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.subtitle}>
-                  El servidor valida la relación con el objetivo. La app no permite elegir otro
-                  reportante.
+                  El reporte se asocia a tu cuenta y al elemento seleccionado.
                 </Text>
               </View>
               <Pressable
@@ -171,7 +174,7 @@ export function ReportTargetModal({
                 <>
                   <InlineMessage
                     variant="success"
-                    message="Reporte registrado. Si ya existía uno equivalente abierto, el servidor devolvió esa referencia."
+                    message="Reporte registrado. Si ya existía uno abierto por el mismo motivo, usaremos ese."
                   />
                   <ReportEvidenceSection
                     token={token}
@@ -186,21 +189,20 @@ export function ReportTargetModal({
                     value={motivo}
                     onChangeText={setMotivo}
                     placeholder="Motivo del reporte"
-                    placeholderTextColor={colors.disabled}
+                    placeholderTextColor="#94A3B8"
                     multiline
                     textAlignVertical="top"
                     style={styles.input}
                     editable={!loading}
                   />
                   <Text style={styles.hint}>
-                    El motivo es obligatorio. El servidor puede consolidar un reporte equivalente
-                    abierto y devolver su referencia.
+                    El motivo es obligatorio. Si ya existe un reporte abierto por el mismo motivo,
+                    se usará ese.
                   </Text>
                   {error ? <InlineMessage message={error} /> : null}
                   {uncertain ? (
                     <Text style={styles.hint}>
-                      No se adjuntará evidencia hasta recibir un identificador confirmado del
-                      servidor.
+                      Podrás adjuntar evidencia cuando el reporte esté confirmado.
                     </Text>
                   ) : null}
                   <PrimaryButton
@@ -221,7 +223,12 @@ export function ReportTargetModal({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   flex: { flex: 1 },
   overlay: {
     flex: 1,

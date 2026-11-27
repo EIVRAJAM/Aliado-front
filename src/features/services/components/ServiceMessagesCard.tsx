@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -35,6 +37,8 @@ export function ServiceMessagesCard({
   uncertain,
   error,
 }: ServiceMessagesCardProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const ownId = currentRole === 'CLIENTE' ? service.clienteId : service.prestadorId;
 
   return (
@@ -52,7 +56,7 @@ export function ServiceMessagesCard({
       {!service.comunicacionHabilitada ? (
         <InlineMessage
           variant="info"
-          message="El canal de comunicación aún no está habilitado para este servicio."
+          message="Los mensajes aún no están habilitados para este servicio."
         />
       ) : (
         <>
@@ -107,8 +111,8 @@ export function ServiceMessagesCard({
           />
 
           <Text style={styles.note}>
-            Los mensajes se actualizan al abrir o actualizar la pantalla; no hay chat en tiempo
-            real.
+            Los mensajes se actualizan al abrir o actualizar la pantalla; no hay mensajería en
+            tiempo real.
           </Text>
         </>
       )}
@@ -116,7 +120,12 @@ export function ServiceMessagesCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: { gap: spacing.md },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconBadge: {

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -17,6 +19,8 @@ interface ProviderResultCardProps {
 }
 
 export function ProviderResultCard({ provider, onPress }: ProviderResultCardProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const firstAvailability = provider.disponibilidad[0];
 
   return (
@@ -84,7 +88,12 @@ export function ProviderResultCard({ provider, onPress }: ProviderResultCardProp
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     padding: 0,
   },

@@ -23,7 +23,7 @@ function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -33,7 +33,7 @@ function requiredNumber(value: unknown): number {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -47,7 +47,7 @@ function parseRating(value: unknown): RatingResult {
   if (!isRecord(value)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -60,7 +60,7 @@ function parseReviewResult(value: unknown): ReviewResult {
   if (!isRecord(value)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return { id: requiredString(value.id) };
@@ -70,7 +70,7 @@ function parseVerification(value: unknown): VerificationRequest {
   if (!isRecord(value) || !isVerificationStatus(value.estado)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return { id: requiredString(value.id), estado: value.estado };
@@ -80,7 +80,7 @@ function parseReport(value: unknown): ReportReviewResult {
   if (!isRecord(value)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return { reporteId: requiredString(value.reporteId) };
@@ -94,7 +94,7 @@ function nullableString(value: unknown): string | null {
   if (typeof value !== 'string') {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -109,7 +109,7 @@ function requiredInteger(value: unknown): number {
   if (!Number.isInteger(number) || number < 0) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return number;
@@ -122,7 +122,7 @@ function parseRatingHistoryReview(value: unknown): RatingHistoryReview | null {
   if (!isRecord(value)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -139,7 +139,7 @@ function parseRatingHistoryService(value: unknown): RatingHistoryService | null 
   if (!isRecord(value)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -156,7 +156,7 @@ function parseRatingHistoryProvider(value: unknown): RatingHistoryProvider | nul
   if (!isRecord(value)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -169,14 +169,14 @@ function parseClientRating(value: unknown): ClientRating {
   if (!isRecord(value)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   const valor = requiredNumber(value.valor);
   if (valor < 1 || valor > 5) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -194,7 +194,7 @@ function parseClientRatingHistoryPage(value: unknown): ClientRatingHistoryPage {
   if (!isRecord(value) || !Array.isArray(value.items)) {
     throw new TrustError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   const items = value.items.map(parseClientRating).sort((left, right) => {
@@ -274,7 +274,7 @@ function mapApiError(error: unknown, fallback: string): TrustError {
     if (error.status === 404) {
       return new TrustError(
         'NOT_FOUND',
-        serverMessage ?? 'El recurso ya no está disponible.',
+        serverMessage ?? 'La información ya no está disponible.',
         404,
         serverCode,
         serverMessage
@@ -301,7 +301,7 @@ function mapApiError(error: unknown, fallback: string): TrustError {
     if (error.status === 413) {
       return new TrustError(
         'TOO_LARGE',
-        'El archivo supera el tamaño aceptado por el servidor.',
+        'El archivo supera el tamaño permitido.',
         413,
         serverCode,
         serverMessage
@@ -310,7 +310,7 @@ function mapApiError(error: unknown, fallback: string): TrustError {
     if (error.status === 415) {
       return new TrustError(
         'UNSUPPORTED',
-        'El servidor no aceptó el tipo de archivo seleccionado.',
+        'El formato del archivo no es compatible.',
         415,
         serverCode,
         serverMessage
@@ -331,7 +331,7 @@ function requireBaseUrl(baseUrl?: string): string {
   if (!baseUrl) {
     throw new TrustError(
       'CONFIGURATION',
-      'La URL de la API no está configurada en este entorno.'
+      'No podemos completar esta operación en este momento. Intenta de nuevo más tarde.'
     );
   }
   return baseUrl;

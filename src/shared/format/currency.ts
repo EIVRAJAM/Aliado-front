@@ -2,7 +2,7 @@ export const MAX_COP_AMOUNT = 2147483647;
 
 export function formatCop(value: number | null | undefined): string {
   if (value === null || value === undefined) {
-    return 'Sin tarifa registrada';
+    return 'Sin tarifa';
   }
   const groups = Math.trunc(Math.abs(value))
     .toString()

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -24,6 +26,8 @@ export function ProviderPublicProfileView({
   provider: PublicProvider;
   onReportReview?: (review: ProviderReview) => void;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const publicFields = PUBLIC_PROFILE_FIELDS.flatMap((field) => {
     const formatted = formatPublicValue(provider.datosGenerales[field.key]);
     return formatted ? [{ ...field, formatted }] : [];
@@ -131,7 +135,7 @@ export function ProviderPublicProfileView({
         )}
         {unsupportedPublicFields > 0 ? (
           <Text style={styles.unsupported}>
-            Algunos datos públicos no se muestran porque su formato no está definido.
+            Algunos datos públicos no se pudieron mostrar.
           </Text>
         ) : null}
       </Card>
@@ -176,16 +180,21 @@ export function ProviderPublicProfileView({
       <View style={styles.note}>
         <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
         <Text style={styles.noteText}>
-          El contrato público no incluye nombre, contacto, dirección exacta, experiencia ni
-          portafolio. El título se deriva de las categorías recibidas. La verificación básica indica
-          revisión de documentos por ALIADO; no es una certificación legal.
+          Este perfil no muestra nombre, contacto, dirección exacta, experiencia ni portafolio. El
+          título se basa en las categorías del perfil. La verificación básica indica revisión de
+          documentos por ALIADO; no es una certificación legal.
         </Text>
       </View>
     </>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   hero: {
     gap: spacing.lg,
     padding: spacing.xl,

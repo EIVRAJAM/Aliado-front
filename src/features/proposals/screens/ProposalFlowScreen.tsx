@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState, type ComponentProps } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
@@ -45,6 +47,8 @@ const URGENCY_LABELS: Record<string, string> = {
 };
 
 export function ProposalFlowScreen({ navigation, route }: ProposalFlowScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
 
   if (!session) {
@@ -84,6 +88,8 @@ function ProviderProposalFlow({
   solicitudId: string;
   opportunity?: ProposalOpportunityContext;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const resolveError = useProposalError();
 
@@ -201,7 +207,7 @@ function ProviderProposalFlow({
       if (created.solicitudId !== solicitudId) {
         setCreationUncertain(true);
         setFormError(
-          'La respuesta del servidor no corresponde a esta solicitud. No se pudo confirmar si la propuesta se registró; no vuelvas a enviar este formulario.'
+          'No pudimos confirmar que la propuesta corresponda a esta solicitud. No vuelvas a enviar este formulario.'
         );
         return;
       }
@@ -287,7 +293,7 @@ function ProviderProposalFlow({
         setEditing(false);
         setStatusUnknown(true);
         setFormError(
-          'La respuesta del servidor no corresponde a esta propuesta. No se puede confirmar su estado actual.'
+          'No pudimos confirmar el estado actual de esta propuesta.'
         );
         return;
       }
@@ -443,8 +449,7 @@ function ProviderProposalFlow({
                   }
                 />
                 <Text style={styles.unknownText}>
-                  Estos datos corresponden a la última respuesta del servidor y pueden estar
-                  desactualizados.
+                  Estos datos son los últimos disponibles y pueden estar desactualizados.
                 </Text>
                 <PrimaryButton
                   label="Volver a la oportunidad"
@@ -564,6 +569,8 @@ function ProposalValue({
   value: string;
   empty?: boolean;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View style={styles.valueBlock}>
       <View style={styles.valueLabelRow}>
@@ -575,7 +582,12 @@ function ProposalValue({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   formCard: {
     gap: spacing.lg,
   },

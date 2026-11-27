@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { SelectOption } from '../../../shared/ui/SelectField';
@@ -18,6 +20,8 @@ export function CategoryPicker({
   error,
   disabled = false,
 }: CategoryPickerProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   if (options.length === 0) {
     return <Text style={styles.empty}>No hay categorías disponibles.</Text>;
   }
@@ -57,7 +61,12 @@ export function CategoryPicker({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     gap: spacing.xs,
   },

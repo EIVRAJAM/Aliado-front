@@ -63,7 +63,7 @@ export function formatAvailability(block: AvailabilityBlock): string {
   const day =
     block.diaSemana === null
       ? 'Todos los días'
-      : DAY_NAMES[block.diaSemana] ?? `Día ${block.diaSemana}`;
+      : DAY_NAMES[block.diaSemana] ?? 'Día no disponible';
   return `${day} · ${block.horaInicio.slice(0, 5)} – ${block.horaFin.slice(0, 5)}`;
 }
 
@@ -102,7 +102,7 @@ export function verificationLabel(value: string): string {
   if (value === 'BASICO') {
     return 'Verificación básica';
   }
-  return value.replaceAll('_', ' ').toLowerCase();
+  return 'Verificación no disponible';
 }
 
 export function originLabel(value: string): string {
@@ -112,7 +112,7 @@ export function originLabel(value: string): string {
   if (value === 'SISTEMA') {
     return 'Sistema';
   }
-  return value;
+  return 'Origen no disponible';
 }
 
 export function ratingLabel(value: number, count: number): string {

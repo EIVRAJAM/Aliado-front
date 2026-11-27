@@ -7,7 +7,7 @@ export function getAuthErrorMessage(error: unknown, fallback: string): string {
 
   switch (error.code) {
     case 'CONFIGURATION':
-      return 'La conexión con ALIADO no está configurada en este entorno. La integración permanece pendiente.';
+      return 'No podemos conectar con ALIADO en este momento. Intenta de nuevo más tarde.';
     case 'NETWORK':
       return 'No se pudo conectar con ALIADO. Revisa tu conexión e intenta de nuevo.';
     case 'EMAIL_TAKEN':
@@ -19,7 +19,7 @@ export function getAuthErrorMessage(error: unknown, fallback: string): string {
     case 'ACCOUNT_DELETED':
       return 'Esta cuenta fue eliminada y no puede recuperarse.';
     case 'ADMIN_PORTAL_REQUIRED':
-      return 'La administración se realiza desde el panel web. Esta app es solo para Cliente y Prestador.';
+      return 'Usa el panel web de ALIADO para cuentas administrativas.';
     case 'SESSION_EXPIRED':
       return 'Tu sesión expiró. Inicia sesión de nuevo.';
     case 'RECOVERY_TOKEN_INVALID':

@@ -22,7 +22,7 @@ function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -35,7 +35,7 @@ function nullableNumber(value: unknown): number | null {
   if (typeof value !== 'number' || Number.isNaN(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -45,7 +45,7 @@ function stringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value.filter((item): item is string => typeof item === 'string');
@@ -55,14 +55,14 @@ function parseAvailability(value: unknown): AvailabilityBlock[] {
   if (!Array.isArray(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value.map((item) => {
     if (!isRecord(item)) {
       throw new ProfessionalProfileError(
         'UNKNOWN',
-        'La respuesta del servidor no tiene el formato esperado.'
+        'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
       );
     }
     return {
@@ -78,7 +78,7 @@ function parseReviews(value: unknown): PublicReview[] {
   if (!Array.isArray(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value.map((item) => {
@@ -90,7 +90,7 @@ function parseReviews(value: unknown): PublicReview[] {
     ) {
       throw new ProfessionalProfileError(
         'UNKNOWN',
-        'La respuesta del servidor no tiene el formato esperado.'
+        'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
       );
     }
     return {
@@ -111,7 +111,7 @@ function parsePreview(value: unknown): ProfessionalPreview {
   ) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
 
@@ -132,7 +132,7 @@ function parseCommitment(value: unknown): AgendaCommitment {
   if (!isRecord(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -147,7 +147,7 @@ function parseAgenda(value: unknown): AgendaCommitment[] {
   if (!Array.isArray(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value.map(parseCommitment);
@@ -157,7 +157,7 @@ function parseCategory(value: unknown) {
   if (!isRecord(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -170,7 +170,7 @@ function parseZone(value: unknown) {
   if (!isRecord(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -185,7 +185,7 @@ function parseCatalogs(categories: unknown, zones: unknown): ProfessionalCatalog
   if (!Array.isArray(categories) || !Array.isArray(zones)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -198,7 +198,7 @@ function parseOwnProfile(value: unknown): OwnProfessionalProfile {
   if (!isRecord(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   const datos = isRecord(value.datosGenerales) ? value.datosGenerales : {};
@@ -214,7 +214,7 @@ function parseCreatedProfile(value: unknown): CreatedProfessionalProfile {
   if (!isRecord(value)) {
     throw new ProfessionalProfileError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -320,7 +320,7 @@ export class HttpProfessionalProfileGateway implements ProfessionalProfileGatewa
     if (!this.baseUrl) {
       throw new ProfessionalProfileError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno.'
+        'No podemos cargar tu perfil profesional en este momento. Intenta de nuevo más tarde.'
       );
     }
     return this.baseUrl;

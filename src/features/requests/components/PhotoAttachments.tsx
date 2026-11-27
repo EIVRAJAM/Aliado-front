@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
@@ -64,6 +66,8 @@ export function PhotoAttachments({
   onChange,
   disabled = false,
 }: PhotoAttachmentsProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const [error, setError] = useState<string | null>(null);
   const remaining = Math.max(0, MAX_REQUEST_PHOTOS - existingCount - photos.length);
 
@@ -126,7 +130,11 @@ export function PhotoAttachments({
       }
 
       if (result.assets.length > remaining) {
-        rejected.push(`solo puedes adjuntar ${remaining} foto(s) más`);
+        rejected.push(
+          remaining === 1
+            ? 'solo puedes adjuntar 1 foto más'
+            : `solo puedes adjuntar ${remaining} fotos más`
+        );
       }
 
       if (accepted.length > 0) {
@@ -194,7 +202,7 @@ export function PhotoAttachments({
                   onPress={() => removePhoto(index)}
                   style={styles.remove}
                 >
-                  <Ionicons name="close" size={15} color={colors.surface} />
+                  <Ionicons name="close" size={15} color={colors.onImage} />
                 </Pressable>
               </View>
             ))}
@@ -230,7 +238,12 @@ export function PhotoAttachments({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     gap: spacing.md,
   },

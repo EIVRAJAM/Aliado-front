@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -21,6 +23,8 @@ import {
 type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation, route }: LoginScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { signIn } = useAuthSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -62,7 +66,7 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
       {!appEnv.apiBaseUrl ? (
         <InlineMessage
           variant="info"
-          message="La conexión con la API no está configurada en este entorno. La autenticación real permanece pendiente."
+          message="El inicio de sesión no está disponible en este momento. Intenta de nuevo más tarde."
         />
       ) : null}
       {notice ? <InlineMessage variant="success" message={notice} /> : null}
@@ -99,7 +103,12 @@ export function LoginScreen({ navigation, route }: LoginScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   links: {
     gap: spacing.xs,
     marginTop: spacing.sm,

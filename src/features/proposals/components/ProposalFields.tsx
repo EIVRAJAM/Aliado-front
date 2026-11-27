@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import DateTimePicker, {
   DateTimePickerAndroid,
 } from '@react-native-community/datetimepicker';
@@ -59,6 +61,8 @@ export function ProposalFields({
   existingAvailability,
   existingAvailabilityUnreadable = false,
 }: ProposalFieldsProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [pickerMode, setPickerMode] = useState<'date' | 'time' | null>(null);
   const [draft, setDraft] = useState(new Date());
@@ -194,7 +198,7 @@ export function ProposalFields({
           <View style={styles.legacyWarning}>
             <Ionicons name="alert-circle-outline" size={16} color={colors.warning} />
             <Text style={styles.legacyText}>
-              La disponibilidad actual no se puede interpretar como fecha y hora:{' '}
+              La disponibilidad guardada no tiene un formato de fecha y hora válido:{' '}
               “{shortPreviousValue(existingAvailability)}”. Selecciona una nueva; se reemplazará
               al guardar.
             </Text>
@@ -209,7 +213,7 @@ export function ProposalFields({
 
         <Text style={styles.hint}>
           Hora local del dispositivo. Es disponibilidad declarada; no representa una reserva ni
-          una coincidencia horaria calculada por el servidor.
+          una coincidencia horaria calculada por ALIADO.
         </Text>
       </View>
 
@@ -304,7 +308,12 @@ export function ProposalFields({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     gap: spacing.md,
   },

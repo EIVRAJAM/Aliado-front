@@ -44,7 +44,7 @@ function mapApiError(error: unknown, fallbackCode: AuthError['code'], fallbackMe
     return new AuthError('NETWORK', 'La solicitud tardó demasiado. Intenta de nuevo.');
   }
 
-  return new AuthError('NETWORK', 'No se pudo conectar con el servidor. Revisa tu conexión e intenta de nuevo.');
+  return new AuthError('NETWORK', 'No se pudo conectar con ALIADO. Revisa tu conexión e intenta de nuevo.');
 }
 
 export class HttpAuthGateway implements AuthGateway {
@@ -58,7 +58,7 @@ export class HttpAuthGateway implements AuthGateway {
     if (!this.baseUrl) {
       throw new AuthError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno. La integración con ALIADO sigue pendiente.'
+        'No podemos conectar con ALIADO en este momento. Intenta de nuevo más tarde.'
       );
     }
     return this.baseUrl;
@@ -111,7 +111,7 @@ export class HttpAuthGateway implements AuthGateway {
       });
 
       if (!isNonEmptyString(response.sessionToken)) {
-        throw new AuthError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+        throw new AuthError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
       }
 
       if (response.rol === 'ADMINISTRADOR') {
@@ -123,7 +123,7 @@ export class HttpAuthGateway implements AuthGateway {
       }
 
       if (!isAuthRole(response.rol)) {
-        throw new AuthError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+        throw new AuthError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
       }
 
       return {

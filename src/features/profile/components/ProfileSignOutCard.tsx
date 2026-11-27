@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -9,6 +11,8 @@ import { useAuthSession } from '../../auth';
 import { getAuthErrorMessage } from '../../auth/utils/auth-error-message';
 
 export function ProfileSignOutCard() {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { signOut, isSigningOut } = useAuthSession();
   const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +55,7 @@ export function ProfileSignOutCard() {
             <Text style={styles.subtitle}>Finaliza la sesión en este dispositivo.</Text>
           </View>
           {isSigningOut ? (
-            <ActivityIndicator color={colors.muted} />
+            <ActivityIndicator color={colors.primary} />
           ) : (
             <Ionicons name="chevron-forward" size={18} color={colors.chevron} />
           )}
@@ -61,7 +65,12 @@ export function ProfileSignOutCard() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     padding: 0,
   },

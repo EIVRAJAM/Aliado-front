@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
@@ -20,6 +22,8 @@ const nextHour = () => { const value = new Date(); value.setMinutes(0, 0, 0); va
 const parseDate = (value: string | undefined, fallback: Date) => { if (!value) return fallback; const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? fallback : parsed; };
 
 export function CommitmentFormModal({ visible, initial, saving, backendError, onClose, onSubmit }: Props) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const [start, setStart] = useState(nextHour());
   const [end, setEnd] = useState(() => { const value = nextHour(); value.setHours(value.getHours() + 1); return value; });
   const [formError, setFormError] = useState<string | null>(null);
@@ -44,7 +48,7 @@ export function CommitmentFormModal({ visible, initial, saving, backendError, on
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}><KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.centered}>
         <View style={styles.dialog} accessibilityViewIsModal>
-          <View style={styles.header}><View style={styles.headerText}><Text style={styles.title}>{initial ? 'Editar compromiso' : 'Nuevo compromiso'}</Text><Text style={styles.subtitle}>Usa la fecha y hora del dispositivo; el compromiso se guarda como un instante.</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Cerrar formulario de compromiso" onPress={onClose} style={styles.closeButton}><Text style={styles.closeText}>Cerrar</Text></Pressable></View>
+          <View style={styles.header}><View style={styles.headerText}><Text style={styles.title}>{initial ? 'Editar compromiso' : 'Nuevo compromiso'}</Text><Text style={styles.subtitle}>Usa la fecha y hora de este dispositivo.</Text></View><Pressable accessibilityRole="button" accessibilityLabel="Cerrar formulario de compromiso" onPress={onClose} style={styles.closeButton}><Text style={styles.closeText}>Cerrar</Text></Pressable></View>
           <ScrollView contentContainerStyle={styles.content}>
             <Text style={styles.sectionTitle}>Inicio</Text>
             <View style={styles.row}><View style={styles.flex}><DateTimeField label="Fecha de inicio" value={start} mode="date" onChange={changeStart} disabled={saving} /></View><View style={styles.flex}><DateTimeField label="Hora de inicio" value={start} mode="time" onChange={changeStart} disabled={saving} /></View></View>
@@ -60,7 +64,12 @@ export function CommitmentFormModal({ visible, initial, saving, backendError, on
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.45)' },
   centered: { flex: 1, justifyContent: 'center', padding: spacing.lg },
   dialog: { maxHeight: '90%', borderRadius: radii.lg, backgroundColor: colors.surface, padding: spacing.lg, gap: spacing.md },

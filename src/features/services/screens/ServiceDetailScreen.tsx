@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
@@ -9,7 +11,7 @@ import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { formatCop } from '../../../shared/format/currency';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { ReportTargetModal } from '../../reports';
 import { ServiceRatingCard } from '../../trust/components/ServiceRatingCard';
@@ -39,6 +41,8 @@ import {
 type ServiceDetailScreenProps = NativeStackScreenProps<RootStackParamList, 'ServiceDetail'>;
 
 export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const detail = useServiceDetail(route.params.servicioId);
   const resolveError = useServiceError();
@@ -80,7 +84,7 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
         setSuccessMessage(success);
       } else {
         setActionError(
-          'No se pudo confirmar que el servicio haya alcanzado el estado solicitado. Actualiza antes de intentar de nuevo.'
+          'No se pudo confirmar el cambio de estado. Actualiza e inténtalo de nuevo.'
         );
       }
     } catch (transitionError) {
@@ -100,7 +104,7 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
           setSuccessMessage(success);
         } else {
           setActionError(
-            'No se pudo confirmar si el servicio cambió de estado. Actualiza antes de intentar de nuevo.'
+            'No se pudo confirmar si el servicio cambió de estado. Actualiza e inténtalo de nuevo.'
           );
         }
       } else {
@@ -265,7 +269,7 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
                 'cancelar',
                 'Servicio cancelado.',
                 'Cancelar servicio',
-                'El servicio quedará cancelado y no admitirá más transiciones.',
+                'El servicio quedará cancelado y no admitirá más cambios.',
                 true
               )
             }
@@ -306,7 +310,7 @@ export function ServiceDetailScreen({ navigation, route }: ServiceDetailScreenPr
             </View>
             <Text style={styles.reportHint}>
               {canReportService
-                ? 'Puedes reportar este servicio o a la otra parte. El servidor valida que participes en el servicio.'
+                ? 'Puedes reportar este servicio o a la otra parte. Solo puedes reportar servicios en los que participas.'
                 : 'El reporte del servicio solo está disponible mientras está contratado o en ejecución. Puedes reportar a la otra parte por separado.'}
             </Text>
             {canReportService ? (
@@ -347,9 +351,11 @@ function ServiceSummary({
   service: ContractedService;
   catalogs: { categories: Array<{ id: string; nombre: string }>; zones: Array<{ id: string; nombre: string }> };
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const urgency = urgencyLabel(service.solicitud.urgencia);
   return (
-    <Card style={[styles.summaryCard, { borderTopColor: toneFor(service.estado) }]}>
+    <Card style={[styles.summaryCard, { borderTopColor: toneFor(service.estado, colors) }]}>
       <View style={styles.summaryHeader}>
         <Text style={styles.eyebrow}>SERVICIO</Text>
         <ServiceStateBadge state={service.estado} />
@@ -388,6 +394,8 @@ function ServiceSummary({
 }
 
 function ServiceProposalCard({ service }: { service: ContractedService }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Card style={styles.sectionCard}>
       <View style={styles.sectionHeader}>
@@ -405,7 +413,7 @@ function ServiceProposalCard({ service }: { service: ContractedService }) {
         {service.propuesta.mensaje?.trim() || 'Sin mensaje.'}
       </Text>
       <Text style={styles.footerText}>
-        {service.prestadorEliminado ? 'Cuenta eliminada' : `Prestador ${shortId(service.prestadorId)}`}
+        {service.prestadorEliminado ? 'Cuenta eliminada' : 'Prestador participante'}
       </Text>
     </Card>
   );
@@ -428,6 +436,8 @@ function ServiceActions({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const canStart = role === 'PRESTADOR' && service.estado === 'CONTRATADO';
   const canFinish = role === 'PRESTADOR' && service.estado === 'EN_EJECUCION';
   const canConfirm = role === 'CLIENTE' && service.estado === 'TERMINADO';
@@ -478,10 +488,10 @@ function ServiceActions({
   );
 }
 
-function toneFor(state: ServiceState): string {
+function toneFor(state: ServiceState, colors: ThemeColors): string {
   switch (state) {
     case 'CONTRATADO':
-      return colors.primary;
+      return colors.info;
     case 'EN_EJECUCION':
       return colors.warning;
     case 'TERMINADO':
@@ -493,11 +503,12 @@ function toneFor(state: ServiceState): string {
   }
 }
 
-function shortId(value: string): string {
-  return value.length > 12 ? `${value.slice(0, 8)}…${value.slice(-4)}` : value;
-}
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   loading: { alignItems: 'center', gap: spacing.sm, paddingVertical: spacing.xl },
   loadingText: { color: colors.muted, fontSize: 14 },
   summaryCard: { borderTopWidth: 4, gap: spacing.md, padding: spacing.xl },

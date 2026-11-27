@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState, type ComponentProps } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
@@ -8,7 +10,7 @@ import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { RequestStateView } from '../components/RequestStateView';
 import { RequestStatusBadge } from '../components/RequestStatusBadge';
@@ -31,6 +33,8 @@ type IconName = ComponentProps<typeof Ionicons>['name'];
 type Action = 'publish' | 'cancel';
 
 export function RequestDetailScreen({ navigation, route }: RequestDetailScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const detailState = useRequestDetail(route.params.requestId);
   const catalogsState = useRequestCatalogs();
@@ -127,7 +131,7 @@ export function RequestDetailScreen({ navigation, route }: RequestDetailScreenPr
             style={[
               styles.hero,
               {
-                borderTopColor: requestStatusTone[request.estado].accent,
+                borderTopColor: requestStatusTone(request.estado, colors).accent,
               },
             ]}
           >
@@ -154,18 +158,18 @@ export function RequestDetailScreen({ navigation, route }: RequestDetailScreenPr
                 <View
                   style={[
                     styles.metaChip,
-                    { backgroundColor: urgencyTone[request.urgencia].background },
+                    { backgroundColor: urgencyTone(request.urgencia, colors).background },
                   ]}
                 >
                   <Ionicons
                     name="time-outline"
                     size={15}
-                    color={urgencyTone[request.urgencia].text}
+                    color={urgencyTone(request.urgencia, colors).text}
                   />
                   <Text
                     style={[
                       styles.metaText,
-                      { color: urgencyTone[request.urgencia].text },
+                      { color: urgencyTone(request.urgencia, colors).text },
                     ]}
                   >
                     {requestUrgencyLabel(request.urgencia)}
@@ -195,7 +199,7 @@ export function RequestDetailScreen({ navigation, route }: RequestDetailScreenPr
               icon="time-outline"
               label="Urgencia"
               value={requestUrgencyLabel(request.urgencia)}
-              valueColor={request.urgencia ? urgencyTone[request.urgencia].text : undefined}
+              valueColor={request.urgencia ? urgencyTone(request.urgencia, colors).text : undefined}
             />
             <InfoTile
               icon="images-outline"
@@ -258,7 +262,7 @@ export function RequestDetailScreen({ navigation, route }: RequestDetailScreenPr
             <Card
               style={[
                 styles.closedCard,
-                { borderLeftColor: requestStatusTone[request.estado].accent },
+                { borderLeftColor: requestStatusTone(request.estado, colors).accent },
               ]}
             >
               <View style={styles.closedIcon}>
@@ -269,7 +273,7 @@ export function RequestDetailScreen({ navigation, route }: RequestDetailScreenPr
                       : 'checkmark-circle-outline'
                   }
                   size={22}
-                  color={requestStatusTone[request.estado].text}
+                  color={requestStatusTone(request.estado, colors).text}
                 />
               </View>
               <View style={styles.closedText}>
@@ -303,6 +307,8 @@ function InfoTile({
   value: string;
   valueColor?: string;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View style={styles.tile}>
       <Ionicons name={icon} size={16} color={colors.muted} />
@@ -314,7 +320,12 @@ function InfoTile({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   hero: {
     borderTopWidth: 4,
     gap: spacing.md,

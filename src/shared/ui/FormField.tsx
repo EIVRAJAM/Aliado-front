@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useAppTheme, type ThemeColors } from './ThemeProvider';
+import { useMemo, useState } from 'react';
 import { StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
-import { colors, radii, spacing } from './theme';
+import { radii, spacing } from './theme';
 
 interface FormFieldProps extends TextInputProps {
   label: string;
@@ -10,6 +11,8 @@ interface FormFieldProps extends TextInputProps {
 }
 
 export function FormField({ label, error, hint, style, ...inputProps }: FormFieldProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const [focused, setFocused] = useState(false);
 
   return (
@@ -19,7 +22,7 @@ export function FormField({ label, error, hint, style, ...inputProps }: FormFiel
         {...inputProps}
         accessibilityLabel={label}
         accessibilityHint={error ?? hint}
-        placeholderTextColor={colors.muted}
+        placeholderTextColor="#94A3B8"
         onFocus={(event) => {
           setFocused(true);
           inputProps.onFocus?.(event);
@@ -46,7 +49,12 @@ export function FormField({ label, error, hint, style, ...inputProps }: FormFiel
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     gap: spacing.xs,
   },

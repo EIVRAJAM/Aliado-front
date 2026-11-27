@@ -15,21 +15,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value;
 }
 
 function stringArray(value: unknown): string[] {
   if (!Array.isArray(value)) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value.filter((item): item is string => typeof item === 'string');
 }
 
 function parseCategory(value: unknown) {
   if (!isRecord(value)) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     id: requiredString(value.id),
@@ -39,7 +39,7 @@ function parseCategory(value: unknown) {
 
 function parseZone(value: unknown) {
   if (!isRecord(value)) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     id: requiredString(value.id),
@@ -51,7 +51,7 @@ function parseZone(value: unknown) {
 
 function parseCatalogs(categories: unknown, zones: unknown): DiscoveryCatalogs {
   if (!Array.isArray(categories) || !Array.isArray(zones)) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     categories: categories.map(parseCategory),
@@ -61,7 +61,7 @@ function parseCatalogs(categories: unknown, zones: unknown): DiscoveryCatalogs {
 
 function parseAvailability(value: unknown): ProviderAvailabilityBlock[] {
   if (!Array.isArray(value)) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value.map((item) => {
     if (
@@ -69,7 +69,7 @@ function parseAvailability(value: unknown): ProviderAvailabilityBlock[] {
       typeof item.horaInicio !== 'string' ||
       typeof item.horaFin !== 'string'
     ) {
-      throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+      throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
     }
     return {
       diaSemana: typeof item.diaSemana === 'number' ? item.diaSemana : null,
@@ -81,7 +81,7 @@ function parseAvailability(value: unknown): ProviderAvailabilityBlock[] {
 
 function parseReviews(value: unknown): ProviderReview[] {
   if (!Array.isArray(value)) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value.map((item) => {
     if (
@@ -90,7 +90,7 @@ function parseReviews(value: unknown): ProviderReview[] {
       typeof item.texto !== 'string' ||
       typeof item.fechaCreacion !== 'string'
     ) {
-      throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+      throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
     }
     return {
       id: requiredString(item.id),
@@ -108,7 +108,7 @@ function parseProvider(value: unknown): PublicProvider {
     typeof value.cantidadCalificaciones !== 'number' ||
     typeof value.nivelVerificacion !== 'string'
   ) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
 
   return {
@@ -126,7 +126,7 @@ function parseProvider(value: unknown): PublicProvider {
 
 function parseSearchResult(value: unknown): ProviderSearchResult {
   if (!isRecord(value) || !Array.isArray(value.prestadores) || !Array.isArray(value.sugerencias)) {
-    throw new DiscoveryError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new DiscoveryError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     prestadores: value.prestadores.map(parseProvider),
@@ -204,7 +204,7 @@ export class HttpDiscoveryGateway implements DiscoveryGateway {
     if (!this.baseUrl) {
       throw new DiscoveryError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno.'
+        'El servicio de búsqueda no está disponible en este momento.'
       );
     }
     return this.baseUrl;

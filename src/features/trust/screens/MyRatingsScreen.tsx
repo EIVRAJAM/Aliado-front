@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -15,6 +17,8 @@ import { useMyRatings } from '../hooks/useMyRatings';
 type MyRatingsScreenProps = NativeStackScreenProps<RootStackParamList, 'MyRatings'>;
 
 export function MyRatingsScreen({ navigation }: MyRatingsScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const {
     ratings,
@@ -94,12 +98,12 @@ export function MyRatingsScreen({ navigation }: MyRatingsScreenProps) {
           </View>
           <Text style={styles.unavailableTitle}>Historial aún no disponible</Text>
           <Text style={styles.unavailableText}>
-            El backend todavía no expone una lectura de las calificaciones propias del
-            Cliente. Por eso no podemos confirmar si tienes reseñas ni mostrar un historial.
+            Aún no podemos consultar tus calificaciones. Por eso no podemos confirmar si tienes
+            reseñas ni mostrar un historial.
           </Text>
           <Text style={styles.unavailableHint}>
-            La operación fue solicitada al equipo backend. No se usan datos de ejemplo ni
-            reseñas públicas de Prestadores.
+            Esta función aún no está disponible. No mostramos datos de ejemplo ni reseñas
+            públicas de Prestadores.
           </Text>
           <PrimaryButton
             label="Volver a comprobar"
@@ -153,7 +157,12 @@ export function MyRatingsScreen({ navigation }: MyRatingsScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',

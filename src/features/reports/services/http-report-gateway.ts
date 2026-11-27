@@ -18,7 +18,7 @@ function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
     throw new ReportError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -38,7 +38,7 @@ function parseCreatedReport(value: unknown): CreatedReport {
   if (!isRecord(value)) {
     throw new ReportError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return { reporteId: requiredString(value.reporteId) };
@@ -48,7 +48,7 @@ function parseEvidence(value: unknown): ReportEvidence {
   if (!isRecord(value)) {
     throw new ReportError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -68,7 +68,7 @@ function parseReportType(value: unknown): ReportType {
   }
   throw new ReportError(
     'INVALID_RESPONSE',
-    'La respuesta del servidor no tiene el formato esperado.'
+    'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
   );
 }
 
@@ -76,7 +76,7 @@ function parseReportDetail(value: unknown): ReportDetail {
   if (!isRecord(value) || !Array.isArray(value.evidencias)) {
     throw new ReportError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -124,7 +124,7 @@ function mapApiError(error: unknown, fallback: string): ReportError {
     if (error.status === 404) {
       return new ReportError(
         'NOT_FOUND',
-        serverMessage ?? 'El recurso ya no está disponible.',
+        serverMessage ?? 'La información ya no está disponible.',
         404,
         serverCode,
         serverMessage
@@ -151,7 +151,7 @@ function mapApiError(error: unknown, fallback: string): ReportError {
     if (error.status === 413) {
       return new ReportError(
         'TOO_LARGE',
-        'El archivo supera el tamaño aceptado por el servidor.',
+        'El archivo supera el tamaño permitido.',
         413,
         serverCode,
         serverMessage
@@ -160,7 +160,7 @@ function mapApiError(error: unknown, fallback: string): ReportError {
     if (error.status === 415) {
       return new ReportError(
         'UNSUPPORTED',
-        'El servidor no aceptó el tipo de archivo seleccionado.',
+        'El formato del archivo no es compatible.',
         415,
         serverCode,
         serverMessage
@@ -181,7 +181,7 @@ function requireBaseUrl(baseUrl?: string): string {
   if (!baseUrl) {
     throw new ReportError(
       'CONFIGURATION',
-      'La URL de la API no está configurada en este entorno.'
+      'No podemos gestionar reportes en este momento. Intenta de nuevo más tarde.'
     );
   }
   return baseUrl;

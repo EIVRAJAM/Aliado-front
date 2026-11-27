@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { requireOptionalNativeModule } from 'expo';
 import { useState } from 'react';
@@ -6,7 +8,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { useMyVerification } from '../hooks/useMyVerification';
 import { useTrustError } from '../hooks/useTrustError';
@@ -21,7 +23,7 @@ import {
   verificationStatusLabel,
 } from '../utils/trust-format';
 
-function statusTone(status: VerificationRequest['estado']) {
+function statusTone(status: VerificationRequest['estado'], colors: ThemeColors) {
   switch (status) {
     case 'PENDIENTE':
       return { icon: 'time-outline' as const, color: colors.warning, surface: colors.warningSurface };
@@ -33,6 +35,8 @@ function statusTone(status: VerificationRequest['estado']) {
 }
 
 export function VerificationCard() {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const resolveError = useTrustError();
   const { verification, loading, error, missing, reload } = useMyVerification();
@@ -56,7 +60,7 @@ export function VerificationCard() {
     try {
       if (!requireOptionalNativeModule('ExpoDocumentPicker')) {
         setActionError(
-          'El selector de documentos no está incluido en este development build. Reconstruye la app para habilitarlo.'
+          'La selección de documentos no está disponible en esta versión de la app. Intenta de nuevo más tarde.'
         );
         return;
       }
@@ -91,7 +95,7 @@ export function VerificationCard() {
       });
     } catch {
       setActionError(
-        'No fue posible abrir el selector de documentos. Si usas un development build, puede requerir reconstrucción para incluir el módulo nativo.'
+        'No fue posible abrir el selector de documentos. Intenta de nuevo.'
       );
     }
   };
@@ -161,16 +165,16 @@ export function VerificationCard() {
             <View
               style={[
                 styles.statusBox,
-                { backgroundColor: statusTone(verification.estado).surface },
+                { backgroundColor: statusTone(verification.estado, colors).surface },
               ]}
             >
               <Ionicons
-                name={statusTone(verification.estado).icon}
+                name={statusTone(verification.estado, colors).icon}
                 size={20}
-                color={statusTone(verification.estado).color}
+                color={statusTone(verification.estado, colors).color}
               />
               <View style={styles.statusText}>
-                <Text style={[styles.statusTitle, { color: statusTone(verification.estado).color }]}>
+                <Text style={[styles.statusTitle, { color: statusTone(verification.estado, colors).color }]}>
                   {verificationStatusLabel(verification.estado)}
                 </Text>
                 <Text style={styles.statusHint}>
@@ -193,8 +197,8 @@ export function VerificationCard() {
             <View style={styles.form}>
               <Text style={styles.label}>Documentos</Text>
               <Text style={styles.hint}>
-                El contrato actual no fija tipos, tamaños ni cantidad en la app. El servidor validará
-                cada archivo y responderá si no es aceptado.
+                La app no fija tipos, tamaños ni cantidad. Si un archivo no es aceptado, verás un
+                error.
               </Text>
               <PrimaryButton
                 label="Seleccionar documentos"
@@ -262,7 +266,12 @@ export function VerificationCard() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: { gap: spacing.md },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconBadge: {

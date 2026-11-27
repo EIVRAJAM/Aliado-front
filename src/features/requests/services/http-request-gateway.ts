@@ -25,14 +25,14 @@ function nullableString(value: unknown): string | null {
     return null;
   }
   if (typeof value !== 'string') {
-    throw new RequestError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new RequestError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value;
 }
 
 function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
-    throw new RequestError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new RequestError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return value;
 }
@@ -59,7 +59,7 @@ function parseRequest(value: unknown): ServiceRequest {
     !isRequestStatus(value.estado) ||
     (value.urgencia !== null && value.urgencia !== undefined && !isRequestUrgency(value.urgencia))
   ) {
-    throw new RequestError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new RequestError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
 
   return {
@@ -78,7 +78,7 @@ function parseRequest(value: unknown): ServiceRequest {
 
 function parseCategory(value: unknown): CatalogCategory {
   if (!isRecord(value)) {
-    throw new RequestError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new RequestError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     id: requiredString(value.id),
@@ -88,7 +88,7 @@ function parseCategory(value: unknown): CatalogCategory {
 
 function parseZone(value: unknown): CatalogZone {
   if (!isRecord(value)) {
-    throw new RequestError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new RequestError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     id: requiredString(value.id),
@@ -102,7 +102,7 @@ function parseCatalogs(
   zones: unknown
 ): RequestCatalogs {
   if (!Array.isArray(categories) || !Array.isArray(zones)) {
-    throw new RequestError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new RequestError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     categories: categories.map(parseCategory),
@@ -112,7 +112,7 @@ function parseCatalogs(
 
 function parseUploadedPhoto(value: unknown): UploadedPhoto {
   if (!isRecord(value)) {
-    throw new RequestError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new RequestError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
   }
   return {
     id: requiredString(value.id),
@@ -232,7 +232,7 @@ export class HttpRequestGateway implements RequestGateway {
     if (!this.baseUrl) {
       throw new RequestError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno. La integración con ALIADO sigue pendiente.'
+        'No podemos gestionar solicitudes en este momento. Intenta de nuevo más tarde.'
       );
     }
     return this.baseUrl;
@@ -263,7 +263,7 @@ export class HttpRequestGateway implements RequestGateway {
         token,
       });
       if (!Array.isArray(response)) {
-        throw new RequestError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+        throw new RequestError('UNKNOWN', 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.');
       }
       return response.map(parseRequest);
     } catch (error) {
@@ -413,7 +413,7 @@ export class HttpRequestGateway implements RequestGateway {
                 ? parseError
                 : new RequestError(
                     'UNKNOWN',
-                    'La respuesta del servidor no tiene el formato esperado.'
+                    'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
                   )
             );
           }

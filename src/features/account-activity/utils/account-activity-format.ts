@@ -20,7 +20,7 @@ const preferenceLabels: Record<NotificationPreferenceType, string> = {
 };
 
 const channelLabels: Record<NotificationChannel, string> = {
-  PUSH: 'Notificación push',
+  PUSH: 'Notificación en el teléfono',
   EMAIL: 'Correo electrónico',
 };
 
@@ -39,7 +39,7 @@ export function activityTypeLabel(type: string): string {
   if (type === 'NOTIFICACION') {
     return 'Notificación';
   }
-  return type;
+  return 'Actividad';
 }
 
 const activityEventLabels: Record<string, string> = {

@@ -1,4 +1,4 @@
-import { colors } from '../../../shared/ui/theme';
+import type { ThemeColors } from '../../../shared/ui/theme';
 import type {
   ContractedService,
   ServiceState,
@@ -13,16 +13,31 @@ const STATE_LABELS: Record<ServiceState, string> = {
   CANCELADO: 'Cancelado',
 };
 
-export const serviceStateTone: Record<
-  ServiceState,
-  { background: string; text: string; accent: string }
-> = {
-  CONTRATADO: { background: colors.infoSurface, text: colors.primary, accent: colors.primary },
-  EN_EJECUCION: { background: colors.warningSurface, text: colors.warning, accent: colors.warning },
-  TERMINADO: { background: colors.tealSurface, text: colors.teal, accent: colors.teal },
-  FINALIZADO: { background: colors.successSurface, text: colors.success, accent: colors.success },
-  CANCELADO: { background: colors.dangerSurface, text: colors.danger, accent: colors.danger },
-};
+export function serviceStateTone(
+  state: ServiceState,
+  colors: ThemeColors
+): { background: string; text: string; accent: string } {
+  switch (state) {
+    case 'CONTRATADO':
+      return { background: colors.infoSurface, text: colors.info, accent: colors.info };
+    case 'EN_EJECUCION':
+      return {
+        background: colors.warningSurface,
+        text: colors.warning,
+        accent: colors.warning,
+      };
+    case 'TERMINADO':
+      return { background: colors.tealSurface, text: colors.teal, accent: colors.teal };
+    case 'FINALIZADO':
+      return {
+        background: colors.successSurface,
+        text: colors.success,
+        accent: colors.success,
+      };
+    case 'CANCELADO':
+      return { background: colors.dangerSurface, text: colors.danger, accent: colors.danger };
+  }
+}
 
 const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 

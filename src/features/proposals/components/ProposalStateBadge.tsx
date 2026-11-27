@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { spacing } from '../../../shared/ui/theme';
@@ -8,7 +10,9 @@ import {
 } from '../utils/proposal-format';
 
 export function ProposalStateBadge({ state }: { state: ProposalVisualState }) {
-  const tone = proposalStateTone[state];
+  const { colors } = useAppTheme();
+  const styles = useStyles();
+  const tone = proposalStateTone(state, colors);
 
   return (
     <View style={[styles.badge, { backgroundColor: tone.background }]}>
@@ -18,7 +22,12 @@ export function ProposalStateBadge({ state }: { state: ProposalVisualState }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',

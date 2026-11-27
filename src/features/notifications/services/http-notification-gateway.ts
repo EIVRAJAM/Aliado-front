@@ -16,7 +16,7 @@ function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
     throw new NotificationError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -29,7 +29,7 @@ function nullableString(value: unknown): string | null {
   if (typeof value !== 'string') {
     throw new NotificationError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -43,7 +43,7 @@ function parseNotifications(value: unknown): AppNotification[] {
   if (!Array.isArray(value)) {
     throw new NotificationError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
 
@@ -136,7 +136,10 @@ export class HttpNotificationGateway implements NotificationGateway {
 
   private async request(token: string, path: string, method: 'GET' | 'PUT'): Promise<unknown> {
     if (!this.baseUrl) {
-      throw new NotificationError('CONFIGURATION', 'La URL de la API no está configurada en este entorno.');
+      throw new NotificationError(
+        'CONFIGURATION',
+        'No podemos cargar las notificaciones en este momento. Intenta de nuevo más tarde.'
+      );
     }
     try {
       return await requestJson<unknown>(this.baseUrl, '/api/v1/notificaciones' + path, { method, token });

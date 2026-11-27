@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -30,6 +32,8 @@ export function ReceivedProposalsScreen({
   navigation,
   route,
 }: ReceivedProposalsScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const resolveError = useProposalError();
   const [proposals, setProposals] = useState<Proposal[]>([]);
@@ -242,7 +246,12 @@ export function ReceivedProposalsScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',

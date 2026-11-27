@@ -18,7 +18,7 @@ function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
     throw new ProposalError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -31,7 +31,7 @@ function nullableString(value: unknown): string | null {
   if (typeof value !== 'string') {
     throw new ProposalError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -44,7 +44,7 @@ function nullablePositiveInteger(value: unknown): number | null {
   if (typeof value !== 'number' || !Number.isInteger(value) || value <= 0) {
     throw new ProposalError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -54,7 +54,7 @@ function parseProposal(value: unknown): Proposal {
   if (!isRecord(value) || !isProposalState(value.estado)) {
     throw new ProposalError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -72,7 +72,7 @@ function parseRetireResponse(value: unknown): RetireProposalResponse {
   if (!isRecord(value) || !isProposalState(value.estado)) {
     throw new ProposalError(
       'INVALID_RESPONSE',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -186,7 +186,7 @@ export class HttpProposalGateway implements ProposalGateway {
     if (!this.baseUrl) {
       throw new ProposalError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno.'
+        'No podemos gestionar propuestas en este momento. Intenta de nuevo más tarde.'
       );
     }
     return this.baseUrl;
@@ -208,7 +208,7 @@ export class HttpProposalGateway implements ProposalGateway {
       if (proposal.tarifaCop !== input.tarifaCop) {
         throw new ProposalError(
           'INVALID_RESPONSE',
-          'La respuesta del servidor no confirma la tarifa enviada.'
+          'No pudimos confirmar la tarifa de la propuesta.'
         );
       }
       return proposal;
@@ -240,13 +240,13 @@ export class HttpProposalGateway implements ProposalGateway {
       if (proposal.id !== proposalId) {
         throw new ProposalError(
           'INVALID_RESPONSE',
-          'La respuesta no corresponde a la propuesta solicitada.'
+          'No pudimos confirmar que la propuesta actualizada sea la correcta.'
         );
       }
       if (proposal.tarifaCop !== input.tarifaCop) {
         throw new ProposalError(
           'INVALID_RESPONSE',
-          'La respuesta del servidor no confirma la tarifa actualizada.'
+          'No pudimos confirmar la tarifa actualizada.'
         );
       }
       return proposal;
@@ -265,7 +265,7 @@ export class HttpProposalGateway implements ProposalGateway {
       if (!Array.isArray(response)) {
         throw new ProposalError(
           'INVALID_RESPONSE',
-          'La respuesta del servidor no tiene el formato esperado.'
+          'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
         );
       }
       return response.map(parseProposal);
@@ -284,7 +284,7 @@ export class HttpProposalGateway implements ProposalGateway {
       if (!isRecord(response)) {
         throw new ProposalError(
           'INVALID_RESPONSE',
-          'La respuesta del servidor no tiene el formato esperado.'
+          'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
         );
       }
       return {
@@ -307,7 +307,7 @@ export class HttpProposalGateway implements ProposalGateway {
       if (retired.id !== proposalId || retired.estado !== 'RETIRADA') {
         throw new ProposalError(
           'INVALID_RESPONSE',
-          'La respuesta de retiro no corresponde a la propuesta solicitada.'
+          'No pudimos confirmar el retiro de la propuesta.'
         );
       }
       return retired;

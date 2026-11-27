@@ -1,3 +1,4 @@
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
@@ -45,6 +46,8 @@ interface UncertainOutcome {
 }
 
 export function RequestFormScreen({ navigation, route }: RequestFormScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const requestId = route.params?.requestId;
   const isEditing = Boolean(requestId);
   const { session } = useAuthSession();
@@ -255,8 +258,8 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
         setFormError(
           uncertain
             ? isEditing
-              ? 'Los cambios se guardaron, pero no se pudo confirmar el resultado de las fotos. Revisa el detalle para verificar el estado actual.'
-              : 'La solicitud se creó, pero no se pudo confirmar el resultado de las fotos o la publicación. Revisa el detalle para verificar el estado actual.'
+              ? 'Los cambios se guardaron, pero no pudimos confirmar si todas las fotos quedaron actualizadas. Revisa el detalle para verificar el estado actual.'
+              : 'La solicitud se creó, pero no pudimos confirmar si todas las fotos o la publicación quedaron guardadas. Revisa el detalle para verificar el estado actual.'
             : `${message ?? ''} La solicitud ya quedó guardada${
                 photos.length > 0 ? ' con las fotos que se pudieron subir' : ''
               }; puedes revisarla en el detalle.`.trim()
@@ -265,7 +268,7 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
         if (isEditing) {
           setUncertainOutcome({
             message:
-              'No se pudo confirmar si los cambios se guardaron. No vuelvas a enviar este formulario; actualiza Mis solicitudes y revisa la solicitud antes de decidir el siguiente paso.',
+              'No se pudo confirmar si los cambios se guardaron. No vuelvas a enviar este formulario; actualiza Mis solicitudes y revisa la solicitud antes de continuar.',
             reconciledRequestId: null,
           });
         } else {
@@ -275,8 +278,8 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
               : null;
           setUncertainOutcome({
             message: reconciled
-              ? 'La respuesta no se pudo confirmar, pero encontramos una solicitud nueva que coincide con los datos enviados. La coincidencia no garantiza que sea la misma operación; revisa su detalle antes de continuar.'
-              : 'No se pudo confirmar si la solicitud se guardó. No vuelvas a enviar este formulario: el servidor no garantiza la idempotencia y la solicitud podría aparecer en la lista más adelante. Actualiza Mis solicitudes y conserva estos datos hasta confirmar el resultado.',
+              ? 'No se pudo confirmar la respuesta, pero encontramos una solicitud nueva que coincide con estos datos. La coincidencia no garantiza que sea la misma solicitud; revísala antes de continuar.'
+              : 'No se pudo confirmar si la solicitud se guardó. No vuelvas a enviar este formulario; revisa Mis solicitudes y conserva estos datos hasta confirmar el resultado.',
             reconciledRequestId: reconciled?.id ?? null,
           });
         }
@@ -467,8 +470,8 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
                 {uncertainOutcome.message}
               </Text>
               <Text style={styles.uncertainHint}>
-                La lista se actualiza al abrirla. No se ofrece un reenvío automático mientras el
-                resultado siga sin confirmarse.
+                La lista se actualiza al abrirla. No se reenviará automáticamente mientras no se
+                confirme el resultado.
               </Text>
               {uncertainOutcome.reconciledRequestId ? (
                 <PrimaryButton
@@ -500,8 +503,8 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
             <View style={styles.securityNote}>
               <Ionicons name="lock-closed-outline" size={15} color={colors.muted} />
               <Text style={styles.securityNoteText}>
-                Si la conexión falla antes de recibir confirmación, conservaremos tus datos y
-                bloquearemos el reenvío hasta que revises Mis solicitudes.
+                Si la conexión falla, conservaremos tus datos y no reenviaremos el formulario
+                hasta que revises Mis solicitudes.
               </Text>
             </View>
           ) : null}
@@ -511,7 +514,12 @@ export function RequestFormScreen({ navigation, route }: RequestFormScreenProps)
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   descriptionInput: {
     minHeight: 120,
     paddingTop: spacing.md,

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import type { CompositeScreenProps } from '@react-navigation/native';
@@ -25,6 +27,8 @@ type ActivityScreenProps = CompositeScreenProps<
 >;
 
 export function ActivityScreen({ navigation }: ActivityScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const indicatorsState = useProviderIndicators();
   const recentState = useRecentActivity();
@@ -94,6 +98,8 @@ function ProviderSummary({
   error: string | null;
   onRetry: () => void;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Card style={styles.summaryCard}>
       <View style={styles.sectionHeader}>
@@ -102,7 +108,7 @@ function ProviderSummary({
         </View>
         <View style={styles.sectionHeaderText}>
           <Text style={styles.sectionTitle}>Resumen del Prestador</Text>
-          <Text style={styles.sectionSubtitle}>Datos calculados por el backend.</Text>
+          <Text style={styles.sectionSubtitle}>Resumen calculado por ALIADO.</Text>
         </View>
       </View>
 
@@ -117,7 +123,7 @@ function ProviderSummary({
           <PrimaryButton label="Reintentar indicadores" variant="secondary" onPress={onRetry} />
         </>
       ) : !indicators ? (
-        <InlineMessage variant="info" message="No se recibieron indicadores para esta cuenta." />
+        <InlineMessage variant="info" message="Aún no hay indicadores disponibles para esta cuenta." />
       ) : (
         <>
           <View style={styles.metricsRow}>
@@ -142,7 +148,8 @@ function ProviderSummary({
             </View>
           </View>
           <Text style={styles.limitNote}>
-            Sin periodo ni fórmula aprobada (D-15). La app no recalcula estos valores.
+            El periodo y la fórmula de estos indicadores aún no están definidos. La app no
+            recalcula los valores.
           </Text>
         </>
       )}
@@ -161,6 +168,8 @@ function RecentActivitySection({
   error: string | null;
   onRetry: () => void;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Card style={styles.sectionCard}>
       <View style={styles.sectionHeader}>
@@ -219,6 +228,8 @@ function WorkHistorySection({
   onOpenHistory: () => void;
   onOpenService: (servicioId: string) => void;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Card style={styles.sectionCard}>
       <View style={styles.sectionHeader}>
@@ -274,7 +285,12 @@ function WorkHistorySection({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   summaryCard: {
     gap: spacing.lg,
   },

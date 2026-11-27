@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../../../shared/ui/Card';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 
 type ActionTone = 'blue' | 'teal' | 'green' | 'danger';
 
@@ -13,12 +15,21 @@ interface ProfileActionCardProps {
   onPress: () => void;
 }
 
-const toneStyles: Record<ActionTone, { background: string; color: string }> = {
-  blue: { background: colors.infoSurface, color: colors.primary },
-  teal: { background: colors.tealSurface, color: colors.teal },
-  green: { background: colors.successSurface, color: colors.success },
-  danger: { background: colors.dangerSurface, color: colors.danger },
-};
+function actionTone(
+  tone: ActionTone,
+  colors: ThemeColors
+): { background: string; color: string } {
+  switch (tone) {
+    case 'blue':
+      return { background: colors.infoSurface, color: colors.info };
+    case 'teal':
+      return { background: colors.tealSurface, color: colors.teal };
+    case 'green':
+      return { background: colors.successSurface, color: colors.success };
+    case 'danger':
+      return { background: colors.dangerSurface, color: colors.danger };
+  }
+}
 
 export function ProfileActionCard({
   icon,
@@ -27,7 +38,9 @@ export function ProfileActionCard({
   tone = 'blue',
   onPress,
 }: ProfileActionCardProps) {
-  const theme = toneStyles[tone];
+  const { colors } = useAppTheme();
+  const styles = useStyles();
+  const theme = actionTone(tone, colors);
 
   return (
     <Card style={styles.card}>
@@ -50,7 +63,12 @@ export function ProfileActionCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     padding: 0,
   },

@@ -1,8 +1,10 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Card } from '../../../shared/ui/Card';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import type { Opportunity } from '../types/opportunity';
 import {
   formatOpportunityDate,
@@ -18,7 +20,9 @@ interface OpportunityCardProps {
 }
 
 export function OpportunityCard({ opportunity, onPress }: OpportunityCardProps) {
-  const tone = urgencyTone(opportunity.urgencia);
+  const { colors } = useAppTheme();
+  const styles = useStyles();
+  const tone = urgencyTone(opportunity.urgencia, colors);
   const summary = opportunitySummary(opportunity);
 
   return (
@@ -82,7 +86,12 @@ export function OpportunityCard({ opportunity, onPress }: OpportunityCardProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     padding: 0,
     borderLeftWidth: 4,

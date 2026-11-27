@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
 import { useEffect, useRef, useState } from 'react';
@@ -16,6 +18,8 @@ export function ReferenceCopyRow({
   displayValue,
   value,
 }: ReferenceCopyRowProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -54,8 +58,8 @@ export function ReferenceCopyRow({
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Copiar ID de ${label.toLowerCase()}`}
-        accessibilityHint="Copia el identificador completo."
+        accessibilityLabel={`Copiar referencia de ${label.toLowerCase()}`}
+        accessibilityHint="Copia la referencia completa."
         onPress={() => {
           void handleCopy();
         }}
@@ -76,7 +80,12 @@ export function ReferenceCopyRow({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',

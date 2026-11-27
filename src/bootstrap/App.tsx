@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ThemeProvider } from '../shared/ui/ThemeProvider';
 import { AuthSessionProvider, createAuthGateway } from '../features/auth';
 import type { AuthSession } from '../features/auth/types/auth';
 import { isPushEnabled } from '../features/notifications/services/push-gateway';
@@ -20,13 +21,15 @@ const retireInstallation = Platform.OS === 'android' && isPushEnabled()
 export default function App() {
   return (
     <SafeAreaProvider>
-      <AuthSessionProvider gateway={authGateway} retireInstallation={retireInstallation}>
-        <OnboardingGate>
-          {(initialAuthRoute, rootKey) => (
-            <RootNavigator key={rootKey} initialAuthRoute={initialAuthRoute} />
-          )}
-        </OnboardingGate>
-      </AuthSessionProvider>
+      <ThemeProvider>
+        <AuthSessionProvider gateway={authGateway} retireInstallation={retireInstallation}>
+          <OnboardingGate>
+            {(initialAuthRoute, rootKey) => (
+              <RootNavigator key={rootKey} initialAuthRoute={initialAuthRoute} />
+            )}
+          </OnboardingGate>
+        </AuthSessionProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

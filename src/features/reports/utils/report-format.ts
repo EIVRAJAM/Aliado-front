@@ -13,7 +13,7 @@ export function reportStatusLabel(status: ReportStatus): string {
     case 'DESCARTADO':
       return 'Descartado';
     default:
-      return status.replaceAll('_', ' ').toLowerCase();
+      return 'Estado no disponible';
   }
 }
 

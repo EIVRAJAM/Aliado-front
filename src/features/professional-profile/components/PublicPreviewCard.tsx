@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -23,6 +25,8 @@ export function PublicPreviewCard({
   preview: ProfessionalPreview;
   onReportReview?: (review: PublicReview) => void;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const publicFields = PUBLIC_PROFILE_FIELDS.flatMap((field) => {
     const formatted = formatPublicValue(preview.datosGenerales[field.key]);
     return formatted ? [{ ...field, formatted }] : [];
@@ -82,7 +86,7 @@ export function PublicPreviewCard({
         )}
         {unsupportedPublicFields > 0 ? (
           <Text style={styles.unsupported}>
-            Algunos datos públicos no se muestran porque su formato no está definido.
+            Algunos datos públicos no se pudieron mostrar.
           </Text>
         ) : null}
       </View>
@@ -168,16 +172,20 @@ export function PublicPreviewCard({
       <View style={styles.note}>
         <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
         <Text style={styles.noteText}>
-          La vista pública solo incluye la descripción profesional. Categorías, zonas y
-          disponibilidad se muestran aparte; experiencia, portafolio y agenda no se incluyen. La
-          verificación básica no es una certificación legal.
+          La experiencia, el portafolio y la agenda no se muestran en esta vista. La verificación
+          básica no es una certificación legal.
         </Text>
       </View>
     </Card>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     gap: spacing.lg,
   },

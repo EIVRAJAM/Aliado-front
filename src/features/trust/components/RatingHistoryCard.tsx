@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -7,6 +9,8 @@ import type { ClientRating } from '../types/trust';
 import { formatHistoryDate } from '../utils/trust-format';
 
 export function RatingHistoryCard({ rating }: { rating: ClientRating }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const service = rating.servicio;
   const providerName = rating.prestador?.nombrePublico?.trim();
   const title = service?.descripcion?.trim() || 'Servicio sin descripción';
@@ -75,7 +79,12 @@ export function RatingHistoryCard({ rating }: { rating: ClientRating }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: { gap: spacing.md },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconBadge: {

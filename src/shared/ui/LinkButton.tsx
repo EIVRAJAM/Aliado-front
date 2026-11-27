@@ -1,6 +1,7 @@
+import { useMemo } from 'react';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { colors } from './theme';
+import { useAppTheme, type ThemeColors } from './ThemeProvider';
 
 interface LinkButtonProps {
   label: string;
@@ -9,6 +10,8 @@ interface LinkButtonProps {
 }
 
 export function LinkButton({ label, onPress, align = 'center' }: LinkButtonProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Pressable
       accessibilityRole="link"
@@ -16,17 +19,21 @@ export function LinkButton({ label, onPress, align = 'center' }: LinkButtonProps
       onPress={onPress}
       style={styles.button}
     >
-      <Text style={[styles.label, { textAlign: align }]}>{label}</Text>
+      <Text style={[styles.label, { color: colors.primary, textAlign: align }]}>{label}</Text>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   button: {
     paddingVertical: 6,
   },
   label: {
-    color: colors.primary,
     fontSize: 15,
     fontWeight: '600',
   },

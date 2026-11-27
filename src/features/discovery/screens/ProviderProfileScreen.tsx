@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -18,6 +20,8 @@ import { useProviderProfile } from '../hooks/useProviderProfile';
 type ProviderProfileScreenProps = NativeStackScreenProps<RootStackParamList, 'ProviderProfile'>;
 
 export function ProviderProfileScreen({ navigation, route }: ProviderProfileScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
 
   if (!session) {
@@ -53,6 +57,8 @@ function ClientProviderProfileScreen({
   route,
   token,
 }: ProviderProfileScreenProps & { token: string }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { provider, loading, notFound, error, reload } = useProviderProfile(
     route.params.providerId
   );
@@ -123,7 +129,12 @@ function ClientProviderProfileScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   stateCard: {
     flexDirection: 'row',
     alignItems: 'center',

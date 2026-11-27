@@ -14,7 +14,7 @@ import {
 } from '../types/account-activity';
 import type { AccountActivityGateway } from './account-activity-gateway';
 
-const INVALID_RESPONSE = 'La respuesta del servidor no tiene el formato esperado.';
+const INVALID_RESPONSE = 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -241,7 +241,7 @@ export class HttpAccountActivityGateway implements AccountActivityGateway {
     if (!this.baseUrl) {
       throw new AccountActivityError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno.'
+        'No podemos cargar tu actividad en este momento. Intenta de nuevo más tarde.'
       );
     }
     return this.baseUrl;

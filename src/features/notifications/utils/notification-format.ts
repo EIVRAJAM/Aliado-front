@@ -1,5 +1,13 @@
 import type { NotificationType } from '../types/notification';
 
+const STATUS_LABELS: Record<string, string> = {
+  CONTRATADO: 'contratado',
+  EN_EJECUCION: 'en ejecución',
+  TERMINADO: 'terminado',
+  FINALIZADO: 'finalizado',
+  CANCELADO: 'cancelado',
+};
+
 const TYPE_LABELS: Record<NotificationType, string> = {
   NUEVA_OPORTUNIDAD: 'Nueva oportunidad',
   PROPUESTA_RECIBIDA: 'Propuesta recibida',
@@ -12,6 +20,10 @@ const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', '
 
 export function notificationTypeLabel(type: NotificationType): string {
   return TYPE_LABELS[type];
+}
+
+export function notificationDetailText(detail: string): string {
+  return detail.replace(/\b(CONTRATADO|EN_EJECUCION|TERMINADO|FINALIZADO|CANCELADO)\b/g, (code) => STATUS_LABELS[code] ?? code);
 }
 
 export function formatNotificationDate(value: string): string {

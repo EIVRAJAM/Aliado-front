@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
@@ -11,6 +13,8 @@ interface ProfileStateViewProps {
 }
 
 export function ProfileStateView({ loading, error, onRetry }: ProfileStateViewProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   if (loading) {
     return (
       <View style={styles.loading}>
@@ -32,7 +36,12 @@ export function ProfileStateView({ loading, error, onRetry }: ProfileStateViewPr
   return null;
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   loading: {
     alignItems: 'center',
     gap: spacing.sm,

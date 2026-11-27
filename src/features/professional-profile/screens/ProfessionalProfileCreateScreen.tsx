@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
@@ -46,6 +48,8 @@ interface UncertainState {
 export function ProfessionalProfileCreateScreen({
   navigation,
 }: ProfessionalProfileCreateScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session, clearSession } = useAuthSession();
   const { catalogs, loading, error, reload } = useProfessionalCatalogs();
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
@@ -115,7 +119,7 @@ export function ProfessionalProfileCreateScreen({
         kind: 'found',
         serverError: false,
         message:
-          'La consulta encontró tu perfil profesional. Puedes revisar la vista previa y la agenda.',
+          'Encontramos tu perfil profesional. Ya puedes revisar la vista previa y la agenda.',
       });
       return;
     }
@@ -124,8 +128,8 @@ export function ProfessionalProfileCreateScreen({
         kind: 'missing',
         serverError,
         message: serverError
-          ? 'El servidor respondió con un error al crear el perfil y la consulta confirma que no se creó. No fue un problema de conexión. Conserva tus selecciones y reintenta solo de forma manual.'
-          : 'La consulta confirma que el perfil no se creó. Conserva tus selecciones y reintenta de forma manual.',
+          ? 'No pudimos crear el perfil. Conserva tus selecciones y vuelve a intentarlo cuando el servicio esté disponible.'
+          : 'No se creó el perfil. Conserva tus selecciones y vuelve a intentarlo.',
       });
       return;
     }
@@ -133,7 +137,7 @@ export function ProfessionalProfileCreateScreen({
       kind: 'unknown',
       serverError: false,
       message:
-        'No se pudo verificar si el perfil existe porque la consulta falló. No envíes el formulario de nuevo; vuelve a revisar cuando la conexión se restablezca.',
+        'No pudimos confirmar si el perfil se creó. No envíes el formulario de nuevo; vuelve a revisar cuando la conexión se restablezca.',
     });
   };
 
@@ -369,8 +373,8 @@ export function ProfessionalProfileCreateScreen({
                   </Text>
                   {uncertain.kind === 'missing' && uncertain.serverError ? (
                     <Text style={styles.uncertainDetail}>
-                      El problema está en el servidor; el alta puede volver a fallar hasta que se
-                      corrija.
+                      El servicio de perfiles no está disponible en este momento. Vuelve a
+                      intentarlo más tarde.
                     </Text>
                   ) : null}
                 </View>
@@ -431,17 +435,13 @@ export function ProfessionalProfileCreateScreen({
               <View style={styles.limitsIcon}>
                 <Ionicons name="information-circle-outline" size={18} color={colors.muted} />
               </View>
-              <Text style={styles.limitsTitle}>Alcance de este paso</Text>
+              <Text style={styles.limitsTitle}>Ten en cuenta</Text>
             </View>
             <Text style={styles.limitItem}>
-              • La creación envía categorías, zonas y una descripción profesional opcional.
+              • Puedes agregar una descripción profesional ahora o más adelante.
             </Text>
             <Text style={styles.limitItem}>
-              • La experiencia, el portafolio y la disponibilidad se gestionan en apartados propios.
-            </Text>
-            <Text style={styles.limitItem}>
-              • La agenda se consulta por separado y los compromisos se guardan como instantes. La
-              disponibilidad semanal se interpreta en la hora de Colombia (America/Bogota).
+              • La experiencia, el portafolio, la agenda y la disponibilidad se gestionan por separado.
             </Text>
           </Card>
         </>
@@ -450,7 +450,12 @@ export function ProfessionalProfileCreateScreen({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   descriptionInput: {
     minHeight: 110,
     textAlignVertical: 'top',

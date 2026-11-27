@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -48,6 +50,8 @@ const TERMS_SECTIONS = [
 ];
 
 export function ConsentCheckbox({ checked, onChange, error }: ConsentCheckboxProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const [termsVisible, setTermsVisible] = useState(false);
 
   return (
@@ -115,12 +119,17 @@ export function ConsentCheckbox({ checked, onChange, error }: ConsentCheckboxPro
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { gap: spacing.xs },
   row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.sm },
   box: { width: 24, height: 24, borderWidth: 1, borderColor: colors.border, borderRadius: radii.sm, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center', marginTop: 1 },
-  boxChecked: { borderColor: colors.primary, backgroundColor: colors.primary },
-  check: { color: colors.surface, fontSize: 16, fontWeight: '700', lineHeight: 18 },
+  boxChecked: { borderColor: colors.primary, backgroundColor: colors.primarySolid },
+  check: { color: colors.onPrimary, fontSize: 16, fontWeight: '700', lineHeight: 18 },
   text: { flex: 1, color: colors.text, fontSize: 14, lineHeight: 20, fontWeight: '600' },
   termsLink: { alignSelf: 'flex-start', paddingVertical: 2, marginLeft: 32 },
   termsLinkText: { color: colors.primary, fontSize: 13, fontWeight: '700', textDecorationLine: 'underline' },

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -25,6 +27,8 @@ import {
 type RegisterScreenProps = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
 export function RegisterScreen({ navigation }: RegisterScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { gateway } = useAuthSession();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -85,13 +89,13 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
       {!appEnv.apiBaseUrl ? (
         <InlineMessage
           variant="info"
-          message="La conexión con la API no está configurada en este entorno. El registro real permanece pendiente."
+          message="El registro no está disponible en este momento. Intenta de nuevo más tarde."
         />
       ) : null}
       {!termsVersion ? (
         <InlineMessage
           variant="info"
-          message="La versión de términos no está configurada. El registro no puede enviarse hasta definirla."
+          message="No podemos validar los términos en este momento. Intenta completar el registro más tarde."
         />
       ) : null}
       {formError ? <InlineMessage message={formError} /> : null}
@@ -131,7 +135,12 @@ export function RegisterScreen({ navigation }: RegisterScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   links: {
     marginTop: spacing.sm,
   },

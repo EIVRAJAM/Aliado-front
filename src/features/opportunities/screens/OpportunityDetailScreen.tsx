@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -7,7 +9,7 @@ import { Card } from '../../../shared/ui/Card';
 import { InlineMessage } from '../../../shared/ui/InlineMessage';
 import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import { useAuthSession } from '../../auth';
 import { OpportunityStateView } from '../components/OpportunityStateView';
 import { OpportunityPhotoGallery } from '../components/OpportunityPhotoGallery';
@@ -30,6 +32,8 @@ export function OpportunityDetailScreen({
   navigation,
   route,
 }: OpportunityDetailScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
 
   if (!session) {
@@ -69,6 +73,8 @@ function ProviderOpportunityDetailScreen({
   solicitudId: string;
   token: string;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { opportunity, loading, notFound, error, reload } =
     useOpportunityDetail(solicitudId);
 
@@ -132,7 +138,9 @@ function OpportunityDetailContent({
   token: string;
   onPropose: () => void;
 }) {
-  const tone = urgencyTone(opportunity.urgencia);
+  const { colors } = useAppTheme();
+  const styles = useStyles();
+  const tone = urgencyTone(opportunity.urgencia, colors);
   const description = opportunity.descripcion?.trim() ?? '';
   const hasDescription = description.length > 0;
   const photoCount = opportunity.fotosDetalle.length;
@@ -216,7 +224,12 @@ function OpportunityDetailContent({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     gap: spacing.md,
     padding: spacing.xl,

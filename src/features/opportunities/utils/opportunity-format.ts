@@ -1,4 +1,4 @@
-import { colors } from '../../../shared/ui/theme';
+import type { ThemeColors } from '../../../shared/ui/theme';
 import type { Opportunity, OpportunityUrgency } from '../types/opportunity';
 
 const MONTHS = [
@@ -23,44 +23,55 @@ const URGENCY_LABELS: Record<OpportunityUrgency, string> = {
   URGENTE: 'Urgente',
 };
 
-export const opportunityUrgencyTone: Record<
-  OpportunityUrgency,
-  { background: string; text: string; accent: string }
-> = {
-  BAJA: {
-    background: colors.neutralSurface,
-    text: colors.neutral,
-    accent: colors.neutral,
-  },
-  MEDIA: {
-    background: colors.infoSurface,
-    text: colors.primary,
-    accent: colors.primary,
-  },
-  ALTA: {
-    background: colors.warningSurface,
-    text: colors.warning,
-    accent: colors.warning,
-  },
-  URGENTE: {
-    background: colors.dangerSurface,
-    text: colors.danger,
-    accent: colors.danger,
-  },
-};
+type UrgencyTone = { background: string; text: string; accent: string };
 
-const neutralTone = {
-  background: colors.neutralSurface,
-  text: colors.neutral,
-  accent: colors.border,
-};
+export function opportunityUrgencyTone(
+  urgency: OpportunityUrgency,
+  colors: ThemeColors
+): UrgencyTone {
+  switch (urgency) {
+    case 'BAJA':
+      return {
+        background: colors.neutralSurface,
+        text: colors.neutral,
+        accent: colors.neutral,
+      };
+    case 'MEDIA':
+      return {
+        background: colors.infoSurface,
+        text: colors.info,
+        accent: colors.info,
+      };
+    case 'ALTA':
+      return {
+        background: colors.warningSurface,
+        text: colors.warning,
+        accent: colors.warning,
+      };
+    case 'URGENTE':
+      return {
+        background: colors.dangerSurface,
+        text: colors.danger,
+        accent: colors.danger,
+      };
+  }
+}
 
 export function urgencyLabel(urgency: OpportunityUrgency | null): string {
   return urgency ? URGENCY_LABELS[urgency] : 'Sin indicar';
 }
 
-export function urgencyTone(urgency: OpportunityUrgency | null) {
-  return urgency ? opportunityUrgencyTone[urgency] : neutralTone;
+export function urgencyTone(
+  urgency: OpportunityUrgency | null,
+  colors: ThemeColors
+): UrgencyTone {
+  return urgency
+    ? opportunityUrgencyTone(urgency, colors)
+    : {
+        background: colors.neutralSurface,
+        text: colors.neutral,
+        accent: colors.border,
+      };
 }
 
 export function formatOpportunityDate(value: string): string {
@@ -88,10 +99,10 @@ export function photoCountLabel(count: number): string {
 export function formatOpportunityReference(solicitudId: string): string {
   const value = solicitudId.trim();
   if (!value) {
-    return 'Ref. no disponible';
+    return 'Referencia no disponible';
   }
   if (value.length <= 12) {
-    return `Ref. ${value}`;
+    return `Referencia ${value}`;
   }
-  return `Ref. ${value.slice(0, 8)}…${value.slice(-4)}`;
+  return `Referencia ${value.slice(0, 8)}…${value.slice(-4)}`;
 }

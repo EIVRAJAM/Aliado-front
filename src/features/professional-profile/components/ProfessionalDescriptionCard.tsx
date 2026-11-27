@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
@@ -23,6 +25,8 @@ export function ProfessionalDescriptionCard({
   description,
   onSave,
 }: ProfessionalDescriptionCardProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { clearSession } = useAuthSession();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(description ?? '');
@@ -137,7 +141,12 @@ export function ProfessionalDescriptionCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     gap: spacing.lg,
   },

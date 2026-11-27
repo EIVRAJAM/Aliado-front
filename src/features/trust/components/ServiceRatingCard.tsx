@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -24,6 +26,8 @@ interface ServiceRatingCardProps {
 type SubmitPhase = 'CALIFICACION' | 'RESENA' | null;
 
 export function ServiceRatingCard({ token, serviceId, onRefresh }: ServiceRatingCardProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const resolveError = useTrustError();
   const [selectedValue, setSelectedValue] = useState(0);
   const [reviewText, setReviewText] = useState('');
@@ -73,7 +77,7 @@ export function ServiceRatingCard({ token, serviceId, onRefresh }: ServiceRating
       }
       setReviewError(
         isUncertainTrustError(error)
-          ? 'No se pudo confirmar si la reseña se guardó. La calificación sí quedó registrada; reintenta solo la reseña. Si ya existe, el servidor responderá 409.'
+          ? 'No se pudo confirmar si la reseña se guardó. La calificación sí quedó registrada; reintenta solo la reseña. Si ya existe, se rechazará el duplicado.'
           : message
       );
     } finally {
@@ -126,7 +130,7 @@ export function ServiceRatingCard({ token, serviceId, onRefresh }: ServiceRating
       }
       setRatingError(
         isUncertainTrustError(error)
-          ? 'No se pudo confirmar si la calificación se guardó. La app no la reenviará automáticamente. Si reintentas y ya existe, el servidor rechazará el duplicado.'
+          ? 'No se pudo confirmar si la calificación se guardó. La app no la reenviará automáticamente. Si reintentas y ya existe, se rechazará el duplicado.'
           : message
       );
     } finally {
@@ -151,7 +155,7 @@ export function ServiceRatingCard({ token, serviceId, onRefresh }: ServiceRating
       {alreadyRated ? (
         <InlineMessage
           variant="info"
-          message="Este servicio ya tiene una calificación registrada. No se envió una segunda calificación. El detalle no expone el valor ni el identificador de la calificación anterior, así que no es posible mostrar ni editar la reseña desde aquí."
+          message="Este servicio ya tiene una calificación registrada. No se envió una segunda calificación. No es posible mostrar ni editar la reseña desde aquí."
         />
       ) : (
         <>
@@ -191,19 +195,19 @@ export function ServiceRatingCard({ token, serviceId, onRefresh }: ServiceRating
                 value={reviewText}
                 onChangeText={setReviewText}
                 placeholder="Escribe tu reseña (obligatoria)"
-                placeholderTextColor={colors.disabled}
+                placeholderTextColor="#94A3B8"
                 multiline
                 textAlignVertical="top"
                 editable={!submitting}
                 style={styles.input}
               />
               <Text style={styles.hint}>
-                El backend guarda primero la calificación y después la reseña en dos operaciones.
-                Si la reseña falla, podrás reintentarla aquí sin volver a calificar.
+                La calificación se guarda antes que la reseña. Si la reseña falla, puedes
+                reintentarla aquí sin volver a calificar.
               </Text>
               <Text style={styles.hint}>
-                Si sales de esta pantalla, la app no puede recuperar la calificación ni una reseña
-                pendiente porque el detalle no expone su identificador.
+                Si sales de esta pantalla, no podrás recuperar la calificación ni una reseña
+                pendiente.
               </Text>
               {ratingError ? <InlineMessage message={ratingError} /> : null}
               {savedRating ? (
@@ -238,7 +242,7 @@ export function ServiceRatingCard({ token, serviceId, onRefresh }: ServiceRating
               />
               {reviewAlreadyExisted ? (
                 <Text style={styles.hint}>
-                  El servidor indicó que la reseña ya existía. La app no volvió a enviar la calificación.
+                  La reseña ya estaba registrada. La app no volvió a enviar la calificación.
                 </Text>
               ) : null}
             </>
@@ -249,7 +253,12 @@ export function ServiceRatingCard({ token, serviceId, onRefresh }: ServiceRating
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: { gap: spacing.md },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   iconBadge: {

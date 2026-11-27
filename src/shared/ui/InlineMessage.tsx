@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing } from './theme';
+import { radii, spacing } from './theme';
+import { useAppTheme, type ThemeColors } from './ThemeProvider';
 
 type MessageVariant = 'error' | 'success' | 'info';
 
@@ -9,35 +11,33 @@ interface InlineMessageProps {
   variant?: MessageVariant;
 }
 
-const palette: Record<MessageVariant, { background: string; text: string }> = {
-  error: {
-    background: colors.dangerSurface,
-    text: colors.danger,
-  },
-  success: {
-    background: colors.successSurface,
-    text: colors.success,
-  },
-  info: {
-    background: colors.infoSurface,
-    text: colors.info,
-  },
-};
-
 export function InlineMessage({ message, variant = 'error' }: InlineMessageProps) {
-  const theme = palette[variant];
+  const { colors } = useAppTheme();
+  const styles = useStyles();
+  const theme =
+    variant === 'success'
+      ? { background: colors.successSurface, text: colors.success }
+      : variant === 'info'
+        ? { background: colors.infoSurface, text: colors.info }
+        : { background: colors.dangerSurface, text: colors.danger };
+  const textColor = theme.text;
 
   return (
     <View
       accessibilityLiveRegion="polite"
       style={[styles.container, { backgroundColor: theme.background }]}
     >
-      <Text style={[styles.text, { color: theme.text }]}>{message}</Text>
+      <Text style={[styles.text, { color: textColor }]}>{message}</Text>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     borderRadius: radii.md,
     paddingHorizontal: spacing.md,

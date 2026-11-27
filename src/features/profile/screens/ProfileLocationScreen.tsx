@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useEffect, useState } from 'react';
 import { Alert, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -23,6 +25,8 @@ import {
 type ProfileLocationScreenProps = NativeStackScreenProps<RootStackParamList, 'ProfileLocation'>;
 
 export function ProfileLocationScreen({ navigation }: ProfileLocationScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const { profile, loading, error, reload } = useMyProfile();
   const resolveError = useProfileError();
@@ -113,7 +117,12 @@ export function ProfileLocationScreen({ navigation }: ProfileLocationScreenProps
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   formCard: {
     gap: spacing.lg,
   },

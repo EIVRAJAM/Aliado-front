@@ -21,7 +21,7 @@ export function useHistoryExport() {
       const exportation = await accountActivityGateway.createHistoryExport(session.token);
       if (exportation.estado !== 'LISTA') {
         setExportError(
-          `La exportación quedó en estado ${exportation.estado} y no está disponible para descargar.`
+          'La exportación todavía no está disponible para descargar. Intenta de nuevo en unos minutos.'
         );
         return;
       }

@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   ActivityIndicator,
@@ -15,13 +17,15 @@ import { PrimaryButton } from '../../../shared/ui/PrimaryButton';
 import { ScreenLayout } from '../../../shared/ui/ScreenLayout';
 import { colors, radii, spacing } from '../../../shared/ui/theme';
 import { ServiceStateBadge } from '../../services/components/ServiceStateBadge';
-import { formatServiceDateTime } from '../../services/utils/service-format';
+import { formatServiceDateTime, serviceStateLabel } from '../../services/utils/service-format';
 import { useHistoryExport } from '../hooks/useHistoryExport';
 import { useWorkHistory } from '../hooks/useWorkHistory';
 
 type WorkHistoryScreenProps = NativeStackScreenProps<RootStackParamList, 'WorkHistory'>;
 
 export function WorkHistoryScreen({ navigation }: WorkHistoryScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const {
     items,
     loading,
@@ -73,7 +77,7 @@ export function WorkHistoryScreen({ navigation }: WorkHistoryScreenProps) {
               <Pressable
                 key={item.id}
                 accessibilityRole="button"
-                accessibilityLabel={`Abrir servicio ${item.id.slice(0, 8)}, ${item.estado}`}
+                accessibilityLabel={`Abrir servicio, ${serviceStateLabel(item.estado)}`}
                 onPress={() => navigation.navigate('ServiceDetail', { servicioId: item.id })}
                 style={({ pressed }) => [pressed ? styles.cardPressed : null]}
               >
@@ -81,7 +85,6 @@ export function WorkHistoryScreen({ navigation }: WorkHistoryScreenProps) {
                   <View style={styles.historyHeader}>
                     <View style={styles.historyTitleWrap}>
                       <Text style={styles.historyTitle}>Servicio contratado</Text>
-                      <Text style={styles.historyId}>ID {item.id.slice(0, 8)}…</Text>
                     </View>
                     <ServiceStateBadge state={item.estado} />
                   </View>
@@ -137,7 +140,12 @@ export function WorkHistoryScreen({ navigation }: WorkHistoryScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   loading: {
     alignItems: 'center',
     gap: spacing.sm,

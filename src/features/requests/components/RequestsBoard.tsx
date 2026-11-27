@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -18,6 +20,8 @@ export function RequestsBoard({
   onOpenRequest,
   onCreate,
 }: RequestsBoardProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { requests, catalogs, loading, error, reload } = useMyRequests();
   const showToolbarNewAction = loading || error !== null || requests.length > 0;
 
@@ -54,7 +58,7 @@ export function RequestsBoard({
               onPress={onCreate}
               style={({ pressed }) => [styles.newButton, pressed ? styles.newPressed : null]}
             >
-              <Ionicons name="add" size={18} color={colors.surface} />
+              <Ionicons name="add" size={18} color={colors.onPrimary} />
               <Text style={styles.newButtonText}>Nueva</Text>
             </Pressable>
           ) : null}
@@ -90,7 +94,12 @@ export function RequestsBoard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -132,7 +141,7 @@ const styles = StyleSheet.create({
   newButton: {
     minHeight: 42,
     borderRadius: radii.md,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primarySolid,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
@@ -147,7 +156,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primaryPressed,
   },
   newButtonText: {
-    color: colors.surface,
+    color: colors.onPrimary,
     fontSize: 14,
     fontWeight: '700',
   },

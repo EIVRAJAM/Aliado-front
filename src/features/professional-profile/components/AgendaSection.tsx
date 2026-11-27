@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -19,6 +21,8 @@ interface AgendaSectionProps {
 }
 
 export function AgendaSection({ agenda, loading, error, missing, onEdit }: AgendaSectionProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <Card style={styles.card}>
       <View style={styles.header}>
@@ -68,17 +72,21 @@ export function AgendaSection({ agenda, loading, error, missing, onEdit }: Agend
       <View style={styles.note}>
         <Ionicons name="information-circle-outline" size={15} color={colors.muted} />
         <Text style={styles.noteText}>
-          Los compromisos se guardan como instantes y se muestran en la zona horaria del
-          dispositivo. La disponibilidad semanal se interpreta en la hora de Colombia
-          (America/Bogota). No representan una reserva ni confirman compatibilidad automática con
-          solicitudes; esa regla sigue pendiente de D-03.
+          Los compromisos se muestran en la hora de tu dispositivo. La disponibilidad semanal usa
+          la hora de Colombia. No representan una reserva ni confirman automáticamente la
+          compatibilidad con solicitudes.
         </Text>
       </View>
     </Card>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     gap: spacing.md,
   },

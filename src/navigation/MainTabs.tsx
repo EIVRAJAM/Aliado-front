@@ -8,7 +8,8 @@ import { DiscoveryScreen } from '../features/discovery';
 import { HomeScreen } from '../features/home';
 import { ProfileOverviewScreen } from '../features/profile';
 import { AgendaScreen } from '../features/professional-profile';
-import { colors } from '../shared/ui/theme';
+import { colors, getThemePalette } from '../shared/ui/theme';
+import { useTheme } from '../shared/ui/ThemeProvider';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -26,6 +27,8 @@ const icons: Record<
 
 export function MainTabs() {
   const { session } = useAuthSession();
+  const { resolvedScheme } = useTheme();
+  const palette = getThemePalette(resolvedScheme);
   const insets = useSafeAreaInsets();
 
   if (!session) {
@@ -37,25 +40,26 @@ export function MainTabs() {
       initialRouteName="Home"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.muted,
+        tabBarActiveTintColor: palette.primary,
+        tabBarInactiveTintColor: palette.muted,
         tabBarHideOnKeyboard: true,
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: '700',
+          fontWeight: '800',
+          marginTop: -1,
         },
         tabBarStyle: {
-          backgroundColor: colors.surface,
+          backgroundColor: palette.surface,
           borderTopColor: colors.border,
           borderTopWidth: 1,
-          paddingTop: 6,
-          paddingBottom: insets.bottom + 6,
-          height: 62 + insets.bottom,
-          elevation: 8,
+          paddingTop: 8,
+          paddingBottom: insets.bottom + 8,
+          height: 68 + insets.bottom,
+          elevation: 12,
           shadowColor: colors.shadow,
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 8,
+          shadowOffset: { width: 0, height: -3 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
         },
         tabBarIcon: ({ focused, color, size }) => (
           <Ionicons

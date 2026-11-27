@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { StyleSheet, Text, View } from 'react-native';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -20,6 +22,8 @@ type ProfileOverviewScreenProps = CompositeScreenProps<
 >;
 
 export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const { profile, loading, error, reload } = useMyProfile();
 
@@ -30,7 +34,7 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
     >
       <InlineMessage
         variant="info"
-        message="La sesión se mantiene solo durante esta ejecución. Al cerrar la app deberás autenticarte de nuevo."
+        message="Por seguridad, deberás iniciar sesión de nuevo al cerrar la app."
       />
       {loading || error || !profile ? (
         <ProfileStateView loading={loading} error={error} onRetry={reload} />
@@ -93,8 +97,8 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
           ) : null}
           <ProfileActionCard
             icon="◷"
-            title="Preferencias de notificación"
-            subtitle="Elige qué avisos recibir y por qué canal."
+            title="Preferencias de la app"
+            subtitle="Ajusta la apariencia y tus avisos."
             onPress={() => navigation.navigate('NotificationPreferences')}
           />
           {session?.role === 'PRESTADOR' ? (
@@ -134,7 +138,12 @@ export function ProfileOverviewScreen({ navigation }: ProfileOverviewScreenProps
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   identity: {
     alignItems: 'center',
     gap: spacing.xs,
@@ -151,7 +160,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   avatarText: {
-    color: colors.surface,
+    color: colors.onPrimary,
     fontSize: 32,
     fontWeight: '800',
   },

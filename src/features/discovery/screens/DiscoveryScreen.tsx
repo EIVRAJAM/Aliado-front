@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -29,6 +31,8 @@ interface FilterErrors {
 }
 
 export function DiscoveryScreen({ navigation }: DiscoveryScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
 
   if (!session) {
@@ -53,6 +57,8 @@ export function DiscoveryScreen({ navigation }: DiscoveryScreenProps) {
 }
 
 function ClientDiscoveryScreen({ navigation }: { navigation: DiscoveryScreenProps['navigation'] }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { catalogs, loading: catalogsLoading, error: catalogsError, reload } =
     useDiscoveryCatalogs();
   const { result, loading: searchLoading, error: searchError, searched, search, clear } =
@@ -229,7 +235,12 @@ function ClientDiscoveryScreen({ navigation }: { navigation: DiscoveryScreenProp
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   filterCard: {
     gap: spacing.lg,
   },

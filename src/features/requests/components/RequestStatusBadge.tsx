@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { spacing } from '../../../shared/ui/theme';
@@ -6,7 +8,9 @@ import { requestStatusLabel } from '../utils/request-format';
 import { requestStatusTone } from '../utils/request-visuals';
 
 export function RequestStatusBadge({ status }: { status: RequestStatus }) {
-  const theme = requestStatusTone[status];
+  const { colors } = useAppTheme();
+  const styles = useStyles();
+  const theme = requestStatusTone(status, colors);
 
   return (
     <View style={[styles.badge, { backgroundColor: theme.background }]}>
@@ -16,7 +20,12 @@ export function RequestStatusBadge({ status }: { status: RequestStatus }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',

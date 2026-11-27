@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import DateTimePicker, { DateTimePickerAndroid, type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -23,6 +25,8 @@ export function formatTimeValue(value: Date): string {
 }
 
 export function DateTimeField({ label, value, mode, onChange, disabled = false, error }: DateTimeFieldProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const [visible, setVisible] = useState(false);
   const [draft, setDraft] = useState(value);
   const displayValue = mode === 'date' ? formatDateValue(value) : formatTimeValue(value);
@@ -85,7 +89,12 @@ export function DateTimeField({ label, value, mode, onChange, disabled = false, 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: { gap: spacing.xs },
   label: { color: colors.text, fontSize: 13, fontWeight: '600' },
   button: { minHeight: 46, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, backgroundColor: colors.inputBackground, justifyContent: 'center', paddingHorizontal: spacing.md },

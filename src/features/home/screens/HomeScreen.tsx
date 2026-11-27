@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { CompositeScreenProps } from '@react-navigation/native';
@@ -18,6 +20,8 @@ type HomeScreenProps = CompositeScreenProps<
 >;
 
 export function HomeScreen({ navigation }: HomeScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const hasNewNotifications = useUnreadNotifications();
 
@@ -40,7 +44,7 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
             pressed ? styles.headerActionPressed : null,
           ]}
         >
-          <Ionicons name="notifications-outline" size={22} color={colors.primary} />
+          <Ionicons name="notifications-outline" size={22} color={colors.onImage} />
           {hasNewNotifications ? <View style={styles.notificationDot} /> : null}
         </Pressable>
       }
@@ -77,7 +81,12 @@ export function HomeScreen({ navigation }: HomeScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   intro: {
     gap: spacing.xs,
     paddingTop: spacing.xs,
@@ -106,13 +115,13 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: radii.md,
     borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    borderColor: 'rgba(255, 255, 255, 0.24)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerActionPressed: {
-    backgroundColor: colors.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
   },
   notificationDot: {
     position: 'absolute',

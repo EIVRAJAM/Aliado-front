@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -21,9 +23,11 @@ import {
 type ForgotPasswordScreenProps = NativeStackScreenProps<RootStackParamList, 'ForgotPassword'>;
 
 const RECOVERY_MESSAGE =
-  'Si el correo está registrado, recibirás un mecanismo de recuperación. Por seguridad, no confirmamos si existe una cuenta.';
+  'Si el correo está registrado, recibirás un código de recuperación. Por seguridad, no confirmamos si existe una cuenta.';
 
 export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { gateway } = useAuthSession();
   const [email, setEmail] = useState('');
   const [errors, setErrors] = useState<PasswordRecoveryFieldErrors>({});
@@ -61,12 +65,12 @@ export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) 
     <ScreenLayout
       variant="auth"
       title="Recupera tu acceso"
-      subtitle="Te enviaremos un mecanismo de verificación si el correo está registrado."
+      subtitle="Te enviaremos un código de recuperación si el correo está registrado."
     >
       {!appEnv.apiBaseUrl ? (
         <InlineMessage
           variant="info"
-          message="La conexión con la API no está configurada en este entorno. La recuperación real permanece pendiente."
+          message="La recuperación de acceso no está disponible en este momento. Intenta de nuevo más tarde."
         />
       ) : null}
       {submitted ? <InlineMessage variant="success" message={RECOVERY_MESSAGE} /> : null}
@@ -93,7 +97,12 @@ export function ForgotPasswordScreen({ navigation }: ForgotPasswordScreenProps) 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   links: {
     gap: spacing.xs,
     marginTop: spacing.sm,

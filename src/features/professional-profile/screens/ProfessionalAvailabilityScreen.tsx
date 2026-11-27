@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useEffect, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -16,10 +18,12 @@ import type { AvailabilityBlockInput } from '../types/professional-profile';
 import { ANY_DAY_OPTION, WEEKDAY_OPTIONS, formatClockTime, parseClockTime } from '../utils/professional-profile-format';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ProfessionalAvailability'>;
-const dayLabel = (value: number | null) => value === null ? ANY_DAY_OPTION.label : WEEKDAY_OPTIONS.find((o) => o.value === value)?.label ?? `Día ${value}`;
+const dayLabel = (value: number | null) => value === null ? ANY_DAY_OPTION.label : WEEKDAY_OPTIONS.find((o) => o.value === value)?.label ?? 'Día no disponible';
 const blockLabel = (block: AvailabilityBlockInput) => `${dayLabel(block.diaSemana)} · ${block.horaInicio} – ${block.horaFin}`;
 
 export function ProfessionalAvailabilityScreen({ navigation }: Props) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const { blocks, loading, error, missing, saving, saveError, success, reload, save } = useProfessionalAvailability();
   const [draftBlocks, setDraftBlocks] = useState<AvailabilityBlockInput[]>([]);
@@ -60,11 +64,11 @@ export function ProfessionalAvailabilityScreen({ navigation }: Props) {
   };
 
   return (
-    <ScreenLayout title="Disponibilidad" subtitle="Define bloques semanales de atención. Los horarios se interpretan en la hora de Colombia (America/Bogota)." onBack={() => navigation.goBack()}>
+    <ScreenLayout title="Disponibilidad" subtitle="Define tus horarios de atención para cada día de la semana." onBack={() => navigation.goBack()}>
       {loading ? <Card style={styles.loadingCard}><ActivityIndicator color={colors.primary} /><Text style={styles.loadingText}>Cargando disponibilidad…</Text></Card> : error ? <><InlineMessage message={error} /><PrimaryButton label="Reintentar" variant="secondary" onPress={() => void reload()} /></> : missing ? <Card style={styles.emptyCard}><Text style={styles.emptyTitle}>Primero crea tu perfil profesional</Text><Text style={styles.emptyText}>La disponibilidad se guarda dentro de tu perfil profesional.</Text><PrimaryButton label="Crear mi perfil profesional" onPress={() => navigation.navigate('ProfessionalProfileCreate')} /></Card> : <>
         {success ? <InlineMessage variant="success" message={success} /> : null}{saveError ? <InlineMessage message={saveError} /> : null}
         <Card style={styles.editorCard}>
-          <View style={styles.cardHeader}><View style={styles.iconBadge}><Ionicons name="time-outline" size={18} color={colors.primary} /></View><View style={styles.headerText}><Text style={styles.title}>{editingIndex === null ? 'Agregar bloque' : 'Editar bloque'}</Text><Text style={styles.subtitle}>Día y horario en hora de Colombia (America/Bogota).</Text></View></View>
+          <View style={styles.cardHeader}><View style={styles.iconBadge}><Ionicons name="time-outline" size={18} color={colors.primary} /></View><View style={styles.headerText}><Text style={styles.title}>{editingIndex === null ? 'Agregar bloque' : 'Editar bloque'}</Text><Text style={styles.subtitle}>Selecciona el día y el horario.</Text></View></View>
           <Text style={styles.fieldLabel}>Día</Text><View style={styles.days}>{[ANY_DAY_OPTION, ...WEEKDAY_OPTIONS].map((option) => <Pressable key={option.value} accessibilityRole="radio" accessibilityState={{ selected: day === option.value }} onPress={() => setDay(option.value)} style={[styles.dayChip, day === option.value ? styles.dayChipSelected : null]}><Text style={[styles.dayChipText, day === option.value ? styles.dayChipTextSelected : null]}>{option.label}</Text></Pressable>)}</View>
           <View style={styles.timeRow}><View style={styles.flex}><DateTimeField label="Hora de inicio" value={start} mode="time" onChange={setStart} disabled={saving} /></View><View style={styles.flex}><DateTimeField label="Hora de fin" value={end} mode="time" onChange={setEnd} disabled={saving} /></View></View>
           {formError ? <InlineMessage message={formError} /> : null}
@@ -72,17 +76,22 @@ export function ProfessionalAvailabilityScreen({ navigation }: Props) {
           {editingIndex !== null ? <LinkButton label="Cancelar edición" onPress={resetForm} align="center" /> : null}
         </Card>
         <Card style={styles.listCard}>
-          <View style={styles.cardHeader}><View style={styles.iconBadge}><Ionicons name="calendar-outline" size={18} color={colors.primary} /></View><View style={styles.headerText}><Text style={styles.title}>Bloques configurados</Text><Text style={styles.subtitle}>{draftBlocks.length} bloque(s) en borrador.</Text></View></View>
+          <View style={styles.cardHeader}><View style={styles.iconBadge}><Ionicons name="calendar-outline" size={18} color={colors.primary} /></View><View style={styles.headerText}><Text style={styles.title}>Bloques configurados</Text><Text style={styles.subtitle}>{draftBlocks.length === 1 ? '1 bloque en borrador.' : `${draftBlocks.length} bloques en borrador.`}</Text></View></View>
           {draftBlocks.length === 0 ? <InlineMessage variant="info" message="Aún no hay bloques de disponibilidad." /> : <View style={styles.list}>{draftBlocks.map((block, index) => <View key={`${block.diaSemana}-${block.horaInicio}-${block.horaFin}-${index}`} style={styles.item}><Text style={styles.itemText}>{blockLabel(block)}</Text><View style={styles.itemActions}><Pressable accessibilityRole="button" accessibilityLabel={`Editar bloque ${blockLabel(block)}`} onPress={() => editBlock(index)} style={styles.action}><Text style={styles.actionText}>Editar</Text></Pressable><Pressable accessibilityRole="button" accessibilityLabel={`Quitar bloque ${blockLabel(block)}`} onPress={() => removeBlock(index)} style={styles.action}><Text style={styles.removeText}>Quitar</Text></Pressable></View></View>)}</View>}
           <PrimaryButton label={saving ? 'Guardando…' : 'Guardar disponibilidad'} onPress={() => void persist()} loading={saving} disabled={saving} />
         </Card>
-        <InlineMessage variant="info" message="La disponibilidad semanal se interpreta en la hora de Colombia (America/Bogota). El matching horario automático con solicitudes sigue pendiente de D-03." />
+        <InlineMessage variant="info" message="Los horarios se muestran en la hora de Colombia. La asignación automática de solicitudes según tu disponibilidad aún no está disponible." />
       </>}
     </ScreenLayout>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   loadingCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, loadingText: { color: colors.muted, fontSize: 14 },
   emptyCard: { gap: spacing.md }, emptyTitle: { color: colors.text, fontSize: 16, fontWeight: '800' }, emptyText: { color: colors.muted, fontSize: 14, lineHeight: 20 },
   editorCard: { gap: spacing.md }, listCard: { gap: spacing.md }, cardHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },

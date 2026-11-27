@@ -9,7 +9,7 @@ import {
 } from '../types/formalization';
 import type { FormalizationGateway } from './formalization-gateway';
 
-const INVALID_RESPONSE = 'La respuesta del servidor no tiene el formato esperado.';
+const INVALID_RESPONSE = 'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -134,7 +134,7 @@ function notFoundMessage(serverCode?: string): string {
     case 'RUTA_NO_ENCONTRADA':
       return 'La ruta de formalización ya no está disponible.';
     default:
-      return 'El recurso solicitado ya no está disponible.';
+      return 'La información solicitada ya no está disponible.';
   }
 }
 
@@ -203,7 +203,7 @@ export class HttpFormalizationGateway implements FormalizationGateway {
     if (!this.baseUrl) {
       throw new FormalizationError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno.'
+        'No podemos cargar tu ruta de formalización en este momento. Intenta de nuevo más tarde.'
       );
     }
     return this.baseUrl;

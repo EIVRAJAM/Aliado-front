@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { spacing } from '../../../shared/ui/theme';
@@ -5,7 +7,9 @@ import type { ServiceState } from '../types/service';
 import { serviceStateLabel, serviceStateTone } from '../utils/service-format';
 
 export function ServiceStateBadge({ state }: { state: ServiceState }) {
-  const tone = serviceStateTone[state];
+  const { colors } = useAppTheme();
+  const styles = useStyles();
+  const tone = serviceStateTone(state, colors);
   return (
     <View style={[styles.badge, { backgroundColor: tone.background }]}>
       <View style={[styles.dot, { backgroundColor: tone.text }]} />
@@ -14,7 +18,12 @@ export function ServiceStateBadge({ state }: { state: ServiceState }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   badge: {
     flexDirection: 'row',
     alignItems: 'center',

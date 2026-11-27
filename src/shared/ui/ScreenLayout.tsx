@@ -1,4 +1,5 @@
-import type { PropsWithChildren, ReactNode } from 'react';
+import { useAppTheme, type ThemeColors } from './ThemeProvider';
+import { useMemo, type PropsWithChildren, type ReactNode } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -11,7 +12,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { colors, radii, spacing } from './theme';
+import { radii, spacing } from './theme';
 
 type ScreenVariant = 'app' | 'auth';
 
@@ -31,6 +32,9 @@ export function ScreenLayout({
   headerAction,
   children,
 }: ScreenLayoutProps) {
+  const { resolvedScheme } = useAppTheme();
+  const styles = useStyles();
+
   if (variant === 'auth') {
     return (
       <SafeAreaView style={styles.authSafe}>
@@ -60,7 +64,7 @@ export function ScreenLayout({
 
   return (
     <SafeAreaView style={styles.appSafe}>
-      <StatusBar style="dark" />
+      <StatusBar style={resolvedScheme === 'dark' ? 'light' : 'dark'} />
       <View style={styles.appHeader}>
         {onBack ? (
           <Pressable
@@ -94,7 +98,12 @@ export function ScreenLayout({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   flex: {
     flex: 1,
   },
@@ -118,7 +127,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: radii.md,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.onPrimary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -128,7 +137,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   authBrand: {
-    color: colors.surface,
+    color: colors.onPrimary,
     fontSize: 22,
     fontWeight: '800',
     letterSpacing: 2,
@@ -141,14 +150,16 @@ const styles = StyleSheet.create({
   },
   authCard: {
     backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radii.xl,
     padding: spacing.xl,
     gap: spacing.lg,
     shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 18,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    elevation: 6,
   },
   authTitle: {
     color: colors.text,
@@ -169,11 +180,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    backgroundColor: colors.header,
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
+    paddingVertical: 14,
   },
   backButton: {
     width: 36,
@@ -183,37 +192,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backPressed: {
-    backgroundColor: colors.background,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
   },
   backText: {
-    color: colors.muted,
+    color: colors.onImage,
     fontSize: 32,
     lineHeight: 32,
     marginTop: -2,
   },
   appLogo: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.md,
-    backgroundColor: colors.primary,
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: colors.onPrimary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   appLogoText: {
-    color: colors.surface,
-    fontSize: 17,
+    color: colors.primary,
+    fontSize: 18,
     fontWeight: '800',
   },
   appHeaderText: {
     flex: 1,
   },
   appTitle: {
-    color: colors.text,
-    fontSize: 17,
-    fontWeight: '700',
+    color: colors.onImage,
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 0.1,
   },
   appBrandSmall: {
-    color: colors.muted,
+    color: colors.headerMuted,
     fontSize: 10,
     fontWeight: '600',
     letterSpacing: 1.2,
@@ -221,7 +231,8 @@ const styles = StyleSheet.create({
   },
   appContent: {
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xxl,
     gap: spacing.lg,
   },
   appSubtitle: {

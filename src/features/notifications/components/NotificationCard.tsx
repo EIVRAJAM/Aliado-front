@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -6,6 +8,7 @@ import { colors, radii, spacing } from '../../../shared/ui/theme';
 import type { AppNotification, NotificationType } from '../types/notification';
 import {
   formatNotificationDate,
+  notificationDetailText,
   notificationTypeLabel,
 } from '../utils/notification-format';
 
@@ -51,6 +54,8 @@ export function NotificationCard({
   onMarkRead?: () => void;
   disabled?: boolean;
 }) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const content = (
     <>
       <View style={styles.iconBadge}>
@@ -65,7 +70,7 @@ export function NotificationCard({
         <Text style={[styles.date, !notification.leidaEn && styles.unread]}>
           {notification.leidaEn ? 'Leída' : 'Sin leer'}
         </Text>
-        <Text style={styles.detail}>{notification.detalle}</Text>
+        <Text style={styles.detail}>{notificationDetailText(notification.detalle)}</Text>
         <Text style={styles.date}>
           {formatNotificationDate(notification.fechaGeneracion)}
         </Text>
@@ -82,7 +87,7 @@ export function NotificationCard({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`${notificationTypeLabel(notification.tipo)}. ${
-            notification.detalle
+            notificationDetailText(notification.detalle)
           } ${actionLabel(notification)}`}
           onPress={onPress}
           disabled={disabled}
@@ -94,7 +99,7 @@ export function NotificationCard({
         <View
           accessible
           accessibilityLabel={`${notificationTypeLabel(notification.tipo)}. ${
-            notification.detalle
+            notificationDetailText(notification.detalle)
           } Aviso informativo.`}
           style={styles.row}
         >
@@ -115,7 +120,12 @@ export function NotificationCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: { padding: 0 },
   row: {
     flexDirection: 'row',

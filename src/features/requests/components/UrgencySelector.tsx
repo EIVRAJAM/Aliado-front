@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { colors, radii, spacing } from '../../../shared/ui/theme';
+import { radii, spacing } from '../../../shared/ui/theme';
 import { urgencyOptions, type RequestUrgency } from '../types/request';
 import { urgencyTone } from '../utils/request-visuals';
 
@@ -17,12 +19,14 @@ export function UrgencySelector({
   error,
   disabled = false,
 }: UrgencySelectorProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View style={styles.container}>
       <View style={styles.options}>
         {urgencyOptions.map((option) => {
           const selected = option.value === value;
-          const tone = urgencyTone[option.value];
+          const tone = urgencyTone(option.value, colors);
           return (
             <Pressable
               key={option.value}
@@ -55,7 +59,12 @@ export function UrgencySelector({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     gap: spacing.xs,
   },

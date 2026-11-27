@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-import { NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import {
@@ -31,7 +31,8 @@ import {
 import { FormalizationScreen } from '../features/formalization';
 import { ProfessionalAvailabilityScreen, ProfessionalProfileCreateScreen, ProfessionalProfileScreen } from '../features/professional-profile';
 import { RequestDetailScreen, RequestFormScreen } from '../features/requests';
-import { colors } from '../shared/ui/theme';
+import { colors, getThemePalette } from '../shared/ui/theme';
+import { useTheme } from '../shared/ui/ThemeProvider';
 import { DeepLinkHandler } from './DeepLinkHandler';
 import { MainTabs } from './MainTabs';
 import { linking, navigationRef } from './deep-links';
@@ -49,13 +50,31 @@ function openPushOpportunity(solicitudId: string) {
 
 export function RootNavigator({ initialAuthRoute = 'Login' }: RootNavigatorProps) {
   const { session } = useAuthSession();
+  const { resolvedScheme } = useTheme();
+  const palette = getThemePalette(resolvedScheme);
   const [navigationReady, setNavigationReady] = useState(false);
   useAndroidPush(navigationReady, openPushOpportunity);
+  const navigationTheme = useMemo(() => {
+    const base = resolvedScheme === 'dark' ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: palette.primary,
+        background: palette.background,
+        card: palette.surface,
+        text: palette.text,
+        border: colors.border,
+        notification: colors.danger,
+      },
+    };
+  }, [palette, resolvedScheme]);
 
   return (
     <>
       <NavigationContainer
         ref={navigationRef}
+        theme={navigationTheme}
         linking={linking}
         onReady={() => setNavigationReady(true)}
       >
@@ -63,7 +82,7 @@ export function RootNavigator({ initialAuthRoute = 'Login' }: RootNavigatorProps
         initialRouteName={session ? 'MainTabs' : initialAuthRoute}
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colors.background },
+          contentStyle: { backgroundColor: palette.background },
         }}
       >
         {session ? (

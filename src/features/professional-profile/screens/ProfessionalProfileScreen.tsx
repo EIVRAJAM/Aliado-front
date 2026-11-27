@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -23,6 +25,8 @@ type ProfessionalProfileScreenProps = NativeStackScreenProps<
 >;
 
 export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const { session } = useAuthSession();
   const {
     profile,
@@ -141,15 +145,15 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
               <Text style={styles.limitsTitle}>Alcance actual</Text>
             </View>
             <Text style={styles.limitItem}>
-              • Puedes consultar y editar la descripción profesional; la vista pública la muestra
-              cuando tiene contenido.
+              • Puedes editar tu descripción profesional; la vista pública la muestra cuando tiene
+              contenido.
             </Text>
             <Text style={styles.limitItem}>
-              • La disponibilidad semanal y los compromisos de agenda ya se pueden editar desde la
-              app con el contrato actual.
+              • Puedes administrar tu disponibilidad semanal y tus compromisos desde la app.
             </Text>
             <Text style={styles.limitItem}>
-              • El matching automático entre solicitudes y disponibilidad sigue pendiente de D-03.
+              • La asignación automática de solicitudes según tu disponibilidad aún no está
+              disponible.
             </Text>
           </Card>
 
@@ -173,7 +177,12 @@ export function ProfessionalProfileScreen({ navigation }: ProfessionalProfileScr
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   loading: {
     alignItems: 'center',
     gap: spacing.sm,

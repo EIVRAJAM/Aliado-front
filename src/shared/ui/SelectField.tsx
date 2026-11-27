@@ -1,9 +1,10 @@
+import { useAppTheme, type ThemeColors } from './ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PrimaryButton } from './PrimaryButton';
-import { colors, radii, spacing } from './theme';
+import { radii, spacing } from './theme';
 
 export interface SelectOption {
   value: string;
@@ -32,6 +33,8 @@ export function SelectField({
   hint,
   disabled = false,
 }: SelectFieldProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const [open, setOpen] = useState(false);
   const selected = options.find((option) => option.value === value);
 
@@ -146,7 +149,12 @@ export function SelectField({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     gap: spacing.xs,
   },

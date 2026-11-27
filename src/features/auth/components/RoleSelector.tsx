@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { colors, radii, spacing } from '../../../shared/ui/theme';
@@ -23,6 +25,8 @@ interface RoleSelectorProps {
 }
 
 export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   return (
     <View style={styles.container}>
       <Text style={styles.label}>Quiero usar ALIADO como</Text>
@@ -55,7 +59,12 @@ export function RoleSelector({ value, onChange, error }: RoleSelectorProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   container: {
     gap: spacing.sm,
   },

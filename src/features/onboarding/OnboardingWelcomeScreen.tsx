@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../shared/ui/ThemeProvider';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { PrimaryButton } from '../../shared/ui/PrimaryButton';
-import { colors, spacing } from '../../shared/ui/theme';
+import { spacing } from '../../shared/ui/theme';
 
 interface OnboardingWelcomeScreenProps {
   onLogin: () => void;
@@ -11,9 +13,11 @@ interface OnboardingWelcomeScreenProps {
 }
 
 export function OnboardingWelcomeScreen({ onLogin, onRegister }: OnboardingWelcomeScreenProps) {
+  const { resolvedScheme } = useAppTheme();
+  const styles = useStyles();
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <StatusBar style="dark" />
+      <StatusBar style={resolvedScheme === 'dark' ? 'light' : 'dark'} />
       <View style={styles.content}>
         <Text style={styles.eyebrow}>ALIADO</Text>
         <Text style={styles.title}>Bienvenido</Text>
@@ -29,7 +33,12 @@ export function OnboardingWelcomeScreen({ onLogin, onRegister }: OnboardingWelco
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: {
     flex: 1,

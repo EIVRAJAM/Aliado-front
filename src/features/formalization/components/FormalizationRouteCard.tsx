@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -30,6 +32,8 @@ export function FormalizationRouteCard({
   openingLinkId,
   onOpenLink,
 }: FormalizationRouteCardProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const hasLinks = route.pasos.some((step) => step.enlaces.length > 0);
   const showProgressSection = shouldShowRouteProgress(progressStatus);
 
@@ -125,7 +129,12 @@ export function FormalizationRouteCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     gap: spacing.lg,
   },
@@ -211,12 +220,12 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 15,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primarySolid,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepNumberText: {
-    color: colors.surface,
+    color: colors.onPrimary,
     fontSize: 13,
     fontWeight: '800',
   },

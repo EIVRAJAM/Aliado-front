@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -20,6 +22,8 @@ export function FormalizationLinkRow({
   opening,
   onPress,
 }: FormalizationLinkRowProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const available = state === 'DISPONIBLE';
   const disabled = !available || opening;
 
@@ -84,7 +88,12 @@ export function FormalizationLinkRow({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',

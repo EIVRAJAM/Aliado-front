@@ -17,7 +17,7 @@ function requiredString(value: unknown): string {
   if (typeof value !== 'string' || !value) {
     throw new OpportunityError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -30,7 +30,7 @@ function nullableString(value: unknown): string | null {
   if (typeof value !== 'string') {
     throw new OpportunityError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return value;
@@ -39,7 +39,10 @@ function nullableString(value: unknown): string | null {
 function parsePhotoReferences(value: unknown): Array<{ id: string; orden: number }> {
   if (value === undefined || value === null) return [];
   if (!Array.isArray(value)) {
-    throw new OpportunityError('UNKNOWN', 'La respuesta del servidor no tiene el formato esperado.');
+    throw new OpportunityError(
+      'UNKNOWN',
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
+    );
   }
   return value.map((item) => {
     if (!isRecord(item) || typeof item.id !== 'string' || !isOpportunityId(item.id)
@@ -54,7 +57,7 @@ function parseCategory(value: unknown): OpportunityCategory {
   if (!isRecord(value)) {
     throw new OpportunityError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
   return {
@@ -67,7 +70,7 @@ function parseOpportunity(value: unknown): Opportunity {
   if (!isRecord(value)) {
     throw new OpportunityError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
 
@@ -75,7 +78,7 @@ function parseOpportunity(value: unknown): Opportunity {
   if (urgencia !== null && urgencia !== undefined && !isOpportunityUrgency(urgencia)) {
     throw new OpportunityError(
       'UNKNOWN',
-      'La respuesta del servidor no tiene el formato esperado.'
+      'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
     );
   }
 
@@ -174,7 +177,7 @@ export class HttpOpportunitiesGateway implements OpportunitiesGateway {
     if (!this.baseUrl) {
       throw new OpportunityError(
         'CONFIGURATION',
-        'La URL de la API no está configurada en este entorno.'
+        'No podemos cargar las oportunidades en este momento. Intenta de nuevo más tarde.'
       );
     }
     return this.baseUrl;
@@ -190,7 +193,7 @@ export class HttpOpportunitiesGateway implements OpportunitiesGateway {
       if (!Array.isArray(response)) {
         throw new OpportunityError(
           'UNKNOWN',
-          'La respuesta del servidor no tiene el formato esperado.'
+          'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
         );
       }
       return response.map(parseCategory);
@@ -209,7 +212,7 @@ export class HttpOpportunitiesGateway implements OpportunitiesGateway {
       if (!Array.isArray(response)) {
         throw new OpportunityError(
           'UNKNOWN',
-          'La respuesta del servidor no tiene el formato esperado.'
+          'No pudimos interpretar la respuesta de ALIADO. Intenta de nuevo.'
         );
       }
       return response.map(parseOpportunity);

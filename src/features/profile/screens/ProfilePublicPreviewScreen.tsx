@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+import { useAppTheme, type ThemeColors } from '../../../shared/ui/ThemeProvider';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,6 +20,8 @@ type ProfilePublicPreviewScreenProps = NativeStackScreenProps<
 >;
 
 export function ProfilePublicPreviewScreen({ navigation, route }: ProfilePublicPreviewScreenProps) {
+  const { colors } = useAppTheme();
+  const styles = useStyles();
   const [publicProfile, setPublicProfile] = useState<PublicProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +79,12 @@ export function ProfilePublicPreviewScreen({ navigation, route }: ProfilePublicP
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = () => {
+  const { colors } = useAppTheme();
+  return useMemo(() => createStyles(colors), [colors]);
+};
+
+const createStyles = (colors: ThemeColors) => StyleSheet.create({
   card: {
     padding: spacing.lg,
   },
